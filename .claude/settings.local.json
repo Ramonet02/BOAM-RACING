@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(npx astro add svelte -y)",
+      "Bash(npx astro add tailwind -y)"
+    ]
+  }
+}
