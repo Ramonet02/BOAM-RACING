@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --no-import-alias)",
+      "Read(//c/Users/rperez/Ramon/Gs/BoamRacing/**)",
+      "Bash(npx create-next-app@latest boam-racing-temp --typescript --tailwind --eslint --app --src-dir --no-import-alias)",
+      "Bash(npx create-next-app@latest boam-racing-temp --typescript --tailwind --eslint --app --src-dir --no-import-alias --no-turbopack 2)",
+      "Bash(1:*)",
+      "Bash(npx create-next-app@latest boam-racing-temp --typescript --tailwind --eslint --app --src-dir --no-import-alias --no-turbopack)",
+      "Bash(rm -f package.json)",
+      "Bash(rm -rf boam-racing-temp)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

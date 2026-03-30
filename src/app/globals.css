@@ -1,0 +1,301 @@
+@import "tailwindcss";
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BOAM RACING — Design System
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+@theme {
+  --color-olive-dark: #3D3914;
+  --color-olive: #6A611B;
+  --color-sand: #FECF97;
+  --color-dune: #E8B478;
+  --color-terracotta: #C56D46;
+  --color-earth-red: #6A2A11;
+  --color-cream: #FFF8EC;
+  --color-dark: #0F0D07;
+  --color-dust: rgba(254, 207, 151, 0.05);
+
+  --radius-organic: 9999px;
+  --radius-soft: 2rem;
+
+  --font-display: "Aubrey", Georgia, "Times New Roman", serif;
+  --font-body: "Barlow Condensed", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ━━━ Base ━━━ */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-dark);
+  color: var(--color-cream);
+  overflow-x: hidden;
+}
+
+::selection {
+  background-color: var(--color-terracotta);
+  color: var(--color-cream);
+}
+
+/* ━━━ Custom Scrollbar ━━━ */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-olive-dark);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-olive);
+}
+
+/* ━━━ Typography Utilities ━━━ */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.text-gradient-sand {
+  background: linear-gradient(135deg, var(--color-sand), var(--color-terracotta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-earth {
+  background: linear-gradient(135deg, var(--color-terracotta), var(--color-earth-red));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ━━━ Background Utilities ━━━ */
+.bg-gradient-sand-terra {
+  background: linear-gradient(135deg, var(--color-sand), var(--color-terracotta));
+}
+
+.bg-gradient-terra-earth {
+  background: linear-gradient(180deg, var(--color-terracotta), var(--color-earth-red));
+}
+
+.bg-gradient-dark-earth {
+  background: linear-gradient(180deg, var(--color-dark), var(--color-earth-red));
+}
+
+/* Grain / Noise texture overlay */
+.noise-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.1; /* Increased for adventure feel */
+  pointer-events: none;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+}
+
+/* ━━━ Scroll-Triggered Animations ━━━ */
+
+/* Base state: hidden */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Variants */
+.animate-on-scroll.slide-left {
+  transform: translateX(-40px);
+}
+.animate-on-scroll.slide-left.is-visible {
+  transform: translateX(0);
+}
+
+.animate-on-scroll.slide-right {
+  transform: translateX(40px);
+}
+.animate-on-scroll.slide-right.is-visible {
+  transform: translateX(0);
+}
+
+.animate-on-scroll.scale-in {
+  transform: scale(0.9);
+}
+.animate-on-scroll.scale-in.is-visible {
+  transform: scale(1);
+}
+
+.animate-on-scroll.blur-in {
+  filter: blur(8px);
+  transform: translateY(20px);
+}
+.animate-on-scroll.blur-in.is-visible {
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+/* Stagger children */
+.stagger-children > .animate-on-scroll:nth-child(1) { transition-delay: 0.05s; }
+.stagger-children > .animate-on-scroll:nth-child(2) { transition-delay: 0.1s; }
+.stagger-children > .animate-on-scroll:nth-child(3) { transition-delay: 0.15s; }
+.stagger-children > .animate-on-scroll:nth-child(4) { transition-delay: 0.2s; }
+.stagger-children > .animate-on-scroll:nth-child(5) { transition-delay: 0.25s; }
+.stagger-children > .animate-on-scroll:nth-child(6) { transition-delay: 0.3s; }
+.stagger-children > .animate-on-scroll:nth-child(7) { transition-delay: 0.35s; }
+.stagger-children > .animate-on-scroll:nth-child(8) { transition-delay: 0.4s; }
+
+/* ━━━ Keyframe Animations ━━━ */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(8px); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-10px); }
+}
+
+@keyframes topo-draw {
+  from { stroke-dashoffset: 1000; opacity: 0; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+
+.animate-topo-draw {
+  animation: topo-draw 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes topo-drift {
+  0%   { transform: translateY(0) translateX(0); }
+  100% { transform: translateY(-20px) translateX(10px); }
+}
+
+@keyframes heat-haze {
+  0%, 100% { filter: blur(0.5px) contrast(1.1); transform: scale(1.01); }
+  50% { filter: blur(1.5px) contrast(1); transform: scale(1); }
+}
+
+/* ━━━ Animation Utilities ━━━ */
+.animate-fade-up      { animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fade-in      { animation: fade-in 0.6s ease forwards; }
+.animate-bounce-subtle { animation: bounce-subtle 2s ease-in-out infinite; }
+.animate-shimmer      { animation: shimmer 3s ease-in-out infinite; background-size: 200% 100%; }
+.animate-pulse-glow   { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-float        { animation: float 4s ease-in-out infinite; }
+
+/* Delay utilities */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
+.delay-800 { animation-delay: 0.8s; }
+
+/* ━━━ Moroccan Pattern Background ━━━ */
+.moroccan-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 15L60 45L30 60L0 45L0 15Z' fill='none' stroke='white' stroke-opacity='0.06' stroke-width='0.5'/%3E%3Cpath d='M30 10L50 20L50 40L30 50L10 40L10 20Z' fill='none' stroke='white' stroke-opacity='0.04' stroke-width='0.5'/%3E%3Ccircle cx='30' cy='30' r='5' fill='none' stroke='white' stroke-opacity='0.03' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 60px 60px;
+}
+
+/* ━━━ Topographic Lines Background ━━━ */
+.topo-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='800' height='800' viewBox='0 0 800 800' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-100,500 C0,450 150,550 250,500 C350,450 500,600 650,550 C800,500 900,600 1000,550 M-100,450 C20,380 160,500 280,430 C400,360 490,520 660,450 C800,380 950,500 1050,450 M-50,380 C40,300 170,450 310,360 C460,270 520,440 680,350 C840,260 920,400 1080,310 M0,290 C60,200 200,380 350,280 C500,180 570,360 720,260 C870,160 950,320 1100,220 M-100,100 C 150,250 250,50 450,150 C 650,250 700,50 900,150 C 1050,200 1150,100 1300,150 M-50,600 C 100,650 200,550 400,650 C 600,750 700,600 900,700 C 1000,750 1100,650 1200,700' fill='none' stroke='white' stroke-opacity='0.15' stroke-width='1.5'/%3E%3Cpath d='M-100,530 C20,480 130,580 230,530 C330,480 480,630 630,580 C780,530 880,630 980,580 M-100,480 C40,410 140,530 260,460 C380,390 470,550 640,480 C780,410 930,530 1030,480 M-50,410 C60,330 150,480 290,390 C440,300 500,470 660,380 C820,290 900,430 1060,340 M0,320 C80,230 180,410 330,310 C480,210 550,390 700,290 C850,190 930,350 1080,250' fill='none' stroke='white' stroke-opacity='0.08' stroke-width='0.6'/%3E%3C/svg%3E");
+  background-size: 800px 800px;
+  animation: topo-pan 40s linear infinite alternate;
+}
+
+@keyframes topo-pan {
+  0% { background-position: 0 0; }
+  100% { background-position: -400px -200px; }
+}
+
+
+/* ━━━ Dramatic Gradients ━━━ */
+.dramatic-gradient-bg {
+  background: radial-gradient(circle at 50% 50%, var(--color-sand) 0%, var(--color-terracotta) 40%, var(--color-earth-red) 70%, var(--color-dark) 100%);
+}
+
+.glow-heavy {
+  filter: drop-shadow(0 0 20px rgba(197, 109, 70, 0.6)) drop-shadow(0 0 40px rgba(106, 42, 17, 0.8));
+}
+
+.glow-sand {
+  filter: drop-shadow(0 0 15px rgba(254, 207, 151, 0.6));
+}
+
+
+/* ━━━ Erosion Masks ━━━ */
+.mask-erosion {
+  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='erosion'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='10'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23erosion)'/%3E%3C/svg%3E");
+  mask-size: cover;
+}
+
+.mask-edge-top {
+  mask-image: linear-gradient(to bottom, transparent, black 15%);
+}
+
+.mask-edge-bottom {
+  mask-image: linear-gradient(to top, transparent, black 15%);
+}
+
+.topo-label {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-sand);
+  opacity: 0.3;
+  pointer-events: none;
+}
