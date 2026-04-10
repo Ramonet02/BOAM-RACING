@@ -1,25 +1,26 @@
 @import "tailwindcss";
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   BOAM RACING — Design System
+   BOAM RACING — Design System (Editorial)
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 @theme {
-  --color-olive-dark: #3D3914;
-  --color-olive: #6A611B;
-  --color-sand: #FECF97;
-  --color-dune: #E8B478;
-  --color-terracotta: #C56D46;
-  --color-earth-red: #6A2A11;
-  --color-cream: #FFF8EC;
-  --color-dark: #0F0D07;
-  --color-dust: rgba(254, 207, 151, 0.05);
+  --color-rust: #C65F3B;
+  --color-moss: #636B51;
+  --color-bg-sand: #F7F4EB;
+  --color-bg-dark: #2A2522;
+  --color-text-primary: #2A2522;
+  --color-text-secondary: #7A756D;
+  --color-text-light: #F7F4EB;
+  --color-border: #D1CFC7;
+  --color-white: #FFFFFF;
 
   --radius-organic: 9999px;
   --radius-soft: 2rem;
 
-  --font-display: "Aubrey", Georgia, "Times New Roman", serif;
-  --font-body: "Barlow Condensed", "Helvetica Neue", Arial, sans-serif;
+  --font-heading: "Anton", "Impact", "Arial Black", sans-serif;
+  --font-body: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
 }
 
 /* ━━━ Base ━━━ */
@@ -30,14 +31,14 @@ html {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--color-dark);
-  color: var(--color-cream);
+  background-color: var(--color-bg-sand);
+  color: var(--color-text-primary);
   overflow-x: hidden;
 }
 
 ::selection {
-  background-color: var(--color-terracotta);
-  color: var(--color-cream);
+  background-color: var(--color-rust);
+  color: var(--color-text-light);
 }
 
 /* ━━━ Custom Scrollbar ━━━ */
@@ -45,50 +46,61 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-dark);
+  background: var(--color-bg-sand);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-olive-dark);
+  background: var(--color-border);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-olive);
+  background: var(--color-text-secondary);
 }
 
 /* ━━━ Typography Utilities ━━━ */
-.font-display {
-  font-family: var(--font-display);
+.font-heading {
+  font-family: var(--font-heading);
 }
 
 .font-body {
   font-family: var(--font-body);
 }
 
-.text-gradient-sand {
-  background: linear-gradient(135deg, var(--color-sand), var(--color-terracotta));
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.text-gradient-rust {
+  background: linear-gradient(135deg, var(--color-rust), #8B3A1F);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.text-gradient-earth {
-  background: linear-gradient(135deg, var(--color-terracotta), var(--color-earth-red));
+.text-gradient-moss {
+  background: linear-gradient(135deg, var(--color-moss), #4A5039);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 /* ━━━ Background Utilities ━━━ */
-.bg-gradient-sand-terra {
-  background: linear-gradient(135deg, var(--color-sand), var(--color-terracotta));
+.bg-gradient-sand-rust {
+  background: linear-gradient(135deg, var(--color-bg-sand), var(--color-rust));
 }
 
-.bg-gradient-terra-earth {
-  background: linear-gradient(180deg, var(--color-terracotta), var(--color-earth-red));
+.bg-gradient-dark {
+  background: linear-gradient(180deg, var(--color-bg-dark), #1A1714);
 }
 
-.bg-gradient-dark-earth {
-  background: linear-gradient(180deg, var(--color-dark), var(--color-earth-red));
+.bg-gradient-dark-fade {
+  background: linear-gradient(180deg, var(--color-bg-sand), var(--color-bg-dark));
+}
+
+/* Glass card effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
 }
 
 /* Grain / Noise texture overlay */
@@ -96,7 +108,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  opacity: 0.1; /* Increased for adventure feel */
+  opacity: 0.04;
   pointer-events: none;
   z-index: 1;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
@@ -243,15 +255,9 @@ body {
 .delay-700 { animation-delay: 0.7s; }
 .delay-800 { animation-delay: 0.8s; }
 
-/* ━━━ Moroccan Pattern Background ━━━ */
-.moroccan-bg {
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 15L60 45L30 60L0 45L0 15Z' fill='none' stroke='white' stroke-opacity='0.06' stroke-width='0.5'/%3E%3Cpath d='M30 10L50 20L50 40L30 50L10 40L10 20Z' fill='none' stroke='white' stroke-opacity='0.04' stroke-width='0.5'/%3E%3Ccircle cx='30' cy='30' r='5' fill='none' stroke='white' stroke-opacity='0.03' stroke-width='0.5'/%3E%3C/svg%3E");
-  background-size: 60px 60px;
-}
-
 /* ━━━ Topographic Lines Background ━━━ */
 .topo-bg {
-  background-image: url("data:image/svg+xml,%3Csvg width='800' height='800' viewBox='0 0 800 800' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-100,500 C0,450 150,550 250,500 C350,450 500,600 650,550 C800,500 900,600 1000,550 M-100,450 C20,380 160,500 280,430 C400,360 490,520 660,450 C800,380 950,500 1050,450 M-50,380 C40,300 170,450 310,360 C460,270 520,440 680,350 C840,260 920,400 1080,310 M0,290 C60,200 200,380 350,280 C500,180 570,360 720,260 C870,160 950,320 1100,220 M-100,100 C 150,250 250,50 450,150 C 650,250 700,50 900,150 C 1050,200 1150,100 1300,150 M-50,600 C 100,650 200,550 400,650 C 600,750 700,600 900,700 C 1000,750 1100,650 1200,700' fill='none' stroke='white' stroke-opacity='0.15' stroke-width='1.5'/%3E%3Cpath d='M-100,530 C20,480 130,580 230,530 C330,480 480,630 630,580 C780,530 880,630 980,580 M-100,480 C40,410 140,530 260,460 C380,390 470,550 640,480 C780,410 930,530 1030,480 M-50,410 C60,330 150,480 290,390 C440,300 500,470 660,380 C820,290 900,430 1060,340 M0,320 C80,230 180,410 330,310 C480,210 550,390 700,290 C850,190 930,350 1080,250' fill='none' stroke='white' stroke-opacity='0.08' stroke-width='0.6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='800' height='800' viewBox='0 0 800 800' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-100,500 C0,450 150,550 250,500 C350,450 500,600 650,550 C800,500 900,600 1000,550 M-100,450 C20,380 160,500 280,430 C400,360 490,520 660,450 C800,380 950,500 1050,450 M-50,380 C40,300 170,450 310,360 C460,270 520,440 680,350 C840,260 920,400 1080,310 M0,290 C60,200 200,380 350,280 C500,180 570,360 720,260 C870,160 950,320 1100,220 M-100,100 C 150,250 250,50 450,150 C 650,250 700,50 900,150 C 1050,200 1150,100 1300,150 M-50,600 C 100,650 200,550 400,650 C 600,750 700,600 900,700 C 1000,750 1100,650 1200,700' fill='none' stroke='%232A2522' stroke-opacity='0.06' stroke-width='1'/%3E%3Cpath d='M-100,530 C20,480 130,580 230,530 C330,480 480,630 630,580 C780,530 880,630 980,580 M-100,480 C40,410 140,530 260,460 C380,390 470,550 640,480 C780,410 930,530 1030,480 M-50,410 C60,330 150,480 290,390 C440,300 500,470 660,380 C820,290 900,430 1060,340 M0,320 C80,230 180,410 330,310 C480,210 550,390 700,290 C850,190 930,350 1080,250' fill='none' stroke='%232A2522' stroke-opacity='0.03' stroke-width='0.6'/%3E%3C/svg%3E");
   background-size: 800px 800px;
   animation: topo-pan 40s linear infinite alternate;
 }
@@ -261,20 +267,35 @@ body {
   100% { background-position: -400px -200px; }
 }
 
-
-/* ━━━ Dramatic Gradients ━━━ */
-.dramatic-gradient-bg {
-  background: radial-gradient(circle at 50% 50%, var(--color-sand) 0%, var(--color-terracotta) 40%, var(--color-earth-red) 70%, var(--color-dark) 100%);
+/* ━━━ Editorial Utilities ━━━ */
+.editorial-rule {
+  height: 1px;
+  background-color: var(--color-border);
 }
 
-.glow-heavy {
-  filter: drop-shadow(0 0 20px rgba(197, 109, 70, 0.6)) drop-shadow(0 0 40px rgba(106, 42, 17, 0.8));
+.waypoint-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 5px;
+  color: var(--color-rust);
 }
 
-.glow-sand {
-  filter: drop-shadow(0 0 15px rgba(254, 207, 151, 0.6));
+.gps-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--color-text-secondary);
 }
 
+.side-label {
+  font-family: var(--font-heading);
+  font-size: 120px;
+  letter-spacing: 6px;
+  color: rgba(42, 37, 34, 0.07);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
 
 /* ━━━ Erosion Masks ━━━ */
 .mask-erosion {
@@ -291,11 +312,11 @@ body {
 }
 
 .topo-label {
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
   font-size: 0.65rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-sand);
-  opacity: 0.3;
+  color: var(--color-text-secondary);
+  opacity: 0.5;
   pointer-events: none;
 }

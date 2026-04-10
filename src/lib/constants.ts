@@ -82,12 +82,13 @@ export const COMMUNICATION_CARDS: CommunicationCard[] = [
 
 /* ── Color palette tokens (for JS usage) ── */
 export const COLORS = {
-  oliveDark:  "#4D4617",
-  olive:      "#6A611B",
-  sand:       "#FECF97",
-  terracotta: "#C56D46",
-  earthRed:   "#6A2A11",
-  cream:      "#FFF8EC",
-  dark:       "#1A1408",
-  white:      "#FFFFFF",
+  rust:          "#C65F3B",
+  moss:          "#636B51",
+  bgSand:        "#F7F4EB",
+  bgDark:        "#2A2522",
+  textPrimary:   "#2A2522",
+  textSecondary: "#7A756D",
+  textLight:     "#F7F4EB",
+  border:        "#D1CFC7",
+  white:         "#FFFFFF",
 } as const;

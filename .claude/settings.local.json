@@ -9,7 +9,8 @@
       "Bash(npx create-next-app@latest boam-racing-temp --typescript --tailwind --eslint --app --src-dir --no-import-alias --no-turbopack)",
       "Bash(rm -f package.json)",
       "Bash(rm -rf boam-racing-temp)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

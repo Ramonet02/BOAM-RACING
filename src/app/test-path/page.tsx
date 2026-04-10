@@ -94,6 +94,7 @@ function OrganicSection({ milestone, title, text }: { milestone: number, title: 
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function OrganicMarker({ smoothProgress }: { smoothProgress: any }) {
   // approximation for the Car in the new 2687x3086 space
   // We need to follow the path points more closely

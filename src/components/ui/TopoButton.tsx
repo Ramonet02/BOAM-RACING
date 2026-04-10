@@ -63,7 +63,7 @@ export default function TopoButton({ children, className = "" }: TopoButtonProps
             cy={0}
             rx={r.rx}
             ry={r.ry}
-            stroke="#C56D46"
+            stroke="#C65F3B"
             strokeWidth={r.sw}
             fill="none"
             style={{
@@ -87,7 +87,7 @@ export default function TopoButton({ children, className = "" }: TopoButtonProps
           zIndex:     1,
           transform:  on ? "scale(1.08)" : "scale(1)",
           filter:     on
-            ? "drop-shadow(0 8px 20px rgba(197,109,70,0.50))"
+            ? "drop-shadow(0 8px 20px rgba(198,95,59,0.40))"
             : "none",
           transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1), filter 0.4s ease",
         }}

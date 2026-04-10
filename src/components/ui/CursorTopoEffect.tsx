@@ -18,7 +18,7 @@ const PEAK_S      = 130;   // tighter sigma → denser rings on button
 const NOISE_SCALE = 0.0052;
 const TIME_SPEED  = 0.00011;
 // ── Colour ────────────────────────────────────────────────────────
-const LINE_RGB    = "197,109,70";
+const LINE_RGB    = "42,37,34";
 
 // ── Segment chaining helpers ───────────────────────────────────────
 type Pt  = [number, number];
@@ -351,7 +351,7 @@ export default function CursorTopoEffect() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 5, mixBlendMode: "screen" }}
+      style={{ zIndex: 5, mixBlendMode: "multiply" }}
       aria-hidden="true"
     />
   );

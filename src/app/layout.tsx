@@ -1,21 +1,28 @@
 import type { Metadata } from "next";
-import { Aubrey, Barlow_Condensed } from "next/font/google";
+import { Anton, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import CursorTopoEffect from "@/components/ui/CursorTopoEffect";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 
-const aubrey = Aubrey({
+const anton = Anton({
   weight: "400",
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-heading",
   display: "swap",
 });
 
-const barlow = Barlow_Condensed({
+const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-body",
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -46,8 +53,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${aubrey.variable} ${barlow.variable}`}>
-      <body className="font-body antialiased bg-[var(--color-dark)] text-[var(--color-cream)]">
+    <html lang="es" className={`${anton.variable} ${inter.variable} ${ibmPlexMono.variable}`}>
+      <body className="font-body antialiased bg-[var(--color-bg-sand)] text-[var(--color-text-primary)]">
         <CursorTopoEffect />
         <Navbar />
         {children}

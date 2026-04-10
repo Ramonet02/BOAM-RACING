@@ -11,13 +11,13 @@ interface TopoDividerProps {
   reverse?: boolean;
 }
 
-export default function TopoDivider({ 
-  location, 
-  coords, 
-  altitude, 
-  type = "atlas", 
+export default function TopoDivider({
+  location,
+  coords,
+  altitude,
+  type = "atlas",
   extreme = false,
-  reverse = false 
+  reverse = false
 }: TopoDividerProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -36,7 +36,6 @@ export default function TopoDivider({
 
   const renderPaths = () => {
     if (type === "atlas") {
-      // High Atlas Peaks - Sharp but curved (Organic)
       return extreme ? (
         <>
           <path d="M0,80 C50,0 100,160 150,40 C200,-20 250,140 300,60 C350,10 400,120 450,30 C500,-40 550,150 600,50 C650,20 700,160 750,40 C800,-10 850,130 900,50 C950,20 1000,150 1050,40 C1100,0 1150,120 1200,80" className="topo-line-main" />
@@ -49,7 +48,6 @@ export default function TopoDivider({
         </>
       );
     } else if (type === "dunes") {
-      // High Dunes / Erg Chebbi style - Wide Flowing curves
       return extreme ? (
         <>
           <path d="M0,120 C150,-50 300,200 450,30 C600,250 850,-50 1200,120" className="topo-line-main" />
@@ -62,7 +60,6 @@ export default function TopoDivider({
         </>
       );
     } else if (type === "gorges") {
-      // Todra Gorges - Steep verticality but rounded edges
       return (
         <>
           <path d="M0,30 C150,30 250,30 280,30 C300,30 300,130 320,130 C350,130 550,130 580,130 C600,130 600,40 620,40 C650,40 850,40 880,40 C900,40 900,110 920,110 C950,110 1150,110 1200,110" className="topo-line-main" />
@@ -70,7 +67,6 @@ export default function TopoDivider({
         </>
       );
     } else {
-      // Plateau style - Slight ripples
       return (
         <>
           <path d="M0,60 Q300,50 600,60 T1200,60" className="topo-line-main" />
@@ -85,12 +81,12 @@ export default function TopoDivider({
       <svg
         ref={svgRef}
         viewBox="0 0 1200 150"
-        className={`w-full h-auto fill-none stroke-[var(--color-sand)] transition-all duration-1000 ${
+        className={`w-full h-auto fill-none stroke-[var(--color-border)] transition-all duration-1000 ${
           isVisible ? "opacity-100" : "opacity-0"
         }`}
         style={{ strokeWidth: 0.5 }}
       >
-        <g 
+        <g
           className={isVisible ? "animate-topo-draw" : ""}
           style={{ strokeDasharray: 1000, strokeDashoffset: isVisible ? 0 : 1000, transition: "stroke-dashoffset 2s ease-out" }}
         >
@@ -103,18 +99,18 @@ export default function TopoDivider({
         <div className={`absolute inset-0 flex flex-col justify-center px-12 pointer-events-none ${reverse ? "rotate-180" : ""}`}>
           <div className="flex flex-col gap-1 items-start">
             {location && (
-              <span className="font-display text-lg text-[var(--color-sand)] opacity-60 tracking-widest uppercase">
+              <span className="font-heading text-lg text-[var(--color-text-primary)] opacity-60 tracking-widest uppercase">
                 {location}
               </span>
             )}
             <div className="flex gap-4">
               {coords && (
-                <span className="font-body text-[10px] text-[var(--color-terracotta)] opacity-50 tracking-[0.3em] font-bold">
+                <span className="font-mono text-[10px] text-[var(--color-rust)] opacity-50 tracking-[0.3em] font-bold">
                   {coords}
                 </span>
               )}
               {altitude && (
-                <span className="font-body text-[10px] text-[var(--color-sand)] opacity-40 tracking-[0.3em]">
+                <span className="font-mono text-[10px] text-[var(--color-text-secondary)] opacity-60 tracking-[0.3em]">
                   ALT: {altitude}
                 </span>
               )}
@@ -124,9 +120,9 @@ export default function TopoDivider({
       )}
 
       <style jsx>{`
-        .topo-line-main { stroke-opacity: 0.4; stroke-width: 1; }
-        .topo-line-sub { stroke-opacity: 0.2; stroke-width: 0.5; }
-        .topo-line-detail { stroke-opacity: 0.1; stroke-width: 0.3; }
+        .topo-line-main { stroke-opacity: 0.3; stroke-width: 1; }
+        .topo-line-sub { stroke-opacity: 0.15; stroke-width: 0.5; }
+        .topo-line-detail { stroke-opacity: 0.08; stroke-width: 0.3; }
         .animate-topo-draw {
           animation: topo-draw 3s ease-out forwards;
         }

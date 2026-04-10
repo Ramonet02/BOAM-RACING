@@ -5,14 +5,12 @@ import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 export default function ExpeditionPath() {
   const { scrollYProgress } = useScroll();
 
-  // Snappier spring for a faster, more responsive "chase" effect
   const smoothProgress = useSpring(scrollYProgress, {
     stiffness: 70,
     damping: 20,
     restDelta: 0.001
   });
 
-  // Map path length to "lead" the viewport aggressively (finishes at 70% scroll)
   const pathLength = useTransform(smoothProgress, [0, 0.70], [0, 1]);
 
   // OFFICIAL VECTOR FROM USER (Vector 1.svg)
@@ -23,29 +21,41 @@ export default function ExpeditionPath() {
       <svg
         viewBox="0 0 1924 4869"
         preserveAspectRatio="xMidYMid meet"
-        className="w-full h-full opacity-40 px-0 md:px-20"
+        className="w-full h-full opacity-30 px-0 md:px-20"
       >
-        {/* Guide Path (Extremely Faint Sand) */}
+        {/* Guide Path (Faint rust) */}
         <path
           d={officialPath}
           fill="none"
-          stroke="var(--color-sand)"
+          stroke="var(--color-rust)"
           strokeWidth="1"
           className="opacity-10"
         />
 
-        {/* The Animated Trail (Organic Viewport-Aware Chase) */}
+        {/* Trail Glow */}
         <motion.path
           d={officialPath}
           fill="none"
-          stroke="var(--color-sand)"
-          strokeWidth="6"
+          stroke="var(--color-rust)"
+          strokeWidth="16"
           strokeLinecap="round"
           style={{
             pathLength,
-            filter: "drop-shadow(0 0 12px var(--color-sand))"
+            opacity: 0.06,
           }}
-          className="opacity-80"
+        />
+
+        {/* The Animated Trail (Main Line) */}
+        <motion.path
+          d={officialPath}
+          fill="none"
+          stroke="var(--color-rust)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          style={{
+            pathLength,
+            opacity: 0.4,
+          }}
         />
       </svg>
     </div>
