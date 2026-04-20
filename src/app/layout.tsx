@@ -53,8 +53,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${anton.variable} ${inter.variable} ${ibmPlexMono.variable}`}>
-      <body className="font-body antialiased bg-[var(--color-bg-sand)] text-[var(--color-text-primary)]">
+    <html
+      lang="es"
+      className={`${anton.variable} ${inter.variable} ${ibmPlexMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body
+        className="font-body antialiased bg-[var(--color-bg-sand)] text-[var(--color-text-primary)]"
+        suppressHydrationWarning
+      >
         <CursorTopoEffect />
         <Navbar />
         {children}
