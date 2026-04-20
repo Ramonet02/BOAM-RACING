@@ -10,7 +10,12 @@
       "Bash(rm -f package.json)",
       "Bash(rm -rf boam-racing-temp)",
       "Bash(npm install:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:57340)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:58946)",
+      "Bash(curl -s http://localhost:58946)",
+      "Bash(npx tsc *)"
     ]
   }
 }
