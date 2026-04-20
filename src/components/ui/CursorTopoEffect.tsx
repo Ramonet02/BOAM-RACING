@@ -115,8 +115,8 @@ function smooth(pts: Pt[], passes: number): Pt[] {
     const len = p.length;
     for (let i = 1; i < len - 1; i++) {
       next[i] = [
-        (p[i-1][0] + p[i][0] * 2 + p[i+1][0]) / 4,
-        (p[i-1][1] + p[i][1] * 2 + p[i+1][1]) / 4,
+        (p[i-1][0] + p[i][0] + p[i+1][0]) / 3,
+        (p[i-1][1] + p[i][1] + p[i+1][1]) / 3,
       ];
     }
     if (closed) {
@@ -437,7 +437,7 @@ export default function CursorTopoEffect() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 5, mixBlendMode: "multiply" }}
+      style={{ zIndex: 5, mixBlendMode: "normal" }}
       aria-hidden="true"
     />
   );
