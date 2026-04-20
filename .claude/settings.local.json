@@ -10,7 +10,9 @@
       "Bash(rm -f package.json)",
       "Bash(rm -rf boam-racing-temp)",
       "Bash(npm install:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Read(//c/Users/rperez/Ramon/Gs/BoamRacing/BOAM-RACING/**)",
+      "Bash(ls -lh /c/Users/rperez/Ramon/Gs/BoamRacing/BOAM-RACING/*.pen)"
     ]
   }
 }

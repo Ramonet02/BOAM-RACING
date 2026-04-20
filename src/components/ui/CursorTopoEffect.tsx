@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 import { topoState } from "./topoState";
 
 // ── Grid ──────────────────────────────────────────────────────────
-const COLS = 95;
-const ROWS = 58;
+const COLS = 140;
+const ROWS = 85;
 // ── Contour levels ────────────────────────────────────────────────
 const LEVELS = 10;
 // ── Cursor hill ───────────────────────────────────────────────────
@@ -18,7 +18,7 @@ const PEAK_S      = 130;   // tighter sigma → denser rings on button
 const NOISE_SCALE = 0.0052;
 const TIME_SPEED  = 0.00011;
 // ── Colour ────────────────────────────────────────────────────────
-const LINE_RGB    = "42,37,34";
+const LINE_RGB    = "198,95,59";   // rust #C65F3B
 
 // ── Segment chaining helpers ───────────────────────────────────────
 type Pt  = [number, number];
@@ -79,7 +79,7 @@ function chain(segs: Seg[]): Pt[][] {
 }
 
 /** Laplacian smoothing — averages each point with its neighbours (n passes) */
-function smooth(pts: Pt[], passes = 3): Pt[] {
+function smooth(pts: Pt[], passes = 4): Pt[] {
   let p = pts.slice();
   const closed =
     (p[0][0] - p[p.length-1][0]) ** 2 + (p[0][1] - p[p.length-1][1]) ** 2 < 4;
@@ -89,8 +89,8 @@ function smooth(pts: Pt[], passes = 3): Pt[] {
     const len = p.length;
     for (let i = 1; i < len - 1; i++) {
       next[i] = [
-        (p[i-1][0] + p[i][0] * 2 + p[i+1][0]) / 4,
-        (p[i-1][1] + p[i][1] * 2 + p[i+1][1]) / 4,
+        (p[i-1][0] + p[i][0] + p[i+1][0]) / 3,
+        (p[i-1][1] + p[i][1] + p[i+1][1]) / 3,
       ];
     }
     if (closed) {
@@ -275,17 +275,17 @@ export default function CursorTopoEffect() {
 
       const rangeTop = 1.2 + BUMP_H + peakH;
 
-      // Draw all levels as smooth chained curves
+      // Draw all levels as smooth chained curves (global)
       for (let k = 0; k < LEVELS; k++) {
         const threshold  = -0.6 + k * rangeTop / (LEVELS - 1);
         const centrality = 1 - Math.abs(k / (LEVELS-1) - 0.5) * 2;
-        const alpha      = 0.07 + centrality * 0.09;
-        const lw         = 0.4 + centrality * 0.55;
+        const alpha      = 0.14 + centrality * 0.22;   // range 0.14–0.36
+        const lw         = 0.9 + centrality * 1.1;     // range 0.9–2.0 px
 
         const chains = chain(collectSegs(threshold));
 
         ctx.beginPath();
-        for (const pts of chains) drawSmooth(ctx, pts);
+        for (const pts of chains) if (pts.length >= 2) drawSmooth(ctx, pts);
         ctx.strokeStyle = `rgba(${LINE_RGB},${alpha})`;
         ctx.lineWidth   = lw;
         ctx.stroke();
@@ -308,14 +308,13 @@ export default function CursorTopoEffect() {
         for (let k = 0; k < LEVELS; k++) {
           const threshold  = -0.6 + k * rangeTop / (LEVELS - 1);
           const centrality = 1 - Math.abs(k / (LEVELS-1) - 0.5) * 2;
-          // Fade the button-area brightness with intensity too
           const brightMult = region.r > BUMP_S ? pi : 1;
-          const alpha      = 0.32 * (0.5 + centrality * 0.5) * brightMult;
-          const lw         = 0.7 + centrality * 0.5;
+          const alpha      = 0.88 * (0.5 + centrality * 0.5) * brightMult;  // range 0.44–0.88
+          const lw         = 1.4 + centrality * 1.2;                          // range 1.4–2.6 px
 
           const chains = chain(collectSegs(threshold));
           ctx.beginPath();
-          for (const pts of chains) drawSmooth(ctx, pts);
+          for (const pts of chains) if (pts.length >= 2) drawSmooth(ctx, pts);
           ctx.strokeStyle = `rgba(${LINE_RGB},${alpha})`;
           ctx.lineWidth   = lw;
           ctx.stroke();
@@ -351,7 +350,7 @@ export default function CursorTopoEffect() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 5, mixBlendMode: "multiply" }}
+      style={{ zIndex: 5, mixBlendMode: "normal" }}
       aria-hidden="true"
     />
   );
