@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { useT } from "@/i18n/LanguageProvider";
 
 export default function ProjectStory() {
+  const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
 
   // Scroll progress across the whole section (enters → leaves viewport)
@@ -30,7 +32,7 @@ export default function ProjectStory() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
 
         {/* Waypoint Tag */}
-        <span className="waypoint-tag block mb-6">[ 01 ]  WHAT IS UNIRAID</span>
+        <span className="waypoint-tag block mb-6">{t.project.waypoint}</span>
 
         {/* Editorial Rule */}
         <div className="w-[460px] max-w-full h-px bg-[var(--color-border)] mb-16"></div>
@@ -47,28 +49,26 @@ export default function ProjectStory() {
               transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
             >
               <h2 className="font-heading text-[clamp(3rem,6vw,68px)] text-[var(--color-text-primary)] leading-[0.92] tracking-[2px] mb-10">
-                MORE THAN<br />
-                A RALLY.<br />
-                A RITE OF<br />
-                PASSAGE.
+                {t.project.title.map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    {i < t.project.title.length - 1 && <br />}
+                  </span>
+                ))}
               </h2>
 
               <div className="space-y-6 text-[15px] text-[var(--color-text-primary)]/80 font-body leading-[1.7] max-w-[460px]">
-                <p>
-                  Uniraid is a solidarity adventure across Morocco for students. The rules are brutal: 20-year-old minimum car age, no GPS, no support vehicles. Just a roadbook, a compass, and a trunk full of charity supplies for desert villages.
-                </p>
-                <p>
-                  More than a race — it&apos;s a test of perseverance, navigation, and human spirit across 6,000 kilometers of unforgiving terrain.
-                </p>
+                <p>{t.project.p1}</p>
+                <p>{t.project.p2}</p>
               </div>
 
               {/* Technical Rules */}
               <div className="mt-10 space-y-1">
                 <p className="font-mono text-[10px] tracking-[2px] text-[var(--color-moss)]">
-                  RULES &middot; NO GPS &middot; NO SUPPORT &middot; 20YR+ CARS
+                  {t.project.rules1}
                 </p>
                 <p className="font-mono text-[10px] tracking-[2px] text-[var(--color-moss)]">
-                  CARGO &middot; CHARITY SUPPLIES FOR DESERT VILLAGES
+                  {t.project.rules2}
                 </p>
               </div>
 
@@ -109,7 +109,7 @@ export default function ProjectStory() {
               {/* Caption overlay */}
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
                 <p className="font-mono text-[9px] tracking-[2px] text-white/60">
-                  ERG CHEBBI &middot; 31&deg;09&apos;N
+                  {t.project.imageCaption}
                 </p>
               </div>
             </motion.div>
@@ -161,7 +161,7 @@ export default function ProjectStory() {
             {/* GPS Caption below images */}
             <div className="hidden md:block absolute bottom-[-80px] left-0">
               <p className="gps-label leading-[1.8]">
-                Atlas Mountains, Morocco<br />
+                {t.project.gpsLocation}<br />
                 31&deg;45&apos;N &nbsp;7&deg;05&apos;W &middot; ALT 2,167m
               </p>
             </div>
@@ -171,7 +171,7 @@ export default function ProjectStory() {
 
       {/* Side Label */}
       <div className="absolute -left-12 top-1/4 hidden xl:block">
-        <span className="side-label">01 — WHAT IS UNIRAID</span>
+        <span className="side-label">{t.project.sideLabel}</span>
       </div>
     </section>
   );

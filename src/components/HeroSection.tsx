@@ -11,10 +11,10 @@ import {
   useSpring,
 } from "framer-motion";
 import DuneTransition from "@/components/ui/DuneTransition";
-
-const TITLE_LINES = ["ONE MISSION.", "FOUR CLASSICS.", "ZERO GPS."];
+import { useT } from "@/i18n/LanguageProvider";
 
 export default function HeroSection() {
+  const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
 
   // Scroll-linked parallax for the hero
@@ -115,7 +115,7 @@ export default function HeroSection() {
           className="font-mono text-[10px] tracking-[8px] text-[var(--color-text-light)]/10 uppercase"
           style={{ writingMode: "vertical-rl" }}
         >
-          Expedition &middot; 2026
+          {t.hero.expedition}
         </span>
       </motion.div>
 
@@ -132,7 +132,7 @@ export default function HeroSection() {
           className="px-6 md:px-12 mb-6"
         >
           <p className="font-mono text-[10px] md:text-[11px] tracking-[4px] text-[var(--color-rust)] uppercase">
-            Student Solidarity Rally &middot; 4-Car Fleet &middot; Morocco 2027
+            {t.hero.tag}
           </p>
         </motion.div>
 
@@ -142,8 +142,8 @@ export default function HeroSection() {
             className="font-heading text-[var(--color-text-light)] leading-[0.88] tracking-[-2px]"
             style={{ fontSize: "clamp(3rem, 10vw, 148px)" }}
           >
-            {TITLE_LINES.map((line, i) => (
-              <span key={line} className="block overflow-hidden">
+            {t.hero.title.map((line, i) => (
+              <span key={i} className="block overflow-hidden">
                 <motion.span
                   initial={{ y: "110%", opacity: 0 }}
                   animate={{ y: "0%", opacity: 1 }}
@@ -182,18 +182,16 @@ export default function HeroSection() {
             className="max-w-md"
           >
             <p className="font-body text-sm text-[var(--color-text-light)]/70 leading-[1.8] tracking-[0.5px] mb-8">
-              We are not just one car. We are a unified fleet of 4 classic
-              vehicles taking on the ultimate desert challenge. Students bound
-              by mechanics, solidarity, and the Moroccan dunes.
+              {t.hero.description}
             </p>
 
             <Link
               href="/patrocinio"
               className="inline-flex items-center gap-3 px-9 py-3.5 bg-[var(--color-rust)] text-[var(--color-text-light)] font-body text-xs font-semibold uppercase tracking-[3px] transition-all duration-300 hover:bg-[var(--color-text-light)] hover:text-[var(--color-bg-dark)] group"
             >
-              Follow the Journey
+              {t.hero.cta}
               <span className="text-sm transition-transform duration-300 group-hover:translate-x-1">
-                &rarr;
+                {t.hero.ctaArrow}
               </span>
             </Link>
           </motion.div>
@@ -201,12 +199,12 @@ export default function HeroSection() {
           {/* Right: Stats Strip — stagger reveal */}
           <div className="flex gap-10 md:gap-14">
             {[
-              { num: "4", label: "Cars" },
-              { num: "8", label: "Drivers" },
-              { num: "3000", label: "Morocco", suffix: "km" },
+              { num: "4",    label: t.hero.stats.cars },
+              { num: "8",    label: t.hero.stats.drivers },
+              { num: "3000", label: t.hero.stats.distance, suffix: "km" },
             ].map((s, i) => (
               <motion.div
-                key={s.label}
+                key={i}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
@@ -241,7 +239,7 @@ export default function HeroSection() {
         className="absolute bottom-72 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center animate-bounce-subtle"
       >
         <span className="font-mono text-[8px] tracking-[0.5em] text-[var(--color-text-light)] uppercase mb-3">
-          Scroll
+          {t.hero.scroll}
         </span>
         <div className="w-px h-10 bg-gradient-to-b from-[var(--color-text-light)] to-transparent" />
       </motion.div>

@@ -4,8 +4,11 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import TopoButton from "@/components/ui/TopoButton";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
+import { useT } from "@/i18n/LanguageProvider";
 
 export default function Navbar() {
+  const t = useT();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -27,10 +30,10 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "El Equipo", href: "/equipo" },
-    { name: "Patrocinio", href: "/patrocinio" },
-    { name: "Media", href: "/media" },
+    { name: t.nav.home,        href: "/" },
+    { name: t.nav.team,        href: "/equipo" },
+    { name: t.nav.sponsorship, href: "/patrocinio" },
+    { name: t.nav.media,       href: "/media" },
   ];
 
   return (
@@ -89,12 +92,14 @@ export default function Navbar() {
               ))}
             </ul>
 
+            <LanguageSwitcher onLight={isScrolled} />
+
             <TopoButton>
               <Link
                 href="/patrocinio"
                 className="block px-8 py-3 bg-[var(--color-rust)] text-[var(--color-text-light)] font-body text-xs uppercase tracking-[3px] font-semibold transition-colors hover:bg-[var(--color-bg-dark)]"
               >
-                Patrocinar
+                {t.nav.sponsorCta}
               </Link>
             </TopoButton>
           </div>
@@ -192,8 +197,22 @@ export default function Navbar() {
                     className="inline-block px-12 py-4 bg-[var(--color-rust)] text-[var(--color-text-light)] font-body uppercase tracking-[3px] text-sm font-semibold"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Patrocinar
+                    {t.nav.sponsorCta}
                   </Link>
+                </motion.li>
+                {/* Language switcher inside the mobile menu */}
+                <motion.li
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 12 }}
+                  transition={{
+                    delay: 0.2 + navLinks.length * 0.08,
+                    duration: 0.5,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className="pt-6 w-full flex justify-center"
+                >
+                  <LanguageSwitcher />
                 </motion.li>
               </ul>
             </motion.div>

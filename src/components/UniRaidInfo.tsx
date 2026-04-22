@@ -3,16 +3,20 @@
 import Image from "next/image";
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-
-const specBadges = [
-  { label: "ENGINE", value: "1.6L", desc: "Zetec inline-4 · Front-Wheel Drive", variant: "light" as const },
-  { label: "PROTECTION", value: "SUMP GUARD", desc: "Custom steel skid plate", variant: "light" as const },
-  { label: "DRIVETRAIN", value: "2WD", desc: "FRONT-WHEEL DRIVE", variant: "rust" as const },
-  { label: "SUSPENSION", value: "RAISED", desc: "Modified rally suspension lift", variant: "moss" as const },
-];
+import { useT } from "@/i18n/LanguageProvider";
 
 export default function UniRaidInfo() {
+  const t = useT();
   const sectionRef = useRef<HTMLElement>(null);
+
+  // Build spec badges from the current translation dictionary. The
+  // `variant` styles are static since they're colour decisions, not copy.
+  const specBadges = [
+    { ...t.car.specs.engine,     variant: "light" as const },
+    { ...t.car.specs.protection, variant: "light" as const },
+    { ...t.car.specs.drivetrain, variant: "rust"  as const },
+    { ...t.car.specs.suspension, variant: "moss"  as const },
+  ];
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -34,7 +38,7 @@ export default function UniRaidInfo() {
 
         {/* Waypoint Tag */}
         <div className="text-right mb-6">
-          <span className="waypoint-tag">[ 02 ]  THE MACHINE</span>
+          <span className="waypoint-tag">{t.car.waypoint}</span>
         </div>
 
         {/* Editorial Rule */}
@@ -87,7 +91,7 @@ export default function UniRaidInfo() {
 
             {/* Spec line */}
             <p className="font-mono text-[9px] tracking-[2px] text-[var(--color-text-secondary)] mt-16">
-              1998 FORD ESCORT MK6 &middot; 1.6L ZETEC &middot; 2WD &middot; SUMP GUARD
+              {t.car.specLineShort}
             </p>
           </div>
 
@@ -101,18 +105,22 @@ export default function UniRaidInfo() {
                 transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
               >
                 <h2 className="font-heading text-[clamp(3.5rem,8vw,110px)] text-[var(--color-text-primary)] leading-[0.88] tracking-[3px] mb-6">
-                  1998 FORD<br />
-                  ESCORT
+                  {t.car.title.map((line, i) => (
+                    <span key={i}>
+                      {line}
+                      {i < t.car.title.length - 1 && <br />}
+                    </span>
+                  ))}
                 </h2>
 
                 <p className="font-body text-lg text-[var(--color-text-secondary)] italic mb-4">
-                  Not to impress. Built to survive the dunes.
+                  {t.car.italic}
                 </p>
 
                 {/* Machine Spec Line */}
                 <div className="h-px bg-[var(--color-border)] mb-8"></div>
                 <p className="font-mono text-[10px] tracking-[2px] text-[var(--color-text-secondary)] mb-12">
-                  1998 FORD ESCORT MK6 &middot; 1.6L ZETEC &middot; FWD &middot; CUSTOM SUMP GUARD
+                  {t.car.specLine}
                 </p>
 
                 {/* Spec Badges */}
@@ -163,7 +171,7 @@ export default function UniRaidInfo() {
 
       {/* Side Label */}
       <div className="absolute right-0 top-1/4 hidden xl:block">
-        <span className="side-label">02 — THE MACHINE</span>
+        <span className="side-label">{t.car.sideLabel}</span>
       </div>
     </section>
   );

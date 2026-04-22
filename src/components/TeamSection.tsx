@@ -1,54 +1,64 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useT } from "@/i18n/LanguageProvider";
 
-const teams = [
+/**
+ * Real team roster — eight friends from Barcelona split into four
+ * two-person crews. First name in each pair = piloto, second = copiloto.
+ * Team "name" is formed from the pilots' surnames (no stylised
+ * military-style callsigns).
+ *
+ * Car model stays constant (Ford Escort) because that's what the fleet
+ * is currently built around; per-team make/year can be broken out later
+ * once the cars are actually assigned and dated.
+ */
+type Pilot = { name: string };
+
+interface Team {
+  id: string;
+  name: string;
+  car: { model: string; year: string };
+  pilots: [Pilot, Pilot];
+}
+
+const TEAMS: Team[] = [
   {
     id: "01",
-    name: "LOS PIONEROS",
-    car: { model: "Ford Escort MK7", year: "1997", progress: 85 },
-    pilots: [
-      { name: "Marc Mestres", role: "Piloto", spec: "Mecanica", callsign: "ALPHA-1" },
-      { name: "Albert Pell", role: "Copiloto", spec: "Navegacion", callsign: "ALPHA-2" }
-    ]
+    name: "LORAS & HUSE",
+    car: { model: "Ford Escort MK7", year: "1997" },
+    pilots: [{ name: "Alex Loras" }, { name: "Huse" }],
   },
   {
     id: "02",
-    name: "LOS NOMADAS",
-    car: { model: "Ford Escort MK7", year: "1998", progress: 60 },
-    pilots: [
-      { name: "Pol Vidal", role: "Piloto", spec: "Electrica", callsign: "BETA-1" },
-      { name: "Joan Roca", role: "Copiloto", spec: "Navegacion", callsign: "BETA-2" }
-    ]
+    name: "SANS & SANS",
+    car: { model: "Ford Escort MK7", year: "1998" },
+    pilots: [{ name: "Marc Sans" }, { name: "Sergi Sans" }],
   },
   {
     id: "03",
-    name: "LOS MECANICOS",
-    car: { model: "Ford Escort MK7", year: "1997", progress: 40 },
-    pilots: [
-      { name: "Carlos Ruiz", role: "Piloto", spec: "Mecanica", callsign: "DELTA-1" },
-      { name: "David Costa", role: "Copiloto", spec: "Logistica", callsign: "DELTA-2" }
-    ]
+    name: "SEGURA & PÉREZ",
+    car: { model: "Ford Escort MK7", year: "1997" },
+    pilots: [{ name: "Bernat Segura" }, { name: "Ramón Pérez" }],
   },
   {
     id: "04",
-    name: "LOS SUPERVIVIENTES",
-    car: { model: "Ford Escort MK7", year: "1999", progress: 25 },
-    pilots: [
-      { name: "Alex Mora", role: "Piloto", spec: "Mecanica", callsign: "ECHO-1" },
-      { name: "Sergi Font", role: "Copiloto", spec: "Navegacion", callsign: "ECHO-2" }
-    ]
-  }
+    name: "MAX & CELL",
+    car: { model: "Ford Escort MK7", year: "1999" },
+    pilots: [{ name: "Max" }, { name: "Cell" }],
+  },
 ];
 
 export default function TeamSection() {
+  const t = useT();
+
   return (
     <section id="equipo" className="relative w-full bg-[var(--color-bg-sand)] pb-32 overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-16">
 
         {/* Team Units */}
         <div className="space-y-32 md:space-y-48 mt-12">
-          {teams.map((team, index) => (
+          {TEAMS.map((team, index) => (
             <motion.div
               key={team.id}
               initial={{ opacity: 0, y: 40 }}
@@ -65,7 +75,7 @@ export default function TeamSection() {
                 <div className="flex items-start justify-between mb-6">
                   <div>
                     <span className="font-mono text-[10px] tracking-[5px] text-[var(--color-rust)] font-semibold block mb-1">
-                      UNIT {team.id}
+                      {t.team.unitPrefix} {team.id}
                     </span>
                     <h3 className="font-heading text-[clamp(2rem,4vw,48px)] text-[var(--color-text-primary)] tracking-[2px] leading-[0.9]">
                       {team.name}
@@ -97,37 +107,31 @@ export default function TeamSection() {
                   {/* Bottom data strip */}
                   <div className="absolute bottom-0 left-0 right-0 border-t border-[var(--color-border)] bg-[var(--color-bg-sand)]/80 backdrop-blur-sm px-5 py-3 flex items-center justify-between z-10">
                     <div>
-                      <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-rust)] uppercase block">Rally Unit</span>
+                      <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-rust)] uppercase block">
+                        {t.team.rallyUnit}
+                      </span>
                       <span className="font-heading text-xl text-[var(--color-text-primary)] tracking-wider">
                         {team.car.model}
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-text-secondary)] uppercase block">Est.</span>
+                      <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-text-secondary)] uppercase block">
+                        {t.team.estLabel}
+                      </span>
                       <span className="font-heading text-xl text-[var(--color-text-primary)]">{team.car.year}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Preparation bar */}
-                <div className="mt-5 border border-[var(--color-border)] p-4">
-                  <div className="flex justify-between items-baseline mb-3">
-                    <span className="font-mono text-[8px] tracking-[4px] text-[var(--color-text-secondary)] uppercase">
-                      Preparacion
-                    </span>
-                    <span className="font-heading text-3xl text-[var(--color-rust)] leading-none">
-                      {team.car.progress}%
-                    </span>
-                  </div>
-                  <div className="h-[2px] w-full bg-[var(--color-border)] relative overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width: `${team.car.progress}%` }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.4, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
-                      className="absolute top-0 left-0 h-full bg-[var(--color-rust)]"
-                    />
-                  </div>
+                {/* Preparation status — honest, not a faked %. Same for all crews
+                    until we have real per-team progress data. */}
+                <div className="mt-5 border border-[var(--color-border)] p-4 flex items-center justify-between">
+                  <span className="font-mono text-[8px] tracking-[4px] text-[var(--color-text-secondary)] uppercase">
+                    {t.team.preparationLabel}
+                  </span>
+                  <span className="font-mono text-[10px] tracking-[3px] text-[var(--color-moss)] uppercase">
+                    {t.team.preparationStatus}
+                  </span>
                 </div>
               </div>
 
@@ -136,10 +140,10 @@ export default function TeamSection() {
                 {/* Dossier header */}
                 <div className="border-t-[3px] border-[var(--color-rust)] border-l border-r border-[var(--color-border)] px-5 py-3 flex items-center justify-between bg-[var(--color-bg-dark)]/5">
                   <span className="font-mono text-[8px] tracking-[5px] text-[var(--color-rust)] uppercase font-semibold">
-                    Dossier Tripulacion
+                    {t.team.crewDossier}
                   </span>
                   <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-text-secondary)]">
-                    UNIT {team.id} · {team.car.year}
+                    {t.team.unitPrefix} {team.id} · {team.car.year}
                   </span>
                 </div>
 
@@ -152,13 +156,10 @@ export default function TeamSection() {
                         pIdx === 0 ? "md:border-r border-b md:border-b-0 border-[var(--color-border)]" : ""
                       }`}
                     >
-                      {/* Callsign + Role row */}
-                      <div className="flex items-center justify-between mb-5">
+                      {/* Role */}
+                      <div className="mb-5">
                         <span className="font-mono text-[8px] tracking-[4px] text-[var(--color-rust)] uppercase font-semibold">
-                          {pilot.role}
-                        </span>
-                        <span className="font-mono text-[8px] tracking-[2px] text-[var(--color-text-secondary)]">
-                          {pilot.callsign}
+                          {pIdx === 0 ? t.team.pilot : t.team.copilot}
                         </span>
                       </div>
 
@@ -167,26 +168,15 @@ export default function TeamSection() {
                         {pilot.name}
                       </h5>
 
-                      {/* Data rows */}
+                      {/* City — single honest row */}
                       <div className="border-t border-[var(--color-border)]">
-                        <div className="flex items-center justify-between py-2 border-b border-[var(--color-border)]/60">
-                          <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-text-secondary)] uppercase">
-                            Especialidad
-                          </span>
-                          <span className="font-mono text-[9px] tracking-[2px] text-[var(--color-text-primary)] uppercase">
-                            {pilot.spec}
-                          </span>
-                        </div>
                         <div className="flex items-center justify-between py-2">
                           <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-text-secondary)] uppercase">
-                            Estado
+                            {t.team.fromLabel}
                           </span>
-                          <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-moss)] animate-pulse"></div>
-                            <span className="font-mono text-[9px] tracking-[2px] text-[var(--color-moss)] uppercase">
-                              Operativo
-                            </span>
-                          </div>
+                          <span className="font-mono text-[9px] tracking-[2px] text-[var(--color-text-primary)]">
+                            {t.team.city}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -199,11 +189,14 @@ export default function TeamSection() {
 
         {/* Footer CTA */}
         <div className="mt-32 py-16 text-center">
-          <span className="waypoint-tag block mb-4">[ JOIN ]</span>
+          <span className="waypoint-tag block mb-4">{t.team.ctaTag}</span>
           <h3 className="font-heading text-[clamp(2.5rem,5vw,64px)] text-[var(--color-text-primary)] tracking-[2px] leading-[0.92] mb-6">
-            AYUDANOS<br />
-            A CRUZAR<br />
-            LA META
+            {t.team.ctaTitle.map((line, i) => (
+              <span key={i}>
+                {line}
+                {i < t.team.ctaTitle.length - 1 && <br />}
+              </span>
+            ))}
           </h3>
         </div>
       </div>

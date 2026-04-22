@@ -4,6 +4,7 @@ import "./globals.css";
 import CursorTopoEffect from "@/components/ui/CursorTopoEffect";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
+import { LanguageProvider } from "@/i18n/LanguageProvider";
 
 const anton = Anton({
   weight: "400",
@@ -62,10 +63,12 @@ export default function RootLayout({
         className="font-body antialiased bg-[var(--color-bg-sand)] text-[var(--color-text-primary)]"
         suppressHydrationWarning
       >
-        <CursorTopoEffect />
-        <Navbar />
-        {children}
-        <FooterSection />
+        <LanguageProvider>
+          <CursorTopoEffect />
+          <Navbar />
+          {children}
+          <FooterSection />
+        </LanguageProvider>
       </body>
     </html>
   );
