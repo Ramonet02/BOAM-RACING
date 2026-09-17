@@ -1,205 +1,302 @@
 "use client";
 
-import { motion } from "framer-motion";
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BOAM RACING — <TeamSection />   ·   Módulo 4 de la spec: EL EQUIPO
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Cuatro bloques de tripulación, uno por coche. Cada bloque monta la
+   ficha técnica del vehículo (<VehicleSpecCard />) junto a los dos
+   pasaportes de sus ocupantes (<PilotPassport />), alternando el lado en
+   escritorio para que la lectura no se vuelva una lista plana.
+
+     ┌ 05 · EL EQUIPO ─────────────────────────────────────────────┐
+     │  OCHO AMIGOS. CUATRO TRIPULACIONES.                         │
+     │  ledger HUD: tripulación · flota · base · coordenadas       │
+     ├─────────────────────────────────────────────────────────────┤
+     │  EQUIPO 01 — LORAS & HUSE                                   │
+     │  [ ficha del coche ][ pasaporte piloto ][ pasaporte copil. ]│
+     │  … ×4                                                       │
+     ├─────────────────────────────────────────────────────────────┤
+     │  reglas del rally · llamada a la acción                     │
+     └─────────────────────────────────────────────────────────────┘
+
+   REGLAS QUE CUMPLE ESTE FICHERO
+   ------------------------------
+   · DATOS: `CREWS` y los derivados de `src/lib/team.ts`. Se ha borrado el
+     array `TEAMS` que esta sección duplicaba a mano (ocho nombres y cuatro
+     coches escritos dos veces en el repo).
+   · COPY: todo vía `useT()`. Ni una cadena de interfaz escrita aquí.
+   · TEMA: "Rally Desert Tactical" sobre fondo oscuro, con los tokens de
+     `globals.css`. No queda ni un color del tema arena claro anterior.
+   · MOVIMIENTO: `useReducedMotion()` apaga la entrada de cada bloque.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+import type { ReactNode } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
+
+import PilotPassport from "@/components/team/PilotPassport";
+import VehicleSpecCard from "@/components/team/VehicleSpecCard";
 import { useT } from "@/i18n/LanguageProvider";
+import { CONTACT, formatDMS } from "@/lib/constants";
+import {
+  CREWS,
+  FLEET_SIZE,
+  HOME_CITY,
+  HOME_COORDS,
+  TEAM_SIZE,
+} from "@/lib/team";
+
+/** Curva de entrada del design system (equivalente JS de --ease-tactical). */
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
+
+/* ────────────────────────────────────────────────────────────
+   Piezas internas
+   ──────────────────────────────────────────────────────────── */
 
 /**
- * Real team roster — eight friends from Barcelona split into four
- * two-person crews. First name in each pair = piloto, second = copiloto.
- * Team "name" is formed from the pilots' surnames (no stylised
- * military-style callsigns).
+ * Celda del ledger HUD de cabecera: etiqueta mono + valor.
  *
- * Car model stays constant (Ford Escort) because that's what the fleet
- * is currently built around; per-team make/year can be broken out later
- * once the cars are actually assigned and dated.
+ * `wrap` cambia la política de desbordamiento del valor. Por defecto se
+ * trunca, que es lo correcto para un dato corto (un número, una ciudad).
+ * Una coordenada DMS completa no se puede truncar sin destruirla —«41°23'…»
+ * no es una coordenada— así que esa celda pide `wrap` y parte en dos líneas.
  */
-type Pilot = { name: string };
-
-interface Team {
-  id: string;
-  name: string;
-  car: { model: string; year: string };
-  pilots: [Pilot, Pilot];
+function LedgerCell({
+  label,
+  children,
+  className = "",
+  wrap = false,
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+  wrap?: boolean;
+}) {
+  return (
+    <div className={`min-w-0 px-4 py-3.5 sm:px-5 ${className}`}>
+      <dt className="telemetry-label text-[0.5625rem]">{label}</dt>
+      <dd
+        className={`mt-1.5 min-w-0 font-heading text-[0.9375rem] uppercase tracking-[0.06em] text-text-primary ${
+          wrap ? "break-words" : "truncate"
+        }`}
+      >
+        {children}
+      </dd>
+    </div>
+  );
 }
 
-const TEAMS: Team[] = [
-  {
-    id: "01",
-    name: "LORAS & HUSE",
-    car: { model: "Ford Escort MK7", year: "1997" },
-    pilots: [{ name: "Alex Loras" }, { name: "Huse" }],
-  },
-  {
-    id: "02",
-    name: "SANS & SANS",
-    car: { model: "Ford Escort MK7", year: "1998" },
-    pilots: [{ name: "Marc Sans" }, { name: "Sergi Sans" }],
-  },
-  {
-    id: "03",
-    name: "SEGURA & PÉREZ",
-    car: { model: "Ford Escort MK7", year: "1997" },
-    pilots: [{ name: "Bernat Segura" }, { name: "Ramón Pérez" }],
-  },
-  {
-    id: "04",
-    name: "MAX & CELL",
-    car: { model: "Ford Escort MK7", year: "1999" },
-    pilots: [{ name: "Max" }, { name: "Cell" }],
-  },
-];
+/* ────────────────────────────────────────────────────────────
+   Sección
+   ──────────────────────────────────────────────────────────── */
 
 export default function TeamSection() {
   const t = useT();
+  const reduce = useReducedMotion() ?? false;
+
+  /** Props de entrada compartidos por los bloques de cabecera. */
+  const rise = (delay: number) => ({
+    initial: reduce ? false : ({ opacity: 0, y: 24 } as const),
+    whileInView: reduce ? undefined : ({ opacity: 1, y: 0 } as const),
+    viewport: { once: true, amount: 0.3 } as const,
+    transition: { duration: 0.7, ease: EASE, delay: reduce ? 0 : delay },
+  });
 
   return (
-    <section id="equipo" className="relative w-full bg-[var(--color-bg-sand)] pb-32 overflow-hidden">
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-16">
+    <section
+      id="equipo"
+      className="dust-overlay relative w-full overflow-hidden bg-bg-base pb-24 sm:pb-32"
+    >
+      {/* Fondo técnico */}
+      <span
+        aria-hidden="true"
+        className="grid-blueprint grid-fade pointer-events-none absolute inset-0 opacity-70"
+      />
+      <span
+        aria-hidden="true"
+        className="side-label absolute right-1 top-32 hidden xl:block"
+      >
+        {t.team.sideLabel}
+      </span>
 
-        {/* Team Units */}
-        <div className="space-y-32 md:space-y-48 mt-12">
-          {TEAMS.map((team, index) => (
-            <motion.div
-              key={team.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
-              className={`flex flex-col ${
-                index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
-              } items-start gap-12 lg:gap-20 relative`}
-            >
-              {/* Car Side */}
-              <div className="w-full lg:w-1/2 flex flex-col">
-                {/* Unit header */}
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <span className="font-mono text-[10px] tracking-[5px] text-[var(--color-rust)] font-semibold block mb-1">
-                      {t.team.unitPrefix} {team.id}
-                    </span>
-                    <h3 className="font-heading text-[clamp(2rem,4vw,48px)] text-[var(--color-text-primary)] tracking-[2px] leading-[0.9]">
-                      {team.name}
-                    </h3>
-                  </div>
-                  <span className="font-mono text-[9px] tracking-[2px] text-[var(--color-text-secondary)] mt-1">
-                    {team.car.year}
-                  </span>
-                </div>
-
-                {/* Car visual */}
-                <div className="relative aspect-[16/9] bg-[var(--color-bg-dark)]/6 overflow-hidden border border-[var(--color-border)]">
-                  {/* Topo grid background */}
-                  <div className="absolute inset-0 topo-bg opacity-40"></div>
-
-                  {/* Large background number */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="font-heading text-[160px] leading-none text-[var(--color-text-primary)]/4 select-none">
-                      {team.id}
-                    </span>
-                  </div>
-
-                  {/* Corner frame markers */}
-                  <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-[var(--color-rust)]/40"></div>
-                  <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-[var(--color-rust)]/40"></div>
-                  <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-[var(--color-rust)]/40"></div>
-                  <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-[var(--color-rust)]/40"></div>
-
-                  {/* Bottom data strip */}
-                  <div className="absolute bottom-0 left-0 right-0 border-t border-[var(--color-border)] bg-[var(--color-bg-sand)]/80 backdrop-blur-sm px-5 py-3 flex items-center justify-between z-10">
-                    <div>
-                      <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-rust)] uppercase block">
-                        {t.team.rallyUnit}
-                      </span>
-                      <span className="font-heading text-xl text-[var(--color-text-primary)] tracking-wider">
-                        {team.car.model}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-text-secondary)] uppercase block">
-                        {t.team.estLabel}
-                      </span>
-                      <span className="font-heading text-xl text-[var(--color-text-primary)]">{team.car.year}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Preparation status — honest, not a faked %. Same for all crews
-                    until we have real per-team progress data. */}
-                <div className="mt-5 border border-[var(--color-border)] p-4 flex items-center justify-between">
-                  <span className="font-mono text-[8px] tracking-[4px] text-[var(--color-text-secondary)] uppercase">
-                    {t.team.preparationLabel}
-                  </span>
-                  <span className="font-mono text-[10px] tracking-[3px] text-[var(--color-moss)] uppercase">
-                    {t.team.preparationStatus}
-                  </span>
-                </div>
-              </div>
-
-              {/* Pilots Side */}
-              <div className="w-full lg:w-1/2 flex flex-col justify-start gap-0 pt-4">
-                {/* Dossier header */}
-                <div className="border-t-[3px] border-[var(--color-rust)] border-l border-r border-[var(--color-border)] px-5 py-3 flex items-center justify-between bg-[var(--color-bg-dark)]/5">
-                  <span className="font-mono text-[8px] tracking-[5px] text-[var(--color-rust)] uppercase font-semibold">
-                    {t.team.crewDossier}
-                  </span>
-                  <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-text-secondary)]">
-                    {t.team.unitPrefix} {team.id} · {team.car.year}
-                  </span>
-                </div>
-
-                {/* Pilot cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border-l border-r border-b border-[var(--color-border)]">
-                  {team.pilots.map((pilot, pIdx) => (
-                    <div
-                      key={pIdx}
-                      className={`group p-6 hover:bg-[var(--color-bg-dark)]/4 transition-colors duration-300 ${
-                        pIdx === 0 ? "md:border-r border-b md:border-b-0 border-[var(--color-border)]" : ""
-                      }`}
-                    >
-                      {/* Role */}
-                      <div className="mb-5">
-                        <span className="font-mono text-[8px] tracking-[4px] text-[var(--color-rust)] uppercase font-semibold">
-                          {pIdx === 0 ? t.team.pilot : t.team.copilot}
-                        </span>
-                      </div>
-
-                      {/* Name */}
-                      <h5 className="font-heading text-[clamp(1.4rem,2.5vw,1.8rem)] text-[var(--color-text-primary)] tracking-[2px] leading-[0.92] mb-5">
-                        {pilot.name}
-                      </h5>
-
-                      {/* City — single honest row */}
-                      <div className="border-t border-[var(--color-border)]">
-                        <div className="flex items-center justify-between py-2">
-                          <span className="font-mono text-[8px] tracking-[3px] text-[var(--color-text-secondary)] uppercase">
-                            {t.team.fromLabel}
-                          </span>
-                          <span className="font-mono text-[9px] tracking-[2px] text-[var(--color-text-primary)]">
-                            {t.team.city}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Footer CTA */}
-        <div className="mt-32 py-16 text-center">
-          <span className="waypoint-tag block mb-4">{t.team.ctaTag}</span>
-          <h3 className="font-heading text-[clamp(2.5rem,5vw,64px)] text-[var(--color-text-primary)] tracking-[2px] leading-[0.92] mb-6">
-            {t.team.ctaTitle.map((line, i) => (
-              <span key={i}>
-                {line}
-                {i < t.team.ctaTitle.length - 1 && <br />}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-5 pt-16 sm:px-8 lg:px-12 lg:pt-24">
+        {/* ── Cabecera de sección ────────────────────────────────────── */}
+        <motion.header {...rise(0)} className="max-w-3xl">
+          <span className="waypoint-tag block">{t.team.waypoint}</span>
+          <h2 className="mt-5 font-heading text-[clamp(2.25rem,7vw,4.5rem)] uppercase leading-[0.9] tracking-[0.04em] text-text-primary">
+            {t.team.title.map((line, i) => (
+              <span key={`${i}-${line}`} className="block">
+                {i === t.team.title.length - 1 ? (
+                  <span className="text-gradient-amber">{line}</span>
+                ) : (
+                  line
+                )}
               </span>
             ))}
-          </h3>
+          </h2>
+          <hr className="divider-tech mt-7 w-full max-w-md" />
+          <p className="mt-6 max-w-2xl text-[0.9375rem] leading-relaxed text-text-secondary sm:text-base">
+            {t.team.intro}
+          </p>
+        </motion.header>
+
+        {/* ── Ledger HUD del equipo ──────────────────────────────────────
+            Marco achaflanado con hairline real: el wrapper pinta el borde y
+            el hijo directo la superficie (patrón .chamfer-outline).
+            Los hairlines interiores salen del `gap-px` sobre `bg-slate`. */}
+        <motion.div {...rise(0.1)} className="chamfer-outline mt-10 sm:mt-12">
+          <div>
+            <dl className="grid grid-cols-2 gap-px bg-slate lg:grid-cols-4">
+              <LedgerCell
+                label={t.common.labels.crew}
+                className="bg-bg-surface"
+              >
+                {TEAM_SIZE}
+              </LedgerCell>
+              {/* `project.stats.cars` ("Coches") y no `car.fleet.title`
+                  ("La flota"): esto es la etiqueta de un contador, no el
+                  titular de una sección. */}
+              <LedgerCell
+                label={t.project.stats.cars}
+                className="bg-bg-surface"
+              >
+                {FLEET_SIZE}
+              </LedgerCell>
+              {/* Span 2 igual que la celda de coordenadas: si sólo una de las
+                  dos ocupase la fila entera, la otra dejaría media fila vacía
+                  y el `gap-px` la pintaría como un hueco de slate. */}
+              <LedgerCell
+                label={t.footer.locationLabel}
+                className="col-span-2 bg-bg-surface lg:col-span-1"
+              >
+                {HOME_CITY}
+              </LedgerCell>
+              {/* A dos columnas la celda mide ~128 px por debajo de 360 px de
+                  viewport y una DMS completa no cabe. Ocupa la fila entera
+                  hasta `lg`, donde el ledger ya es de cuatro columnas. */}
+              <LedgerCell
+                label={t.common.labels.coords}
+                className="col-span-2 bg-bg-surface lg:col-span-1"
+                wrap
+              >
+                <span className="gps-label text-text-secondary">
+                  {formatDMS(HOME_COORDS)}
+                </span>
+              </LedgerCell>
+            </dl>
+          </div>
+        </motion.div>
+
+        {/* ── Las cuatro tripulaciones ───────────────────────────────── */}
+        <div className="mt-16 flex flex-col gap-16 sm:mt-20 sm:gap-24">
+          {CREWS.map((crew, index) => {
+            /* En escritorio el coche cambia de lado en las unidades pares
+               para romper la columna y dar ritmo a la lectura. */
+            const flip = index % 2 === 1;
+
+            return (
+              <article key={crew.id} className="relative">
+                <motion.header
+                  {...rise(0)}
+                  className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-slate pb-4"
+                >
+                  <div className="min-w-0">
+                    <span className="telemetry-label telemetry-label-amber telemetry-label-dash block">
+                      {t.team.unitPrefix} {crew.code}
+                    </span>
+                    <h3 className="mt-3 font-heading text-[clamp(1.75rem,5vw,3rem)] uppercase leading-[0.92] tracking-[0.05em] text-text-primary">
+                      {crew.name}
+                    </h3>
+                  </div>
+
+                  <span className="tech-badge tech-badge-amber shrink-0 whitespace-nowrap">
+                    {t.team.crewDossier} {crew.code}
+                  </span>
+                </motion.header>
+
+                {/* El reparto 5/7 sólo entra en xl: entre lg y xl las tres
+                    tarjetas quedarían por debajo de 260 px y los campos del
+                    pasaporte no respiran. Hasta ahí, coche a todo lo ancho y
+                    los dos pasaportes en pareja a partir de md. */}
+                <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-12 xl:gap-6">
+                  <VehicleSpecCard
+                    crew={crew}
+                    delay={0.05}
+                    className={`xl:col-span-5 ${flip ? "xl:order-2" : "xl:order-1"}`}
+                  />
+
+                  <div
+                    className={`grid grid-cols-1 gap-5 md:grid-cols-2 xl:col-span-7 xl:gap-6 ${
+                      flip ? "xl:order-1" : "xl:order-2"
+                    }`}
+                  >
+                    <PilotPassport
+                      member={crew.pilot}
+                      crew={crew}
+                      delay={0.12}
+                    />
+                    <PilotPassport
+                      member={crew.copilot}
+                      crew={crew}
+                      delay={0.2}
+                    />
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
+
+        {/* ── Franja de reglas del rally ─────────────────────────────── */}
+        <motion.div
+          {...rise(0)}
+          className="mt-16 flex flex-col gap-2 border-y border-slate py-4 sm:mt-20 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+        >
+          <p className="telemetry-label telemetry-label-amber min-w-0 text-[0.5625rem] leading-relaxed sm:text-[0.625rem]">
+            {t.project.rules1}
+          </p>
+          <p className="telemetry-label min-w-0 text-[0.5625rem] leading-relaxed sm:text-[0.625rem]">
+            {t.project.rules2}
+          </p>
+        </motion.div>
+
+        {/* ── Llamada a la acción ────────────────────────────────────── */}
+        <motion.div
+          {...rise(0.05)}
+          className="panel hud-frame hud-frame-lg relative mt-16 overflow-hidden px-6 py-14 text-center sm:mt-20 sm:px-10 sm:py-20"
+        >
+          <span
+            aria-hidden="true"
+            className="grid-blueprint-fine grid-fade pointer-events-none absolute inset-0 opacity-50"
+          />
+
+          <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center">
+            <span className="waypoint-tag block">{t.team.ctaTag}</span>
+
+            <h3 className="mt-5 font-heading text-[clamp(1.9rem,6vw,3.75rem)] uppercase leading-[0.92] tracking-[0.04em] text-text-primary">
+              {t.team.ctaTitle.map((line, i) => (
+                <span key={`${i}-${line}`} className="block">
+                  {line}
+                </span>
+              ))}
+            </h3>
+
+            <p className="mt-6 text-[0.9375rem] leading-relaxed text-text-secondary">
+              {t.team.ctaDescription}
+            </p>
+
+            <a href={CONTACT.mailto} className="btn-tactical btn-amber mt-9">
+              {t.team.ctaButton}
+              <ArrowUpRight size={15} strokeWidth={2} aria-hidden="true" />
+            </a>
+
+            <p className="gps-label mt-6 break-all">{CONTACT.email}</p>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
 }
+
+export { TeamSection };

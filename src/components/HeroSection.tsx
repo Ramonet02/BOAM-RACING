@@ -1,248 +1,615 @@
 "use client";
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BOAM RACING — <HeroSection />
+   Apertura de la home, tema "Rally Desert Tactical" (Modulo 1).
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   CAPAS (de fondo a frente)
+     00  fondo        <RallyImage> a sangre, con parallax de scroll y de raton.
+     10  scrims       degradados vertical y lateral + rejilla de plano.
+     30  HUD          telemetria de esquina (GPS, rumbo) y rotulo vertical.
+     20  suelo        lavado bajo el bloque de texto (solo en el tema claro).
+     20  contenido    tag, titular, regla, copy, CTAs y contadores.
+     20  marquee      banda de teletipo sobre el horizonte.
+     20  divisoria    <RidgeDivider> — ULTIMO ELEMENTO EN FLUJO, no absoluto:
+                      asi reserva su propio alto y no puede tapar el copy, y
+                      la foto (inset-0) se sigue viendo tras las crestas
+                      translucidas.
+
+   REPARTO DE ANIMACION — y por que esta asi
+   -----------------------------------------
+   · La ENTRADA (aparicion de cada bloque) va en CSS, con las utilidades del
+     design system (`animate-fade-up`, `animate-slide-left`, `animate-fade-in`)
+     mas dos keyframes propios del titular, y el retardo por `animationDelay`
+     en linea.
+   · El PARALLAX (scroll y raton) va en framer-motion, que es para lo que
+     hace falta JS.
+
+   El motivo no es estetico. framer-motion serializa el estado `initial` en
+   el HTML del servidor y solo lo resuelve al hidratar: si el bundle de
+   cliente no llega (deploy a medias, chunk 404, JS bloqueado), un titular
+   animado con `initial={{y:"108%"}}` dentro de un `overflow-hidden` se queda
+   FUERA DE PANTALLA para siempre. Con la entrada en CSS el hero se lee
+   entero sin una linea de JS, y el parallax simplemente no ocurre.
+   Comprobado en el navegador contra este mismo repo.
+
+   `prefers-reduced-motion` lo resuelve el bloque global de globals.css, que
+   pone `animation-duration: .001ms !important` sobre `*`: cada animacion de
+   entrada salta a su fotograma final (contenido visible, cero movimiento) y
+   gana incluso a los `animationDelay` en linea. El parallax de framer-motion
+   se apaga aparte, consultando `useReducedMotion()`, porque escribe
+   transforms inline por JS y el CSS no puede pararlo.
+
+   DATOS Y COPY — ni una cifra ni una fecha escritas a mano:
+     · copy   -> `useT()` (los tokens {edition}/{crew}/{cars} llegan ya
+                 resueltos por el compositor de i18n).
+     · cifras -> `PROJECT_FACTS`, derivado de route.ts y team.ts.
+     · coords -> `HERO_COORDS.dms` de constants.ts.
+     · imagen -> manifiesto de `src/lib/imagery.ts`. Cero banco de
+                 imagenes generico: hasta que llegue la foto real del
+                 equipo se pinta el placeholder tactico.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
 import Link from "next/link";
-import Image from "next/image";
-import { useRef } from "react";
+import { useEffect, useRef, type CSSProperties, type MouseEvent } from "react";
 import {
   motion,
-  useScroll,
-  useTransform,
   useMotionValue,
+  useReducedMotion,
+  useScroll,
   useSpring,
+  useTransform,
 } from "framer-motion";
-import DuneTransition from "@/components/ui/DuneTransition";
-import { useT } from "@/i18n/LanguageProvider";
+import RallyImage from "@/components/ui/RallyImage";
+import RidgeDivider from "@/components/ui/RidgeDivider";
+import { HERO_COORDS, PROJECT_FACTS } from "@/lib/constants";
+import { useLocale, useT } from "@/i18n/LanguageProvider";
+import type { Locale } from "@/i18n/translations";
+
+/** Foto de cabecera de la home, segun el manifiesto de `imagery.ts`. */
+const HERO_IMAGE_ID = "portada-home-duna-amanecer";
+
+/**
+ * Hoja propia del hero. Dos cosas dentro:
+ *
+ * 1. Keyframes del titular editorial: la linea sube desde debajo de su propia
+ *    caja recortada, y la regla crece desde la izquierda. No estan en el
+ *    design system porque son especificos de este hero.
+ *
+ * 2. CALIBRACION POR TEMA de las capas que van SOBRE la fotografia. Esto no
+ *    se resuelve con tokens de color: lo que cambia entre temas no es el
+ *    color (ese ya sale de --base-rgb) sino CUANTA foto se deja pasar. En
+ *    oscuro, texto claro sobre foto oscura se lee con el scrim suave de
+ *    siempre; en claro, texto oscuro sobre esa misma foto se vuelve
+ *    ilegible en cuanto la foto asoma. La dosis es un dato del tema.
+ *
+ * Van en un <style> del componente, no en globals.css, por dos razones:
+ * globals.css es de otro modulo, y asi el hero es autocontenido. El bloque
+ * global de `prefers-reduced-motion` desactiva las animaciones igual, porque
+ * actua sobre `*` con `!important`.
+ *
+ * Las reglas de tema SOLO declaran custom properties. Es deliberado: al ir
+ * sin @layer ganarian a cualquier utilidad de Tailwind, y una variable no
+ * pinta nada por si misma. Quien pinta es el `style` en linea del elemento.
+ *
+ * El selector se escribe igual que en globals.css, comillas incluidas:
+ * React no escapa el texto de un <style>, asi que llega intacto al DOM
+ * (comprobado con el react-dom del propio repo, no por costumbre).
+ *
+ * Por defecto = DESERT y tactical se reescribe entero: mismo criterio que
+ * globals.css, de modo que sin JS —o antes del script anti-parpadeo— el hero
+ * ya sale calibrado para el tema primario.
+ */
+const HERO_STYLES = `
+@keyframes boam-hero-line { from { transform: translate3d(0, 112%, 0); } to { transform: none; } }
+@keyframes boam-hero-rule { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.boam-hero-line { animation: boam-hero-line 1.05s var(--ease-tactical) both; }
+.boam-hero-rule { transform-origin: left; animation: boam-hero-rule 0.85s var(--ease-tactical) both; }
+
+/* DESERT · la foto se lava hacia crema. Sigue viva en el tercio alto
+   (0.46-0.52) y desaparece bajo el bloque de texto, donde manda
+   --hero-text-wash. El flanco pesa menos que en oscuro: aqui el trabajo de
+   legibilidad lo hace el lavado del texto, no el lateral. */
+.boam-hero {
+  --hero-scrim-v: linear-gradient(180deg,
+    rgb(var(--base-rgb) / 0.88) 0%,
+    rgb(var(--base-rgb) / 0.52) 22%,
+    rgb(var(--base-rgb) / 0.46) 46%,
+    rgb(var(--base-rgb) / 0.70) 76%,
+    rgb(var(--base-rgb) / 0.94) 100%);
+  --hero-scrim-h: linear-gradient(90deg,
+    rgb(var(--base-rgb) / 0.66) 0%,
+    rgb(var(--base-rgb) / 0.28) 42%,
+    transparent 72%);
+  /* Suelo del bloque de texto. 0.985 y no 0.90: con 0.90, una foto oscura
+     por debajo dejaba .telemetry-label (4.95:1 en limpio) en 4.1:1. */
+  --hero-text-wash: 0.985;
+  /* Plancha bajo el HUD flotante, que cae justo en la franja donde la foto
+     sigue al ~50 %. Se disuelve hacia la foto: no se lee como pegatina. */
+  --hero-plate: 0.94;
+  --hero-marquee: 0.94;
+}
+
+/* TACTICAL · valores originales, uno a uno. Si algo cambia aqui es un bug:
+   los dos degradados son exactamente los que tenia el hero antes de existir
+   el tema claro, y los tres lavados valen 0 / 0 / 0.55, es decir "no hay
+   plancha, no hay lavado y el teletipo mantiene su 55 %". */
+:root[data-theme="tactical"] .boam-hero {
+  --hero-scrim-v: linear-gradient(180deg,
+    rgb(var(--base-rgb) / 0.92) 0%,
+    rgb(var(--base-rgb) / 0.45) 22%,
+    rgb(var(--base-rgb) / 0.30) 46%,
+    rgb(var(--base-rgb) / 0.72) 76%,
+    rgb(var(--base-rgb) / 0.96) 100%);
+  --hero-scrim-h: linear-gradient(90deg,
+    rgb(var(--base-rgb) / 0.88) 0%,
+    rgb(var(--base-rgb) / 0.35) 42%,
+    transparent 72%);
+  --hero-text-wash: 0;
+  --hero-plate: 0;
+  --hero-marquee: 0.55;
+}
+`;
+
+/** Suelo del bloque de texto. Transparente por arriba para entrar sin canto,
+ *  opaco desde el 18 % de su caja. En tactical la variable vale 0 y la capa
+ *  es literalmente invisible. */
+const TEXT_WASH =
+  "linear-gradient(180deg," +
+  " rgb(var(--base-rgb) / 0) 0%," +
+  " rgb(var(--base-rgb) / var(--hero-text-wash)) 18%," +
+  " rgb(var(--base-rgb) / var(--hero-text-wash)) 100%)";
+
+/** Plancha del HUD derecho: se disuelve hacia la foto, hacia la izquierda. */
+const PLATE_RIGHT =
+  "linear-gradient(to left," +
+  " rgb(var(--base-rgb) / var(--hero-plate)) 46%," +
+  " rgb(var(--base-rgb) / 0) 100%)";
+
+/** Plancha del rotulo vertical: tira estrecha, disuelta por los dos cantos. */
+const PLATE_VERTICAL =
+  "linear-gradient(to bottom," +
+  " rgb(var(--base-rgb) / 0) 0%," +
+  " rgb(var(--base-rgb) / var(--hero-plate)) 14%," +
+  " rgb(var(--base-rgb) / var(--hero-plate)) 86%," +
+  " rgb(var(--base-rgb) / 0) 100%)";
+
+/** Retardo de entrada en linea; lo anula el bloque de reduced-motion. */
+function delay(seconds: number): CSSProperties {
+  return { animationDelay: `${seconds}s` };
+}
+
+/**
+ * Agrupa millares a mano — "1.885" en es/ca, "1,885" en en.
+ *
+ * Deliberadamente sin `Intl`: `toLocaleString` puede discrepar entre el Node
+ * del build y el navegador (datos ICU distintos) y eso seria un error de
+ * hidratacion dentro del copy. Mismo criterio que el compositor de i18n.
+ */
+function groupThousands(value: number, locale: Locale): string {
+  const separator = locale === "en" ? "," : ".";
+  const digits = Math.trunc(Math.abs(value)).toString();
+  let out = "";
+  for (let i = 0; i < digits.length; i += 1) {
+    if (i > 0 && (digits.length - i) % 3 === 0) out += separator;
+    out += digits[i];
+  }
+  return value < 0 ? `-${out}` : out;
+}
+
+interface HeroStat {
+  readonly value: string;
+  readonly unit?: string;
+  readonly label: string;
+}
 
 export default function HeroSection() {
   const t = useT();
+  const { locale } = useLocale();
   const sectionRef = useRef<HTMLElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const parallax = prefersReducedMotion !== true;
 
-  // Scroll-linked parallax for the hero
+  /* ── Parallax de scroll ─────────────────────────────────────────────── */
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const bgY        = useTransform(scrollYProgress, [0, 1], ["0%", "22%"]);
-  const bgScale    = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
-  const contentY   = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
-  const contentOp  = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
-  const indicatorOp = useTransform(scrollYProgress, [0, 0.15], [0.3, 0]);
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const backgroundScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-14%"]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.62], [1, 0]);
+  const scrollHintOpacity = useTransform(scrollYProgress, [0, 0.12], [1, 0]);
 
-  // Mouse-driven parallax (counter-motion, max ~16px)
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const sx = useSpring(mx, { stiffness: 60, damping: 18, mass: 0.6 });
-  const sy = useSpring(my, { stiffness: 60, damping: 18, mass: 0.6 });
+  /* ── Parallax de raton (contramovimiento, ~20px) ────────────────────── */
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const smoothX = useSpring(pointerX, { stiffness: 60, damping: 18, mass: 0.6 });
+  const smoothY = useSpring(pointerY, { stiffness: 60, damping: 18, mass: 0.6 });
 
-  const handleMouse = (e: React.MouseEvent) => {
-    const nx = e.clientX / window.innerWidth - 0.5;
-    const ny = e.clientY / window.innerHeight - 0.5;
-    mx.set(-nx * 18);
-    my.set(-ny * 18);
+  /* ── La caja del hero se mide UNA vez por entrada del puntero ─────────
+     `getBoundingClientRect()` obliga al navegador a vaciar estilo y layout
+     antes de contestar. Llamándolo en cada `mousemove` —hasta 120 veces por
+     segundo— se paga ese vaciado una y otra vez, y encima justo después de
+     que los muelles de framer-motion hayan escrito transformaciones, que es
+     cuando el layout está sucio y el vaciado sale más caro. Medido en esta
+     página: 2,3 ms por llamada, unos 280 ms de hilo principal por segundo
+     mientras mueves el ratón. Eso es el tirón que se nota.
+
+     La caja no cambia mientras mueves el ratón dentro del hero, así que se
+     mide al entrar y se guarda. Si cambia el tamaño de la ventana se
+     invalida. Un scroll a media pasada desajusta el origen unos píxeles de
+     un efecto decorativo de ±20 px: no se percibe. */
+  const boxRef = useRef<DOMRect | null>(null);
+
+  const handleEnter = (event: MouseEvent<HTMLElement>) => {
+    boxRef.current = event.currentTarget.getBoundingClientRect();
   };
+
+  const handlePointer = (event: MouseEvent<HTMLElement>) => {
+    const box = boxRef.current ?? event.currentTarget.getBoundingClientRect();
+    boxRef.current = box;
+    if (box.width === 0 || box.height === 0) return;
+    pointerX.set(-((event.clientX - box.left) / box.width - 0.5) * 20);
+    pointerY.set(-((event.clientY - box.top) / box.height - 0.5) * 20);
+  };
+
+  const resetPointer = () => {
+    boxRef.current = null;
+    pointerX.set(0);
+    pointerY.set(0);
+  };
+
+  useEffect(() => {
+    const invalidate = () => {
+      boxRef.current = null;
+    };
+    window.addEventListener("resize", invalidate);
+    return () => window.removeEventListener("resize", invalidate);
+  }, []);
+
+  /* ── Contadores: derivados, nunca escritos a mano ───────────────────── */
+  const stats: readonly HeroStat[] = [
+    { value: String(PROJECT_FACTS.fleetSize), label: t.hero.stats.cars },
+    { value: String(PROJECT_FACTS.teamSize), label: t.hero.stats.drivers },
+    {
+      value: groupThousands(PROJECT_FACTS.moroccoKm, locale),
+      unit: "km",
+      label: t.hero.stats.distance,
+    },
+    { value: String(PROJECT_FACTS.days), label: t.hero.stats.days },
+  ];
+
+  /* ── Teletipo: dos mitades identicas para que el bucle a -50% cierre ── */
+  const marqueeHalf = [...t.hero.marquee, ...t.hero.marquee, ...t.hero.marquee];
+  const marqueeTrack = [...marqueeHalf, ...marqueeHalf];
+
+  const lastTitleLine = t.hero.title.length - 1;
 
   return (
     <section
       ref={sectionRef}
-      onMouseMove={handleMouse}
-      className="relative w-full min-h-screen flex flex-col justify-end bg-[var(--color-bg-dark)]"
+      onMouseEnter={parallax ? handleEnter : undefined}
+      onMouseMove={parallax ? handlePointer : undefined}
+      onMouseLeave={parallax ? resetPointer : undefined}
+      className="boam-hero dust-overlay relative isolate flex min-h-[100svh] w-full flex-col overflow-hidden bg-bg-base"
     >
-      {/* Hero Background Image — scroll + mouse parallax */}
+      <style>{HERO_STYLES}</style>
+
+      {/* ═══ 00 · Fondo ═══════════════════════════════════════════════════ */}
       <motion.div
         className="absolute inset-0 z-0 will-change-transform"
-        style={{ y: bgY, scale: bgScale }}
+        style={parallax ? { y: backgroundY, scale: backgroundScale } : undefined}
       >
-        <motion.div className="absolute inset-0" style={{ x: sx, y: sy }}>
-          <Image
-            src="https://images.unsplash.com/photo-1509316785289-025f5b846b35?auto=format&fit=crop&q=80&w=2070"
-            alt="Desert expedition landscape"
-            fill
-            className="object-cover"
+        {/* Sobredimensionado: el parallax de raton no llega a descubrir borde. */}
+        {/* `will-change-transform`: esta capa la mueven los muelles del ratón
+            en cada fotograma. Sin promocionarla, el navegador no la trata como
+            capa propia y ese movimiento REPINTA la foto del hero entera en vez
+            de limitarse a recolocar una textura ya rasterizada. El contenedor
+            de fuera ya la llevaba; a ésta se le había olvidado. */}
+        <motion.div
+          className="absolute inset-[-5%] will-change-transform"
+          style={parallax ? { x: smoothX, y: smoothY } : undefined}
+        >
+          <RallyImage
+            image={HERO_IMAGE_ID}
+            fillParent
             priority
+            compact
+            overlay="none"
+            showCaption={false}
+            chamfer={false}
+            sizes="100vw"
+            objectPosition="center 45%"
           />
         </motion.div>
-        {/* Dark vignette overlay for depth and contrast */}
+      </motion.div>
+
+      {/* ═══ 10 · Scrims ══════════════════════════════════════════════════ */}
+      {/* Las dos curvas viven en el <style> de arriba porque su dosis es un
+          dato del tema. El color ya era tematico (--base-rgb); lo que no
+          podia serlo, y ahora lo es, es cuanta foto dejan pasar. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-10"
+        style={{ backgroundImage: "var(--hero-scrim-v)" }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-10"
+        style={{ backgroundImage: "var(--hero-scrim-h)" }}
+      />
+      <div
+        aria-hidden="true"
+        className="grid-blueprint grid-fade-y pointer-events-none absolute inset-0 z-10 opacity-40"
+      />
+
+      {/* ═══ 30 · HUD de telemetria ═══════════════════════════════════════
+          Va en el flanco DERECHO: la columna izquierda la ocupa el titular,
+          que arranca a la misma altura, y ahi se solapaban.
+
+          El HUD cae en la franja alta, la unica donde la foto sigue viva al
+          ~50 %, asi que en claro necesita suelo propio: la plancha se
+          disuelve hacia la izquierda y no llega a leerse como una caja. En
+          tactical --hero-plate vale 0 y esto es exactamente lo que habia.
+
+          Los offsets estan recolocados para que el TEXTO siga donde estaba
+          pese al relleno nuevo: right-5 + pr-5 = right-10 (en lg, right-11
+          + pr-5 = right-16) y top-[6.5rem] + py-5 = top-28. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-5 top-[6.5rem] z-30 hidden flex-col items-end gap-4 py-5 pl-24 pr-5 md:flex lg:right-11"
+        style={{ backgroundImage: PLATE_RIGHT }}
+      >
         <div
-          className="absolute inset-0 z-10"
-          style={{
-            background: `
-              linear-gradient(180deg,
-                rgba(42, 37, 34, 0.7) 0%,
-                rgba(42, 37, 34, 0.2) 30%,
-                rgba(42, 37, 34, 0.1) 50%,
-                rgba(42, 37, 34, 0.6) 75%,
-                rgba(42, 37, 34, 0.95) 100%
-              )
-            `,
-          }}
-        />
-        {/* Left side gradient for text area */}
-        <div
-          className="absolute inset-0 z-10"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(42, 37, 34, 0.5) 0%, transparent 60%)",
-          }}
-        />
-      </motion.div>
-
-      {/* Noise Layer */}
-      <div className="absolute inset-0 z-10 noise-bg pointer-events-none" />
-
-      {/* GPS Coordinates — top left */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1.2, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute top-32 left-8 md:left-12 z-20 hidden md:block"
-      >
-        <p className="font-mono text-[11px] tracking-[3px] text-[var(--color-text-light)]/50">
-          32&deg;03&apos;12.5&quot;N
-        </p>
-        <p className="font-mono text-[11px] tracking-[3px] text-[var(--color-text-light)]/50">
-          1&deg;01&apos;45.8&quot;W
-        </p>
-      </motion.div>
-
-      {/* Side Vertical Label */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.6, delay: 1.6 }}
-        className="absolute right-8 top-48 z-20 hidden lg:block"
-      >
-        <span
-          className="font-mono text-[10px] tracking-[8px] text-[var(--color-text-light)]/10 uppercase"
-          style={{ writingMode: "vertical-rl" }}
+          className="animate-slide-right flex flex-col items-end gap-2 border-r border-amber/45 pr-4"
+          style={delay(0.85)}
         >
-          {t.hero.expedition}
-        </span>
-      </motion.div>
-
-      {/* ━━━ Hero Content ━━━ */}
-      <motion.div
-        className="relative z-20 w-full"
-        style={{ marginTop: "40vh", y: contentY, opacity: contentOp }}
-      >
-        {/* Editorial Tag */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="px-6 md:px-12 mb-6"
-        >
-          <p className="font-mono text-[10px] md:text-[11px] tracking-[4px] text-[var(--color-rust)] uppercase">
-            {t.hero.tag}
+          <p className="telemetry-label telemetry-label-amber">
+            {t.hero.hud.coordsLabel}
           </p>
-        </motion.div>
+          <p className="gps-label text-text-secondary">{HERO_COORDS.dms}</p>
+        </div>
 
-        {/* Main Title — staggered line reveal */}
-        <div className="px-6 md:px-12">
+        <div
+          className="animate-slide-right flex flex-col items-end gap-2 border-r border-slate pr-4"
+          style={delay(1)}
+        >
+          <p className="telemetry-label">{t.hero.hud.headingLabel}</p>
+          <p className="gps-label text-text-secondary">
+            {t.hero.hud.headingValue}
+          </p>
+        </div>
+      </div>
+
+      {/* Rotulo vertical pegado al canto derecho, en la franja que queda
+          libre entre el HUD y los contadores. Misma plancha que el HUD, en
+          tira: right-1 + px-2 devuelve el texto a su right-3 de siempre. */}
+      <span
+        aria-hidden="true"
+        className="telemetry-label animate-fade-in pointer-events-none absolute right-1 top-1/2 z-30 hidden -translate-y-1/2 px-2 py-10 lg:block"
+        style={{
+          writingMode: "vertical-rl",
+          letterSpacing: "0.48em",
+          backgroundImage: PLATE_VERTICAL,
+          ...delay(1.15),
+        }}
+      >
+        {t.hero.expedition}
+      </span>
+
+      {/* ═══ 20 · Contenido ═══════════════════════════════════════════════ */}
+      <motion.div
+        className="relative z-20 flex flex-1 flex-col justify-end px-5 pb-10 pt-32 sm:px-8 sm:pt-36 md:px-12 lg:px-16"
+        style={parallax ? { y: contentY, opacity: contentOpacity } : undefined}
+      >
+        {/* El bloque de texto se envuelve para poder darle SU PROPIO suelo.
+            Un degradado a porcentaje fijo de la seccion no sirve: en movil
+            el texto arranca al ~18 % del hero y en escritorio al ~55 %, asi
+            que el lavado tiene que ir pegado a la caja del TEXTO, no a la
+            del hero. Va a sangre (w-screen centrado) para que no aparezca
+            un canto vertical de crema recortado sobre la foto.
+
+            ESTE es el mecanismo que mantiene legible el hero en claro: el
+            texto conserva el contraste de sus tokens (text-primary 13.3:1,
+            secondary 7.3:1, telemetry 4.95:1) porque debajo tiene el fondo
+            de la pagina y no una fotografia de brillo desconocido. */}
+        <div className="relative">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-16 -top-14 left-1/2 -z-10 w-screen -translate-x-1/2"
+            style={{ backgroundImage: TEXT_WASH }}
+          />
+
+          {/* Tag + badge de edicion */}
+          <div
+            className="animate-fade-up mb-6 flex flex-wrap items-center gap-x-4 gap-y-3"
+            style={delay(0.1)}
+          >
+            <span className="telemetry-label telemetry-label-amber telemetry-label-dash">
+              {t.hero.tag}
+            </span>
+            <span className="tech-badge tech-badge-amber">
+              {t.common.edition.monthYearShort}
+            </span>
+          </div>
+
+          {/* Titular — revelado linea a linea tras su propia mascara.
+
+              Los TRES valores del clamp estan medidos en el navegador contra
+              la linea mas larga de los tres idiomas ("OCHO DE NOSOTROS." en
+              es, "VUIT DE NOSALTRES." en ca), no elegidos a ojo:
+
+              · 7.4vw (tramo fluido) es el tamano al que esa linea todavia cabe
+                en UNA sola linea con el padding lateral de la seccion. Por
+                encima rompia en dos y el hero crecia hasta empujar los CTA
+                fuera de pantalla.
+              · 1.7rem (suelo) hace falta porque por debajo de ~454px de
+                viewport el clamp se queda clavado en su minimo y deja de
+                encoger. Con el suelo anterior de 2.1rem la linea pedia 329px
+                de ancho sobre los 320px utiles de una pantalla de 360px: se
+                partia en dos justo en el tamano de movil mas comun. A 1.7rem
+                cabe con margen desde 320px de viewport.
+              · 7rem (techo) evita que en monitores anchos el titular se coma
+                el resto del hero. */}
           <h1
-            className="font-heading text-[var(--color-text-light)] leading-[0.88] tracking-[-2px]"
-            style={{ fontSize: "clamp(3rem, 10vw, 148px)" }}
+            className="font-heading font-bold uppercase leading-[0.86] tracking-[-0.02em] text-text-primary"
+            style={{ fontSize: "clamp(1.7rem, 7.4vw, 7rem)" }}
           >
             {t.hero.title.map((line, i) => (
-              <span key={i} className="block overflow-hidden">
-                <motion.span
-                  initial={{ y: "110%", opacity: 0 }}
-                  animate={{ y: "0%", opacity: 1 }}
-                  transition={{
-                    duration: 1.1,
-                    delay: 0.35 + i * 0.14,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  className="block"
-                >
-                  {line}
-                </motion.span>
+              <span key={`${i}-${line}`} className="block overflow-hidden pb-[0.06em]">
+                <span className="boam-hero-line block" style={delay(0.26 + i * 0.13)}>
+                  {i === lastTitleLine ? (
+                    <span className="text-gradient-amber">{line}</span>
+                  ) : (
+                    line
+                  )}
+                </span>
               </span>
             ))}
           </h1>
-        </div>
 
-        {/* Editorial Rule */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.9, delay: 0.95, ease: [0.22, 1, 0.36, 1] }}
-          style={{ transformOrigin: "left" }}
-          className="px-6 md:px-12 mt-6"
-        >
-          <div className="w-24 h-[2px] bg-[var(--color-rust)]" />
-        </motion.div>
+          {/* Regla editorial */}
+          <div
+            className="boam-hero-rule mt-6 h-px w-full max-w-xs bg-gradient-to-r from-amber via-amber/40 to-transparent"
+            style={delay(0.85)}
+          />
 
-        {/* Bottom Section: Description + Stats */}
-        <div className="px-6 md:px-12 mt-6 pb-24 flex flex-col md:flex-row md:items-end md:justify-between gap-10">
-          {/* Left: Subtitle + CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 1.05, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-md"
-          >
-            <p className="font-body text-sm text-[var(--color-text-light)]/70 leading-[1.8] tracking-[0.5px] mb-8">
-              {t.hero.description}
-            </p>
+          {/* Copy + CTAs · contadores */}
+          <div className="mt-7 flex flex-col gap-9 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+            <div className="animate-fade-up max-w-xl" style={delay(0.95)}>
+              <p className="font-body text-[0.9375rem] leading-[1.75] text-text-secondary sm:text-base">
+                {t.hero.description}
+              </p>
 
-            <Link
-              href="/patrocinio"
-              className="inline-flex items-center gap-3 px-9 py-3.5 bg-[var(--color-rust)] text-[var(--color-text-light)] font-body text-xs font-semibold uppercase tracking-[3px] transition-all duration-300 hover:bg-[var(--color-text-light)] hover:text-[var(--color-bg-dark)] group"
-            >
-              {t.hero.cta}
-              <span className="text-sm transition-transform duration-300 group-hover:translate-x-1">
-                {t.hero.ctaArrow}
-              </span>
-            </Link>
-          </motion.div>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <Link
+                  href="/#proyecto"
+                  className="btn-tactical btn-amber group w-full sm:w-auto"
+                >
+                  {t.hero.cta}
+                  <span
+                    aria-hidden="true"
+                    className="transition-transform duration-300 ease-tactical group-hover:translate-x-1"
+                  >
+                    {t.hero.ctaArrow}
+                  </span>
+                </Link>
+                <Link
+                  href="/patrocinio"
+                  className="btn-tactical btn-outline w-full sm:w-auto"
+                >
+                  {t.hero.secondaryCta}
+                </Link>
+              </div>
 
-          {/* Right: Stats Strip — stagger reveal */}
-          <div className="flex gap-10 md:gap-14">
-            {[
-              { num: "4",    label: t.hero.stats.cars },
-              { num: "8",    label: t.hero.stats.drivers },
-              { num: "3000", label: t.hero.stats.distance, suffix: "km" },
-            ].map((s, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.9,
-                  delay: 1.2 + i * 0.1,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-              >
-                <p className="font-heading text-3xl md:text-4xl text-[var(--color-text-light)]">
-                  {s.num}
-                  {s.suffix && (
-                    <span className="text-lg text-[var(--color-rust)]">{s.suffix}</span>
-                  )}
-                </p>
-                <p className="font-mono text-[10px] tracking-[2px] text-[var(--color-text-light)]/40 uppercase mt-1">
-                  {s.label}
-                </p>
-              </motion.div>
-            ))}
+              {/* Tira de estado + pista de scroll. La pista va AQUI, y no
+                  suelta en una esquina, porque en el fondo a la derecha
+                  chocaba con los contadores y en flujo propio se comia ~70px
+                  del presupuesto vertical del hero. */}
+              <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span className="status-dot shrink-0" aria-hidden="true" />
+                <span className="telemetry-label">{t.hero.hud.statusLabel}</span>
+                <span className="gps-label text-lime">
+                  {t.hero.hud.statusValue}
+                </span>
+
+                <span
+                  aria-hidden="true"
+                  className="ml-2 hidden h-4 w-px bg-slate sm:block"
+                />
+                <motion.span
+                  style={parallax ? { opacity: scrollHintOpacity } : undefined}
+                  className="hidden items-center gap-2.5 sm:flex"
+                >
+                  <span aria-hidden="true" className="telemetry-label">
+                    {t.hero.scroll}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="block h-5 w-px bg-gradient-to-b from-amber to-transparent"
+                  />
+                  <span className="sr-only">{t.common.a11y.scrollDown}</span>
+                </motion.span>
+              </div>
+            </div>
+
+            {/* Contadores. Cada celda usa `flex-col-reverse`: en el DOM va
+                primero el <dt> (semantica correcta de la lista de descripcion)
+                y en pantalla primero la cifra. */}
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-7 sm:grid-cols-4 lg:flex lg:shrink-0 lg:gap-10">
+              {stats.map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className="animate-fade-up flex flex-col-reverse border-t border-slate pt-3"
+                  style={delay(1.05 + i * 0.09)}
+                >
+                  <dt className="telemetry-label mt-2 block">{stat.label}</dt>
+                  <dd className="font-heading text-3xl font-semibold leading-none text-text-primary md:text-4xl">
+                    {stat.value}
+                    {/* amber-text y no amber: 16px no llegan a "texto grande",
+                        asi que el ambar pleno (3.87:1 sobre crema) se queda
+                        corto. En tactical los dos tokens valen #FF6B00. */}
+                    {stat.unit && (
+                      <span className="ml-1 font-mono text-base font-medium text-amber-text">
+                        {stat.unit}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
         </div>
+
       </motion.div>
 
-      {/* Dune transition — overlays the hero image at the bottom */}
-      <div className="absolute bottom-0 left-0 right-0 z-20">
-        <DuneTransition toColor="#F7F4EB" lineColor="#F7F4EB" height={280} />
+      {/* ═══ 20 · Teletipo sobre el horizonte ═════════════════════════════ */}
+      {/* El 0.55 de siempre deja pasar casi media foto: sobre negro no se
+          nota y sobre crema se come el teletipo, que va en mono de 11 px. */}
+      {/* SIN `backdrop-blur`.
+          Llevaba `backdrop-blur-[2px]`, y un `backdrop-filter` obliga al
+          compositor a RELEER y desenfocar todo lo que tiene detrás cada vez
+          que eso cambia. Detrás tiene el fondo del hero, que los muelles del
+          parallax de ratón mueven de continuo: o sea, una franja de todo el
+          ancho re-desenfocada en cada fotograma mientras paseas el cursor por
+          la portada. Es exactamente la zona donde Ramón notaba el tirón, y
+          que se arregla sola al bajar (abajo no hay ni esta banda ni parallax
+          de ratón).
+
+          Lo que se pierde: nada visible. El desenfoque era de 2 px y esta
+          banda ya es opaca al 94 % en desierto y al 55 % en táctico — detrás
+          de eso, 2 px de blur no se distinguen. */}
+      <div
+        aria-hidden="true"
+        className="relative z-20 w-full overflow-hidden border-y border-slate/70 py-2.5"
+        style={{ backgroundColor: "rgb(var(--base-rgb) / var(--hero-marquee))" }}
+      >
+        <div className="animate-marquee flex w-max will-change-transform">
+          {marqueeTrack.map((entry, i) => (
+            <span
+              key={`${i}-${entry}`}
+              className="telemetry-label flex shrink-0 items-center gap-5 px-5"
+            >
+              {/* Mono de 11px: mismo motivo que la unidad de los contadores. */}
+              <span className={i % 3 === 1 ? "text-amber-text" : "text-text-tertiary"}>
+                {entry}
+              </span>
+              <span className="text-amber/50">&#9670;</span>
+            </span>
+          ))}
+        </div>
       </div>
 
-      {/* Scroll Indicator — fades out as user scrolls */}
-      <motion.div
-        style={{ opacity: indicatorOp }}
-        className="absolute bottom-72 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center animate-bounce-subtle"
-      >
-        <span className="font-mono text-[8px] tracking-[0.5em] text-[var(--color-text-light)] uppercase mb-3">
-          {t.hero.scroll}
-        </span>
-        <div className="w-px h-10 bg-gradient-to-b from-[var(--color-text-light)] to-transparent" />
-      </motion.div>
+      {/* ═══ 20 · Divisoria "sierra de montanas" ══════════════════════════ */}
+      <div className="relative z-20 -mb-px w-full">
+        <RidgeDivider
+          toColor="var(--color-bg-base)"
+          lineColor="var(--color-sand)"
+          height="clamp(72px, 9vw, 132px)"
+        />
+      </div>
     </section>
   );
 }

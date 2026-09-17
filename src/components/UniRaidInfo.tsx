@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import RallyImage from "@/components/ui/RallyImage";
 import { useT } from "@/i18n/LanguageProvider";
 
 export default function UniRaidInfo() {
@@ -11,6 +11,12 @@ export default function UniRaidInfo() {
 
   // Build spec badges from the current translation dictionary. The
   // `variant` styles are static since they're colour decisions, not copy.
+  //
+  // Los nombres de variante son historicos ("rust", "moss") y se conservan
+  // para no tocar la estructura, pero ya NO pintan los tokens legacy del
+  // mismo nombre: rust -> --color-amber y moss -> --color-sand, que es a lo
+  // que apuntaba el puente legacy de globals.css. Asi el chip sigue el tema
+  // activo sin que cambie ni un pixel en tactical.
   const specBadges = [
     { ...t.car.specs.engine,     variant: "light" as const },
     { ...t.car.specs.protection, variant: "light" as const },
@@ -32,7 +38,7 @@ export default function UniRaidInfo() {
     <section
       id="uniraid"
       ref={sectionRef}
-      className="relative w-full py-40 overflow-hidden bg-[var(--color-bg-sand)]"
+      className="relative w-full py-25 overflow-hidden bg-bg-base"
     >
       <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
 
@@ -42,7 +48,7 @@ export default function UniRaidInfo() {
         </div>
 
         {/* Editorial Rule */}
-        <div className="ml-auto w-[500px] max-w-full h-px bg-[var(--color-border)] mb-6"></div>
+        <div className="ml-auto w-[500px] max-w-full h-px bg-slate mb-6"></div>
 
         <div className="flex flex-col lg:flex-row gap-16 items-start">
 
@@ -50,7 +56,7 @@ export default function UniRaidInfo() {
           <div className="w-full lg:w-1/2 relative">
             <motion.div
               style={{ y: carY }}
-              className="relative w-full aspect-[4/3] overflow-hidden shadow-[0_20px_48px_rgba(42,37,34,0.25)]"
+              className="relative w-full aspect-[4/3] overflow-hidden shadow-tactical-lg"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 1.08 }}
@@ -59,11 +65,13 @@ export default function UniRaidInfo() {
                 transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0"
               >
-                <Image
-                  src="https://images.unsplash.com/photo-1541443131876-44b03de101c5?auto=format&fit=crop&q=80&w=2070"
-                  alt="Ford Escort MK6"
-                  fill
-                  className="object-cover"
+                <RallyImage
+                  image="coches-formacion"
+                  fillParent
+                  compact
+                  overlay="none"
+                  showCaption={false}
+                  chamfer={false}
                 />
               </motion.div>
             </motion.div>
@@ -71,7 +79,7 @@ export default function UniRaidInfo() {
             {/* Detail Image — parallax in opposite direction */}
             <motion.div
               style={{ y: detailY }}
-              className="absolute -bottom-8 right-4 w-[220px] h-[240px] overflow-hidden shadow-[0_12px_32px_rgba(42,37,34,0.2)] hidden md:block"
+              className="absolute -bottom-8 right-4 w-[220px] h-[240px] overflow-hidden shadow-tactical hidden md:block"
             >
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -80,17 +88,19 @@ export default function UniRaidInfo() {
                 transition={{ duration: 1.2, delay: 0.3 }}
                 className="absolute inset-0"
               >
-                <Image
-                  src="https://images.unsplash.com/photo-1547234935-80c7145ec969?auto=format&fit=crop&q=80&w=600"
-                  alt="Car detail"
-                  fill
-                  className="object-cover"
+                <RallyImage
+                  image="coche-detalle-rotulacion"
+                  fillParent
+                  compact
+                  overlay="none"
+                  showCaption={false}
+                  chamfer={false}
                 />
               </motion.div>
             </motion.div>
 
             {/* Spec line */}
-            <p className="font-mono text-[9px] tracking-[2px] text-[var(--color-text-secondary)] mt-16">
+            <p className="font-mono text-[9px] tracking-[2px] text-text-secondary mt-16">
               {t.car.specLineShort}
             </p>
           </div>
@@ -104,7 +114,7 @@ export default function UniRaidInfo() {
                 viewport={{ once: true, margin: "-10%" }}
                 transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
               >
-                <h2 className="font-heading text-[clamp(3.5rem,8vw,110px)] text-[var(--color-text-primary)] leading-[0.88] tracking-[3px] mb-6">
+                <h2 className="font-heading text-[clamp(3.5rem,8vw,110px)] text-text-primary leading-[0.88] tracking-[3px] mb-6">
                   {t.car.title.map((line, i) => (
                     <span key={i}>
                       {line}
@@ -113,13 +123,13 @@ export default function UniRaidInfo() {
                   ))}
                 </h2>
 
-                <p className="font-body text-lg text-[var(--color-text-secondary)] italic mb-4">
+                <p className="font-body text-lg text-text-secondary italic mb-4">
                   {t.car.italic}
                 </p>
 
                 {/* Machine Spec Line */}
-                <div className="h-px bg-[var(--color-border)] mb-8"></div>
-                <p className="font-mono text-[10px] tracking-[2px] text-[var(--color-text-secondary)] mb-12">
+                <div className="h-px bg-slate mb-8"></div>
+                <p className="font-mono text-[10px] tracking-[2px] text-text-secondary mb-12">
                   {t.car.specLine}
                 </p>
 
@@ -139,24 +149,33 @@ export default function UniRaidInfo() {
                       whileHover={{ y: -4, transition: { duration: 0.25 } }}
                       className={`p-4 flex flex-col gap-1 cursor-default ${
                         badge.variant === "rust"
-                          ? "bg-[var(--color-rust)] text-[var(--color-text-light)]"
+                          ? "bg-amber-solid text-text-inverse"
                           : badge.variant === "moss"
-                          ? "bg-[var(--color-moss)] text-[var(--color-text-light)]"
-                          : "bg-white border border-[var(--color-border)] shadow-sm backdrop-blur-sm"
+                          ? "bg-sand-solid text-text-inverse"
+                          : "bg-bg-elevated border border-slate"
                       }`}
                     >
+                      {/*
+                        Texto a OPACIDAD COMPLETA en las variantes rust/moss:
+                        --color-amber (3.87:1) y --color-sand (3.30:1 inverso
+                        / 4.03:1 primary) no aguantan 4.5:1 con NADA encima, y
+                        menos aun atenuado al 70-80%. Los tonos *-solid ya
+                        estan calibrados para texto inverso a opacidad plena
+                        (5.30-5.34:1); diluirlos habria vuelto a romper el
+                        mismo caso que arregla el token.
+                      */}
                       <span className={`font-mono text-[8px] tracking-[4px] ${
-                        badge.variant === "light" ? "text-[var(--color-text-secondary)]" : "text-white/70"
+                        badge.variant === "light" ? "text-text-secondary" : "text-text-inverse"
                       }`}>
                         {badge.label}
                       </span>
                       <span className={`font-heading text-2xl tracking-[1px] ${
-                        badge.variant === "light" ? "text-[var(--color-text-primary)]" : ""
+                        badge.variant === "light" ? "text-text-primary" : ""
                       }`}>
                         {badge.value}
                       </span>
                       <span className={`font-body text-[11px] ${
-                        badge.variant === "light" ? "text-[var(--color-text-secondary)]" : "text-white/80"
+                        badge.variant === "light" ? "text-text-secondary" : "text-text-inverse"
                       }`}>
                         {badge.desc}
                       </span>

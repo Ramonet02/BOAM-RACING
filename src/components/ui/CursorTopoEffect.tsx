@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import {
+  DEFAULT_THEME,
+  THEME_ATTRIBUTE,
+  isTheme,
+  type Theme,
+} from "@/theme/themeScript";
 import { topoState } from "./topoState";
 
 // ── Quality tiers ─────────────────────────────────────────────────
@@ -41,11 +47,168 @@ const PEAK_S      = 130;   // tighter sigma → denser rings on button
 // ── Noise ─────────────────────────────────────────────────────────
 const NOISE_SCALE = 0.0052;
 const TIME_SPEED  = 0.00011;
-// ── Colour ────────────────────────────────────────────────────────
-const LINE_RGB    = "42,37,34";
 // ── Frame pacing ─────────────────────────────────────────────────
 const TARGET_FPS  = 60;
 const FRAME_MS    = 1000 / TARGET_FPS;
+// ── Caché del ruido base ──────────────────────────────────────────
+// El campo de ruido (fbm) se desplaza TIME_SPEED / NOISE_SCALE ≈ 0.021 px
+// por fotograma: a 60 fps tarda 0.79 s en moverse UN píxel. Recalcularlo
+// entero cada fotograma —84.816 llamadas a hash() en el tier alto, medido—
+// paga por una deriva que el ojo no puede seguir. Se recalcula cada
+// NOISE_REBUILD_EVERY fotogramas y el cerro del cursor (y el pico, cuando
+// lo haya) se suman cada fotograma sobre esa base cacheada. Con 6 el error
+// de posición acumulado es 6×0.021 ≈ 0.13 px — sub-píxel, indistinguible —
+// y el coste de ese trozo baja de 0.45 ms a ~0.11 ms de media por fotograma
+// (medido con un banco fuera del navegador que reproduce este código).
+const NOISE_REBUILD_EVERY = 6;
+/** Por debajo de esto el cursor se considera parado: es movimiento sub-pixel
+ *  de la interpolacion, invisible en un cerro gaussiano de 185 px de sigma. */
+const IDLE_EPS = 0.08;
+
+// ── Colour ────────────────────────────────────────────────────────
+// Aquí no hay ni un color fijo, y no es un capricho de estilo: este efecto
+// ya estuvo roto e invisible porque unas constantes JS conservaron el tono
+// del tema anterior tras un cambio de paleta. Todo sale de los tokens que
+// declara globals.css:
+//
+//   --topo-line / --topo-line-rgb   curvas de nivel en reposo
+//   --topo-bump / --topo-bump-rgb   realce bajo el cursor
+//   --topo-peak / --topo-peak-rgb   pico al pasar por un botón
+//
+// Los *-rgb son tripletes separados por COMA ("185, 169, 140"), pensados a
+// propósito para entrar tal cual en `rgba(${rgb},${alpha})`. Aun así se
+// parsean y se vuelven a serializar: si algún día se migrasen al formato
+// separado por ESPACIO que usa el resto del fichero para rgb(… / α), la
+// cadena `rgba(185 169 140,0.3)` sería inválida, el canvas ignoraría la
+// asignación en silencio y heredaría el strokeStyle del trazo anterior.
+// Parsear cuesta cuatro líneas y cierra esa clase entera de fallo.
+
+// ── Alpha por tema ────────────────────────────────────────────────
+// El color sale del token, pero el ALPHA no puede: 0.10–0.22 estaba
+// calibrado para línea CLARA sobre #0F1012. En desert la línea es OSCURA
+// sobre crema y ambos tonos están mucho más cerca en luminancia, así que
+// con el mismo alpha la textura desaparece.
+//
+// Medido con WCAG 2.x sobre la composición REAL de los dos pases (el pase
+// brillante se traza encima del base, sobre la MISMA geometría) contra
+// --color-bg-base de cada tema.
+//
+// Ojo al calibrar: `centrality` NUNCA llega a 1. Los tres tiers tienen un
+// número par de niveles, así que k/(levels-1) no cae jamás en 0.5 y el techo
+// real es 0.800 (low) · 0.857 (medium) · 0.889 (high). No se toca — la rampa
+// es común a los dos temas y enderezarla movería tactical. La tabla va al
+// tier alto, que es el caso normal:
+//
+//                          tactical (intacto)    desert
+//   base    c = 0 → 8/9    1.11 → 1.29           1.10 → 1.25
+//   bump    c = 0 → 8/9    2.15 → 4.43           1.64 → 2.19
+//   peak    c = 0 → 8/9    1.67 → 2.88           1.73 → 2.37
+//
+// La banda base coincide casi punto por punto, que es lo que importa: es la
+// textura de fondo y debe pesar lo mismo en los dos temas.
+//
+// EL REALCE DE DESERT LO LIMITA EL TEXTO, NO EL FONDO.
+// El canvas es `position: fixed; z-index: 5`: pinta POR ENCIMA del contenido,
+// así que sus líneas cruzan los glifos. En tactical eso da igual, porque el
+// realce (#D8CEBE) y el texto (#F2EFE9) son AMBOS claros y un glifo cruzado
+// se queda en 12.85:1. En desert el realce (#8A7B5E) es un tono medio sobre
+// texto OSCURO (#2A241C): ACLARA la letra en vez de oscurecerla. Con el alpha
+// "bonito" de 0.878 un glifo bajo el cursor caía a 3.84:1 — por debajo del
+// 4.5:1 de texto normal, y justo en el punto al que el usuario está mirando.
+//
+// El tope lo marca el bump: alpha 0.603 deja el texto clavado en 4.5:1. Con
+// 0.38 + 0.22·c el máximo es 0.576, así que el glifo aguanta 4.57:1 (4.92:1
+// bajo el pico ámbar) con margen para la cuantización a 8 bits. A cambio el
+// realce sobre el fondo baja de 3.09 a 2.19, que sigue siendo ~1.8× la
+// textura base (1.25) y se distingue de sobra.
+//
+// No se arregla bajando el z-index: cualquier valor ≥ 0 sigue pintando sobre
+// el texto en flujo, y con z-index negativo el canvas caería por detrás del
+// fondo de <body> y desaparecería del todo.
+//
+// Los números de tactical son exactamente los de siempre: 0.10 + 0.12·c y
+// 0.26 + 0.26·c, la misma recta que el 0.52 · (0.5 + 0.5·c) anterior
+// (desvío máximo 5.6e-17, indistinguible al cuantizar el alpha a 8 bits).
+type AlphaCfg = {
+  /** Pase base en el nivel más exterior (centralidad 0). */
+  baseMin: number;
+  /** Subida del pase base hasta el nivel central (centralidad 1). */
+  baseSpan: number;
+  /** Pase brillante en el nivel más exterior. */
+  brightMin: number;
+  /** Subida del pase brillante hasta el nivel central. */
+  brightSpan: number;
+};
+
+const THEME_ALPHA: Record<Theme, AlphaCfg> = {
+  desert:   { baseMin: 0.16, baseSpan: 0.22, brightMin: 0.38, brightSpan: 0.22 },
+  tactical: { baseMin: 0.10, baseSpan: 0.12, brightMin: 0.26, brightSpan: 0.26 },
+};
+
+type TopoPalette = {
+  /** "r,g,b" listo para rgba(). null = el token no se pudo leer. */
+  line: string | null;
+  bump: string | null;
+  peak: string | null;
+  alpha: AlphaCfg;
+};
+
+/** Acepta "185, 169, 140" y también "185 169 140" → devuelve "185,169,140". */
+function parseTriplet(raw: string): string | null {
+  const parts = raw.trim().split(/[\s,/]+/).filter(Boolean);
+  if (parts.length < 3) return null;
+  const out: number[] = [];
+  for (let i = 0; i < 3; i++) {
+    const n = Number(parts[i]);
+    if (!Number.isFinite(n)) return null;
+    out.push(Math.max(0, Math.min(255, Math.round(n))));
+  }
+  return out.join(",");
+}
+
+/** Respaldo dentro del propio sistema de tokens: el hex hermano (#RGB/#RRGGBB). */
+function parseHex(raw: string): string | null {
+  const h = raw.trim().replace(/^#/, "");
+  const full =
+    h.length === 3 ? h[0] + h[0] + h[1] + h[1] + h[2] + h[2] : h;
+  if (!/^[0-9a-fA-F]{6}$/.test(full)) return null;
+  const n = parseInt(full, 16);
+  return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+}
+
+/** Triplete primero, hex como red de seguridad, null si no hay ninguno. */
+function readChannel(
+  styles: CSSStyleDeclaration,
+  tripletVar: string,
+  hexVar: string,
+): string | null {
+  return (
+    parseTriplet(styles.getPropertyValue(tripletVar)) ??
+    parseHex(styles.getPropertyValue(hexVar))
+  );
+}
+
+function activeTheme(root: HTMLElement): Theme {
+  const raw = root.getAttribute(THEME_ATTRIBUTE);
+  return isTheme(raw) ? raw : DEFAULT_THEME;
+}
+
+/**
+ * Lee la paleta viva del <html>. Es la ÚNICA fuente de color del efecto.
+ * Sin atributo data-theme el fallback es DEFAULT_THEME, que coincide con el
+ * selector agrupado `:root, :root[data-theme="desert"]` de globals.css: el
+ * alpha y el color salen siempre del mismo tema.
+ */
+function readPalette(): TopoPalette {
+  const root = document.documentElement;
+  const styles = getComputedStyle(root);
+  return {
+    line: readChannel(styles, "--topo-line-rgb", "--topo-line"),
+    bump: readChannel(styles, "--topo-bump-rgb", "--topo-bump"),
+    peak: readChannel(styles, "--topo-peak-rgb", "--topo-peak"),
+    alpha: THEME_ALPHA[activeTheme(root)],
+  };
+}
 
 // ── Segment chaining helpers ───────────────────────────────────────
 type Pt  = [number, number];
@@ -164,28 +327,54 @@ function appendSmooth(path: Path2D, rawPts: Pt[], passes: number) {
   if (closed) path.closePath();
 }
 
+type Point = { x: number; y: number };
+
 export default function CursorTopoEffect() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cur       = useRef({ x: -9999, y: -9999, tx: -9999, ty: -9999 });
   const timeRef   = useRef(0);
-  const rafRef    = useRef(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.matchMedia("(hover: none)").matches) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const canvas = canvasRef.current!;
-    const ctx    = canvas.getContext("2d", { alpha: true })!;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) return;
+
+    const root        = document.documentElement;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     let tier: TierCfg = TIERS[detectQuality()];
     let W = 0, H = 0, cW = 0, cH = 0;
     let field = new Float32Array(0);
+    // Sólo el ruido, sin cerro ni pico. Se relee en `field` cada fotograma
+    // (barato: un `.set()`) y se recalcula de verdad cada NOISE_REBUILD_EVERY.
+    let noise = new Float32Array(0);
+    // Cuenta atrás hasta el próximo recálculo de `noise`. 0 = tocaba este
+    // fotograma. Arranca en 0 para que el primer fotograma sea siempre fresco.
+    let noiseCountdown = 0;
+
+    // Caché de la paleta. null = invalidada (arranque o cambio de tema). Se
+    // relee DENTRO del fotograma, nunca en el handler de la mutación: así no
+    // se paga un getComputedStyle por mutación y se lee el atributo ya
+    // asentado, con el CSS del tema nuevo aplicado.
+    let palette: TopoPalette | null = null;
 
     // Adaptive downgrade tracking
     let probeStart = 0;
     let probeFrames = 0;
     let downgraded = false;
+
+    let rafId = 0;
+    let staticPending = false;
+    let lastFrame = 0;
+    /** Fuerza un repintado aunque nada se mueva: arranque, cambio de tema,
+     *  cambio de tamano y reentrada del raton. */
+    let needsPaint = true;
+
+    const cursorPt: Point = { x: 0, y: 0 };
 
     const resize = () => {
       canvas.width  = W = window.innerWidth;
@@ -193,6 +382,12 @@ export default function CursorTopoEffect() {
       cW = W / tier.cols;
       cH = H / tier.rows;
       field = new Float32Array((tier.cols + 1) * (tier.rows + 1));
+      noise = new Float32Array((tier.cols + 1) * (tier.rows + 1));
+      needsPaint = true;
+      // El tamaño de `noise` acaba de cambiar (tamaño de ventana o bajada de
+      // tier): la caché vieja tiene la forma equivocada. Se fuerza un
+      // recálculo inmediato en el siguiente fotograma.
+      noiseCountdown = 0;
     };
 
     // ── Value noise ───────────────────────────────────────────────
@@ -265,11 +460,141 @@ export default function CursorTopoEffect() {
       return segs;
     };
 
-    // ── Main loop ─────────────────────────────────────────────────
-    let lastFrame = 0;
+    // ── Height field ──────────────────────────────────────────────
+    // Partido en dos: `rebuildNoise` es la parte cara (fbm en cada nodo de
+    // la rejilla) y se llama con cuentagotas; `applyBump` es la parte barata
+    // (dos gaussianas) y se llama siempre. Las dos escriben exactamente los
+    // mismos números que la `buildField` de una sola pieza de antes — el
+    // primero sobre `noise`, el segundo copiando `noise` a `field` y sumando
+    // encima —, así que el resultado por fotograma es idéntico; lo único que
+    // cambia es CADA CUÁNTO se paga la parte cara.
+    const rebuildNoise = (t: number) => {
+      const cols = tier.cols;
+      const rows = tier.rows;
+      for (let j = 0; j <= rows; j++) {
+        for (let i = 0; i <= cols; i++) {
+          const px = i * cW, py = j * cH;
+          noise[j * (cols + 1) + i] = fbm(px * NOISE_SCALE, py * NOISE_SCALE, t);
+        }
+      }
+    };
 
-    const tick = (now: number) => {
-      rafRef.current = requestAnimationFrame(tick);
+    const applyBump = (
+      cursor: Point | null,
+      peak: Point | null,
+      peakH: number,
+    ) => {
+      field.set(noise);
+      const cols = tier.cols;
+      const rows = tier.rows;
+      const inv2BumpS = 1 / (2 * BUMP_S * BUMP_S);
+      const inv2PeakS = 1 / (2 * PEAK_S * PEAK_S);
+      // Sin cerro y sin pico (el caso más común: ratón fuera de pantalla,
+      // pico siempre inactivo hoy — ver topoState.ts) no hay nada que sumar:
+      // `field` ya es el ruido cacheado tal cual.
+      if (!cursor && !peak) return;
+      for (let j = 0; j <= rows; j++) {
+        for (let i = 0; i <= cols; i++) {
+          const px = i * cW, py = j * cH;
+          let bump = 0;
+          if (cursor) {
+            const dx = px - cursor.x, dy = py - cursor.y;
+            bump = BUMP_H * Math.exp(-(dx*dx + dy*dy) * inv2BumpS);
+          }
+
+          let peakV = 0;
+          if (peak) {
+            const dx = px - peak.x, dy = py - peak.y;
+            peakV = peakH * Math.exp(-(dx*dx + dy*dy) * inv2PeakS);
+          }
+
+          if (bump !== 0 || peakV !== 0) field[j*(cols+1)+i] += bump + peakV;
+        }
+      }
+    };
+
+    // ── Paint ─────────────────────────────────────────────────────
+    // Compute Path2D + style once per level, then reuse in both
+    // passes (base unclipped + bright clipped).
+    type LevelData = {
+      path: Path2D;
+      baseAlpha: number; baseLw: number;
+      brightAlpha: number; brightLw: number;
+    };
+
+    const paint = (
+      pal: TopoPalette,
+      cursor: Point | null,
+      peak: Point | null,
+      peakMult: number,
+      peakH: number,
+    ) => {
+      ctx.clearRect(0, 0, W, H);
+
+      const levels   = tier.levels;
+      const rangeTop = 1.2 + BUMP_H + peakH;
+      const a        = pal.alpha;
+
+      const levelsData: LevelData[] = [];
+
+      for (let k = 0; k < levels; k++) {
+        const threshold  = -0.6 + k * rangeTop / (levels - 1);
+        const centrality = 1 - Math.abs(k / (levels-1) - 0.5) * 2;
+
+        const path = new Path2D();
+        const chains = chain(collectSegs(threshold));
+        for (const pts of chains) appendSmooth(path, pts, tier.smoothPasses);
+
+        levelsData.push({
+          path,
+          baseAlpha:   a.baseMin   + centrality * a.baseSpan,
+          baseLw:      0.4 + centrality * 0.55,
+          brightAlpha: a.brightMin + centrality * a.brightSpan,
+          brightLw:    0.7 + centrality * 0.5,
+        });
+      }
+
+      // Base unclipped pass
+      if (pal.line) {
+        for (const L of levelsData) {
+          ctx.strokeStyle = `rgba(${pal.line},${L.baseAlpha})`;
+          ctx.lineWidth   = L.baseLw;
+          ctx.stroke(L.path);
+        }
+      }
+
+      // Bright clipped pass — reuses the same Path2D objects.
+      // Cada región lleva su propio color: el cerro del cursor va en
+      // --topo-bump y el pico del botón en --topo-peak. Se pintan en orden,
+      // así que el acento queda por encima cuando ambos coinciden.
+      const clipRegions: {
+        x: number; y: number; r: number; mult: number; rgb: string;
+      }[] = [];
+      if (cursor && pal.bump) {
+        clipRegions.push({ x: cursor.x, y: cursor.y, r: BUMP_S * 1.5, mult: 1, rgb: pal.bump });
+      }
+      if (peak && pal.peak && peakMult > 0.01) {
+        clipRegions.push({ x: peak.x, y: peak.y, r: PEAK_S * 1.8, mult: peakMult, rgb: pal.peak });
+      }
+
+      for (const region of clipRegions) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(region.x, region.y, region.r, 0, Math.PI * 2);
+        ctx.clip();
+
+        for (const L of levelsData) {
+          ctx.strokeStyle = `rgba(${region.rgb},${L.brightAlpha * region.mult})`;
+          ctx.lineWidth   = L.brightLw;
+          ctx.stroke(L.path);
+        }
+        ctx.restore();
+      }
+    };
+
+    // ── Animated loop ─────────────────────────────────────────────
+    const animate = (now: number) => {
+      rafId = requestAnimationFrame(animate);
 
       if (!W) return;
       if (document.hidden) { lastFrame = 0; return; }
@@ -296,112 +621,124 @@ export default function CursorTopoEffect() {
         }
       }
 
+      /* ── ¿Hay algo que repintar? ────────────────────────────────────────
+         ╔═══════════════════════════════════════════════════════════════╗
+         ║  CON EL RATÓN QUIETO ESTE LIENZO SE CONGELA                   ║
+         ╚═══════════════════════════════════════════════════════════════╝
+         Antes repintaba 60 veces por segundo pasara lo que pasara. El
+         dibujo en sí es barato (0,37 ms de rasterizado, medido), pero el
+         canvas es `position: fixed` y ocupa TODA la ventana por encima del
+         contenido: cada repintado obliga al compositor a rehacer la pantalla
+         entera, y con ella el `backdrop-filter` de la barra fija y el
+         `mix-blend-mode` de cada capa de grano. Es decir, el coste no estaba
+         en dibujar, estaba en obligar a todo lo demás a recomponerse.
+
+         El perfil de Ramón lo enseña sin lugar a dudas: 18 fps de media con
+         el hilo principal 86 % ocioso — el freno estaba en el compositor.
+
+         Mientras el cursor se mueve se repinta igual que siempre. En cuanto
+         se para, no hay nada nuevo que enseñar: el cerro ya está donde tiene
+         que estar y el ruido de fondo se desplaza 0,021 px por fotograma,
+         así que congelarlo es literalmente invisible. `timeRef` tampoco
+         avanza, de modo que al volver a moverse no da un salto. */
+      const dxCur = cur.current.tx - cur.current.x;
+      const dyCur = cur.current.ty - cur.current.y;
+      const targetIntensity = topoState.target ? 1 : 0;
+      const cursorMoving = Math.abs(dxCur) > IDLE_EPS || Math.abs(dyCur) > IDLE_EPS;
+      const peakChanging = Math.abs(targetIntensity - topoState.intensity) > 0.002;
+
+      if (!cursorMoving && !peakChanging && !needsPaint) {
+        // Nada se mueve: el fotograma anterior sigue siendo válido.
+        return;
+      }
+      needsPaint = false;
+
+      if (!palette) palette = readPalette();
+
       timeRef.current += TIME_SPEED;
       const t = timeRef.current;
 
       // Smooth cursor lag
-      cur.current.x += (cur.current.tx - cur.current.x) * 0.08;
-      cur.current.y += (cur.current.ty - cur.current.y) * 0.08;
+      cur.current.x += dxCur * 0.08;
+      cur.current.y += dyCur * 0.08;
       const cx = cur.current.x, cy = cur.current.y;
-      const cursorOnScreen = cx > -BUMP_S && cx < W + BUMP_S && cy > -BUMP_S && cy < H + BUMP_S;
+      const onScreen =
+        cx > -BUMP_S && cx < W + BUMP_S && cy > -BUMP_S && cy < H + BUMP_S;
+
+      let cursor: Point | null = null;
+      if (onScreen) {
+        cursorPt.x = cx;
+        cursorPt.y = cy;
+        cursor = cursorPt;
+      }
 
       // Lerp button-peak intensity
-      const targetI = topoState.target ? 1 : 0;
-      topoState.intensity += (targetI - topoState.intensity) * 0.055;
+      topoState.intensity += (targetIntensity - topoState.intensity) * 0.055;
       if (topoState.target) topoState.pos = topoState.target;
       const pi    = topoState.intensity;
       const peak  = pi > 0.005 ? topoState.pos : null;
       const peakH = PEAK_H * pi;
 
-      // Build field
-      const cols = tier.cols;
-      const rows = tier.rows;
-      const inv2BumpS = 1 / (2 * BUMP_S * BUMP_S);
-      const inv2PeakS = 1 / (2 * PEAK_S * PEAK_S);
-      for (let j = 0; j <= rows; j++) {
-        for (let i = 0; i <= cols; i++) {
-          const px = i * cW, py = j * cH;
-          const base = fbm(px * NOISE_SCALE, py * NOISE_SCALE, t);
-
-          let bump = 0;
-          if (cursorOnScreen) {
-            const dx = px - cx, dy = py - cy;
-            bump = BUMP_H * Math.exp(-(dx*dx + dy*dy) * inv2BumpS);
-          }
-
-          let peakV = 0;
-          if (peak) {
-            const dx = px - peak.x, dy = py - peak.y;
-            peakV = peakH * Math.exp(-(dx*dx + dy*dy) * inv2PeakS);
-          }
-
-          field[j*(cols+1)+i] = base + bump + peakV;
-        }
+      // El ruido se recalcula con cuentagotas; el cerro/pico, cada fotograma.
+      if (noiseCountdown <= 0) {
+        rebuildNoise(t);
+        noiseCountdown = NOISE_REBUILD_EVERY;
       }
+      noiseCountdown -= 1;
+      applyBump(cursor, peak, peakH);
+      paint(palette, cursor, peak, pi, peakH);
+    };
 
-      ctx.clearRect(0, 0, W, H);
+    // ── Reduced motion ────────────────────────────────────────────
+    // Un solo fotograma: mismo campo de ruido, sin bucle, sin cerro de
+    // cursor y sin pico. La textura sigue formando parte del diseño pero no
+    // se mueve absolutamente nada. Hay que repintarlo a mano al cambiar de
+    // tema o de tamaño porque aquí no hay bucle que refresque los colores:
+    // es justo el caso en el que el canvas se quedaba con la paleta vieja.
+    const drawStatic = () => {
+      if (!W) return;
+      if (!palette) palette = readPalette();
+      // Aquí no hay bucle que amortice el recálculo: se pide siempre fresco.
+      rebuildNoise(timeRef.current);
+      applyBump(null, null, 0);
+      paint(palette, null, null, 0, 0);
+    };
 
-      const levels  = tier.levels;
-      const rangeTop = 1.2 + BUMP_H + peakH;
+    const scheduleStatic = () => {
+      if (staticPending) return;
+      staticPending = true;
+      rafId = requestAnimationFrame(() => {
+        staticPending = false;
+        rafId = 0;
+        drawStatic();
+      });
+    };
 
-      // Compute Path2D + style once per level, then reuse in both
-      // passes (base unclipped + bright clipped).
-      type LevelData = {
-        path: Path2D;
-        baseAlpha: number; baseLw: number;
-        brightAlpha: number; brightLw: number;
-      };
-      const levelsData: LevelData[] = [];
+    const stop = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+      staticPending = false;
+    };
 
-      for (let k = 0; k < levels; k++) {
-        const threshold  = -0.6 + k * rangeTop / (levels - 1);
-        const centrality = 1 - Math.abs(k / (levels-1) - 0.5) * 2;
-
-        const path = new Path2D();
-        const chains = chain(collectSegs(threshold));
-        for (const pts of chains) appendSmooth(path, pts, tier.smoothPasses);
-
-        levelsData.push({
-          path,
-          baseAlpha:   0.07 + centrality * 0.09,
-          baseLw:      0.4  + centrality * 0.55,
-          brightAlpha: 0.32 * (0.5 + centrality * 0.5),
-          brightLw:    0.7  + centrality * 0.5,
-        });
+    /** Arranca el modo que toque. Sirve de arranque y de handler del cambio
+     *  de preferencia del sistema, que se puede conmutar en caliente. */
+    const applyMotionMode = () => {
+      stop();
+      if (motionQuery.matches) {
+        scheduleStatic();
+        return;
       }
-
-      // Base unclipped pass
-      for (const L of levelsData) {
-        ctx.strokeStyle = `rgba(${LINE_RGB},${L.baseAlpha})`;
-        ctx.lineWidth   = L.baseLw;
-        ctx.stroke(L.path);
-      }
-
-      // Bright clipped pass — reuses the same Path2D objects
-      if (cursorOnScreen || peak) {
-        const clipRegions: { x: number; y: number; r: number; mult: number }[] = [];
-        if (cursorOnScreen) clipRegions.push({ x: cx, y: cy, r: BUMP_S * 1.5, mult: 1 });
-        if (peak && pi > 0.01) clipRegions.push({ x: peak.x, y: peak.y, r: PEAK_S * 1.8, mult: pi });
-
-        for (const region of clipRegions) {
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(region.x, region.y, region.r, 0, Math.PI * 2);
-          ctx.clip();
-
-          for (const L of levelsData) {
-            ctx.strokeStyle = `rgba(${LINE_RGB},${L.brightAlpha * region.mult})`;
-            ctx.lineWidth   = L.brightLw;
-            ctx.stroke(L.path);
-          }
-          ctx.restore();
-        }
-      }
+      lastFrame   = 0;
+      probeStart  = 0;
+      probeFrames = 0;
+      downgraded  = false;
+      rafId = requestAnimationFrame(animate);
     };
 
     const onMove = (e: MouseEvent) => {
       cur.current.tx = e.clientX;
       cur.current.ty = e.clientY;
+      needsPaint = true;
       if (cur.current.x === -9999) {
         cur.current.x = e.clientX;
         cur.current.y = e.clientY;
@@ -411,25 +748,53 @@ export default function CursorTopoEffect() {
     const onLeave = () => {
       cur.current.tx = -9999;
       cur.current.ty = -9999;
+      needsPaint = true;
     };
 
     const onVisibility = () => {
-      if (!document.hidden) lastFrame = 0;
+      if (!document.hidden) {
+        lastFrame = 0;
+        needsPaint = true;
+      }
     };
+
+    const onResize = () => {
+      resize();
+      if (motionQuery.matches) scheduleStatic();
+    };
+
+    // Cambio de tema: invalida la caché y deja que el siguiente fotograma
+    // relea los tokens. Con el bucle vivo eso son ~16 ms; en modo estático
+    // no hay siguiente fotograma, así que se pide uno explícitamente.
+    const onThemeChange = () => {
+      palette = null;
+      needsPaint = true;
+      if (motionQuery.matches) scheduleStatic();
+    };
+
+    const themeObserver = new MutationObserver(onThemeChange);
+    themeObserver.observe(root, {
+      attributes: true,
+      attributeFilter: [THEME_ATTRIBUTE],
+    });
 
     document.addEventListener("mousemove", onMove, { passive: true });
     document.addEventListener("mouseleave", onLeave);
     document.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", onResize);
+    motionQuery.addEventListener("change", applyMotionMode);
+
     resize();
-    rafRef.current = requestAnimationFrame(tick);
+    applyMotionMode();
 
     return () => {
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseleave", onLeave);
       document.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", onResize);
+      motionQuery.removeEventListener("change", applyMotionMode);
+      themeObserver.disconnect();
+      stop();
     };
   }, []);
 

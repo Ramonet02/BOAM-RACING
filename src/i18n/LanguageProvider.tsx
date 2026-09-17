@@ -12,6 +12,19 @@
  *   useT()      → the current translation dictionary
  *   useLocale() → { locale, setLocale } for the language switcher
  *
+ * The dictionary it serves is composed in `./translations` from the
+ * per-section files in `./sections/`. Nothing here needs to change when
+ * copy is added: adding a key to a section makes it reachable as
+ * `t.<section>.<key>` automatically.
+ *
+ * The strings that reach a component are already FINAL: `./translations`
+ * resolves the `{edition}` / `{km}` / `{days}` / `{stages}` / `{cars}` /
+ * `{crew}` tokens once, at module load, out of `src/lib/route.ts`,
+ * `src/lib/team.ts` and `common.edition` — so no figure and no date is
+ * ever duplicated inside `src/i18n/**`. The only token left for the call
+ * site is `{n}` (sponsorship slots of the tier being rendered); fill it
+ * with the `fill()` helper exported from `./translations`.
+ *
  * Note: SSR always renders in the default locale. If the user had saved
  * a different language, the first frame shows the default before the
  * client swaps it. This is fine for this site because the nav is small

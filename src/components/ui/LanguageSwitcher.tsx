@@ -1,9 +1,18 @@
 "use client";
 
 /**
- * LanguageSwitcher — three-button inline selector (ES · EN · CA) that
- * adapts its colour to the current navbar state (dark text on scrolled
- * sand bg vs. light text on transparent bg over the hero).
+ * LanguageSwitcher — three-button inline selector (ES · EN · CA).
+ *
+ * Color: siempre tokens del tema activo. Antes la rama por defecto pintaba
+ * `--color-text-light`, que hoy es solo un alias legacy de
+ * `--color-text-primary` en globals.css: las dos ramas ya resolvian al MISMO
+ * color, asi que esto no cambia ni un pixel y quita una dependencia del
+ * puente legacy (marcado para borrarse).
+ *
+ * `onLight` se conserva para no romper la API del componente. La Navbar no lo
+ * pasa: el selector vive sobre una superficie tematizada (bg-bg-*), nunca
+ * sobre una foto, y ahi la tinta correcta es la primaria del tema —clara en
+ * tactical, oscura en desert— sin ramas.
  */
 
 import { useLocale } from "@/i18n/LanguageProvider";
@@ -21,15 +30,20 @@ export default function LanguageSwitcher({
 }: LanguageSwitcherProps) {
   const { locale, setLocale } = useLocale();
 
+  /* Las dos ramas coinciden a proposito: `--color-text-light` era un alias
+     legacy de `--color-text-primary`, asi que ya resolvian al mismo color
+     antes de tokenizar. Se conserva la forma —y el prop— para no cambiar la
+     API del componente; el dia que haga falta una tinta distinta sobre foto,
+     este es el sitio. */
   const activeClass = onLight
-    ? "text-[var(--color-text-primary)]"
-    : "text-[var(--color-text-light)]";
+    ? "text-text-primary"
+    : "text-text-primary";
   const inactiveClass = onLight
-    ? "text-[var(--color-text-primary)]/40 hover:text-[var(--color-text-primary)]/75"
-    : "text-[var(--color-text-light)]/40 hover:text-[var(--color-text-light)]/75";
+    ? "text-text-primary/40 hover:text-text-primary/75"
+    : "text-text-primary/40 hover:text-text-primary/75";
   const sepClass = onLight
-    ? "text-[var(--color-text-primary)]/20"
-    : "text-[var(--color-text-light)]/20";
+    ? "text-text-primary/20"
+    : "text-text-primary/20";
 
   return (
     <div

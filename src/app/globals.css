@@ -1,181 +1,621 @@
 @import "tailwindcss";
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   BOAM RACING — Design System (Editorial)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+/* ══════════════════════════════════════════════════════════════════════════
+   BOAM RACING · DESIGN SYSTEM · DOBLE TEMA
+   ──────────────────────────────────────────────────────────────────────────
+   Dos temas sobre UN unico sistema. Los componentes no saben que tema hay
+   activo: solo consumen tokens. Cambiar de tema = redefinir VALORES, nunca
+   reescribir reglas.
+
+     · desert    PRIMARIO y por defecto. Ocres, arenas y cremas.
+     · tactical  SECUNDARIO. El oscuro "Rally Desert Tactical" de siempre,
+                 conservado valor a valor. Si aqui cambia un valor, es un bug.
+
+   Mecanismo        <html data-theme="desert" | "tactical">
+   Por defecto      desert SIEMPRE en la primera visita. NO se sigue
+                    prefers-color-scheme: el claro es decision de marca.
+   Persistencia     localStorage["boam-theme"] (lo gestiona el toggle;
+                    este fichero no lee ni escribe nada).
+   Anti-parpadeo    script inline en <head> que fija data-theme antes del
+                    primer pintado.
+
+   Como funciona la cascada
+     @theme (Tailwind v4) emite sus variables sobre :root → especificidad
+     (0,1,0). Los bloques :root[data-theme="…"] son (0,2,0) y ganan siempre.
+     Por eso basta redefinir valores: las utilidades bg-* / text-* / border-*
+     ya apuntan a var(--color-…) y siguen el tema solas.
+
+   Indice
+     01 · Tokens de tema        (@theme → utilidades Tailwind) · valores DESERT
+     02 · Tema DESERT           (:root, :root[data-theme="desert"])
+     03 · Tema TACTICAL         (:root[data-theme="tactical"])
+     04 · Runtime no tematico   (chaflan, coche, geometria HUD, puente legacy)
+     05 · Base / reset tematico + transicion de cambio de tema
+     06 · Keyframes
+     07 · Utilidades
+     08 · Componentes
+     09 · Scroll reveal
+     10 · prefers-reduced-motion
+   ══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══ 01 · TOKENS DE TEMA ══════════════════════════════════════════════════
+   Todo lo declarado aqui genera utilidades Tailwind v4 automaticamente:
+   --color-amber → bg-amber / text-amber / border-amber, etc.
+
+   LOS VALORES DE ESTE BLOQUE SON LOS DEL TEMA DESERT (el por defecto).
+   El tema tactical los sobreescribe en la seccion 03.
+   Regla de oro: aqui se declaran NOMBRES; los valores viven por tema.       */
 
 @theme {
-  --color-rust: #C65F3B;
-  --color-moss: #636B51;
-  --color-bg-sand: #F7F4EB;
-  --color-bg-dark: #2A2522;
-  --color-text-primary: #2A2522;
-  --color-text-secondary: #7A756D;
-  --color-text-light: #F7F4EB;
-  --color-border: #D1CFC7;
-  --color-white: #FFFFFF;
+  /* ── Superficies ─────────────────────────────────────────────────────── */
+  --color-bg-base: #F4EEE2;        /* fondo de pagina · crema               */
+  --color-bg-surface: #FBF7EF;     /* tarjeta / panel elevado               */
+  --color-bg-elevated: #FFFFFF;    /* hover, cabeceras, popovers            */
+  --color-bg-sunken: #E8DFCE;      /* pozos, footer, zonas de contraste     */
 
-  --radius-organic: 9999px;
-  --radius-soft: 2rem;
+  /* ── Acentos ─────────────────────────────────────────────────────────────
+     Equivalencia de roles entre temas (mantenerla da coherencia):
+       lima  (senal / estado, tier mas alto) → moss   en desert
+       ambar (accion primaria)               → ambar ocre
+       sand  (secundario / datos)            → sand ocre
+       muted (terciario)                     → muted arena                   */
+  --color-amber: #BF5A1E;          /* accion primaria · 3.87:1 sobre base   */
+  --color-amber-deep: #8F3E12;     /* pressed / sombra del ambar            */
+  --color-amber-text: #A34B17;     /* 5.08:1 · ambar para TEXTO PEQUENO     */
+  --color-amber-hover: #A94A15;    /* hover · en claro se OSCURECE          */
+  /* Fondo de BOTON SOLIDO con texto encima — no es lo mismo que --color-amber
+     (ese vale para iconos/bordes/gradientes, que solo piden 3:1). .btn-amber
+     es texto de 12px/600 sobre relleno: exige 4.5:1, y #BF5A1E + texto
+     inverso solo daba 4.18:1. Reutiliza los tonos que ya existian
+     (amber-hover/amber-deep) para la escalera reposo→hover, un paso mas
+     oscuro; en tactical ambas valen EXACTAMENTE lo mismo que --color-amber/
+     --color-amber-hover de siempre, cero cambio visual. */
+  --color-amber-solid: #A94A15;       /* 5.34:1 con texto inverso */
+  --color-amber-solid-hover: #8F3E12; /* 6.86:1 con texto inverso */
+  --color-sand: #A67B38;           /* secundario, datos · 3.30:1            */
+  /* Mismo problema que amber-solid: #A67B38 no aguanta texto encima (ni
+     inverso 3.57:1 ni primary 4.03:1 llegan a 4.5). -21% de brillo -> 5.30:1
+     con texto inverso. En tactical el sand YA vale con inverso (8.32:1,
+     porque alli el inverso es OSCURO): no hace falta oscurecerlo, se deja
+     igual y por tanto sand-solid = sand, cero cambio visual. */
+  --color-sand-solid: #83612C;     /* 5.30:1 con texto inverso */
+  --color-lime: #5F6B33;           /* rol "lima" = moss en desert · 5.00:1  */
+  --color-lime-hover: #4E5829;     /* hover · en claro se OSCURECE          */
 
-  --font-heading: "Anton", "Impact", "Arial Black", sans-serif;
-  --font-body: "Inter", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", "Courier New", monospace;
-}
+  /* ── Estructura ──────────────────────────────────────────────────────── */
+  --color-slate: #D8CDB8;          /* bordes, separadores, rejilla          */
+  --color-slate-soft: #E6DDCA;     /* hairlines interiores (mas sutiles)    */
+  --color-slate-strong: #BFB098;   /* borde marcado, rejilla, contornos     */
+  --color-muted: #8A7F6B;          /* arena apagada · decorativo            */
 
-/* ━━━ Base ━━━ */
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
-}
+  /* ── Texto ───────────────────────────────────────────────────────────── */
+  --color-text-primary: #2A241C;   /* 13.3:1 · titulares y cuerpo           */
+  --color-text-secondary: #554C3E; /*  7.3:1 · parrafos secundarios         */
+  --color-text-tertiary: #6B6152;  /*  5.26:1 base · 4.59:1 sobre sunken    */
+  --color-text-inverse: #FBF7EF;   /* texto sobre ambar / moss              */
 
-body {
-  font-family: var(--font-body);
-  background-color: var(--color-bg-sand);
-  color: var(--color-text-primary);
-  overflow-x: hidden;
-}
+  /* ── Tipografia ──────────────────────────────────────────────────────────
+     Las tres familias llegan de next/font (layout.tsx) en variables
+     intermedias (--font-chakra / --font-inter / --font-jetbrains) y se
+     exponen aqui con nombre semantico. Consumir siempre
+     var(--font-heading | --font-body | --font-mono) o las utilidades
+     font-heading / font-body / font-mono.                                  */
+  --font-heading: var(--font-chakra), "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-::selection {
-  background-color: var(--color-rust);
-  color: var(--color-text-light);
-}
+  /* ── Radios: el sistema es angular. Solo sobrevive el pill (radius-full)
+        para puntos de estado y avatares.                                    */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+  --radius-full: 9999px;
 
-/* ━━━ Custom Scrollbar ━━━ */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--color-bg-sand);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
-}
+  /* ── Sombras ─────────────────────────────────────────────────────────────
+     La GEOMETRIA es identica en los dos temas; lo que cambia es el COLOR, y
+     por eso el color sale a su propia variable (--shadow-cast, --glow-*-…).
 
-/* ━━━ Typography Utilities ━━━ */
-.font-heading {
-  font-family: var(--font-heading);
-}
+     Importante: el color se referencia como var() SIN anidar parentesis.
+     Tailwind reescribe el color de las sombras del tema para poder soportar
+     shadow-<color>; con `rgb(var(--x) / var(--y))` esa reescritura puede
+     partir el valor por el parentesis interior. Con `var(--x)` no. No lo
+     conviertas a rgb(...) inline.                                          */
+  --shadow-tactical: 0 18px 44px -26px var(--shadow-cast);
+  --shadow-tactical-lg: 0 32px 70px -30px var(--shadow-cast-lg);
+  --shadow-amber-glow: 0 0 0 1px var(--glow-amber-ring), 0 14px 38px -20px var(--glow-amber-cast);
+  --shadow-lime-glow: 0 0 0 1px var(--glow-lime-ring), 0 14px 38px -20px var(--glow-lime-cast);
 
-.font-body {
-  font-family: var(--font-body);
-}
-
-.font-mono {
-  font-family: var(--font-mono);
-}
-
-.text-gradient-rust {
-  background: linear-gradient(135deg, var(--color-rust), #8B3A1F);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.text-gradient-moss {
-  background: linear-gradient(135deg, var(--color-moss), #4A5039);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ━━━ Background Utilities ━━━ */
-.bg-gradient-sand-rust {
-  background: linear-gradient(135deg, var(--color-bg-sand), var(--color-rust));
-}
-
-.bg-gradient-dark {
-  background: linear-gradient(180deg, var(--color-bg-dark), #1A1714);
-}
-
-.bg-gradient-dark-fade {
-  background: linear-gradient(180deg, var(--color-bg-sand), var(--color-bg-dark));
+  /* ── Easing compartido ───────────────────────────────────────────────── */
+  --ease-tactical: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-snap: cubic-bezier(0.3, 0, 0.1, 1);
 }
 
-/* Glass card effect */
-.glass-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--color-border);
+
+/* ═══ 02 · TEMA DESERT ═════════════════════════════════════════════════════
+   Primario y por defecto. El selector va agrupado a proposito:
+
+     :root                        → red de seguridad. Si el script
+                                    anti-parpadeo no ha corrido todavia o
+                                    falla, la pagina ya es desert.
+     :root[data-theme="desert"]   → (0,2,0). Gana explicitamente al bloque
+                                    tactical al volver al claro.
+
+   En CSS la especificidad de una lista de selectores se evalua por el
+   selector que casa, asi que este bloque vale (0,1,0) como fallback y
+   (0,2,0) cuando el atributo esta puesto: un solo bloque, las dos funciones.
+
+   Los --color-* se repiten aqui aunque ya esten en @theme: hace el tema
+   legible de un vistazo y lo protege de cualquier regla futura que se cuele
+   con especificidad de atributo.                                           */
+
+:root,
+:root[data-theme="desert"] {
+  color-scheme: light;
+
+  /* ── Superficies ─────────────────────────────────────────────────────── */
+  --color-bg-base: #F4EEE2;
+  --color-bg-surface: #FBF7EF;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-sunken: #E8DFCE;
+
+  /* ── Acentos ─────────────────────────────────────────────────────────── */
+  --color-amber: #BF5A1E;
+  --color-amber-deep: #8F3E12;
+  --color-amber-text: #A34B17;
+  /* Los hover del tema claro van hacia ABAJO, no hacia arriba: en oscuro
+     "destacar" es aclarar (#FF6B00 → #FF8524) y en claro es oscurecer. Si
+     se aclaran, el texto crema del boton cae a 3.25:1. Progresion:
+     reposo #BF5A1E → hover #A94A15 (5.34:1) → pressed/deep #8F3E12.        */
+  --color-amber-hover: #A94A15;
+  /* Fondo de boton solido (.btn-amber): #BF5A1E + texto inverso solo daba
+     4.18:1 a 12px/600. Reutiliza los mismos tonos un paso mas oscuro. */
+  --color-amber-solid: #A94A15;       /* 5.34:1 con texto inverso */
+  --color-amber-solid-hover: #8F3E12; /* 6.86:1 con texto inverso */
+  --color-sand-solid: #83612C;        /* 5.30:1 con texto inverso */
+  --color-sand: #A67B38;
+  --color-lime: #5F6B33;
+  --color-lime-hover: #4E5829;     /* moss oscurecido · 7.14:1 con el texto */
+
+  /* ── Estructura ──────────────────────────────────────────────────────── */
+  --color-slate: #D8CDB8;
+  --color-slate-soft: #E6DDCA;
+  --color-slate-strong: #BFB098;
+  --color-muted: #8A7F6B;
+
+  /* ── Texto ───────────────────────────────────────────────────────────── */
+  --color-text-primary: #2A241C;
+  --color-text-secondary: #554C3E;
+  --color-text-tertiary: #6B6152;  /* -4%: 4.33:1 sobre sunken no llegaba a 4.5 */
+  --color-text-inverse: #FBF7EF;
+
+  /* ── Canales RGB · separados por ESPACIO ─────────────────────────────────
+     Sintaxis CSS moderna, para componer alpha: rgb(var(--amber-rgb) / 0.18)
+     Si cambias un --color-* de arriba, cambia aqui su triplete o los fondos
+     translucidos saldran del tema equivocado.                              */
+  --amber-rgb: 191 90 30;
+  --amber-text-rgb: 163 75 23;
+  --sand-rgb: 166 123 56;
+  --lime-rgb: 95 107 51;
+  --slate-rgb: 216 205 184;
+  --slate-strong-rgb: 191 176 152;
+  --muted-rgb: 138 127 107;
+  --base-rgb: 244 238 226;
+  --surface-rgb: 251 247 239;
+  --elevated-rgb: 255 255 255;
+  --sunken-rgb: 232 223 206;
+  --text-rgb: 42 36 28;
+
+  /* ── Tiers de patrocinio ─────────────────────────────────────────────────
+     Antes eran hex fijos en datos (src/lib/sponsors.ts · TIER_COLORS) y no
+     podian cambiar de tema. Consumir var(--tier-…) desde CSS, o leerlos con
+     getComputedStyle si hay que pintarlos en SVG/canvas.
+     Roles: principal = senal (lima/moss) · oro = ambar · plata = sand ·
+            bronce = muted.                                                 */
+  --tier-principal: #5F6B33;
+  --tier-oro: #BF5A1E;
+  --tier-plata: #A67B38;
+  --tier-bronce: #8A7F6B;
+
+  /* Triplete por ESPACIO, para los rellenos con alpha de las zonas del
+     coche:  fill: rgb(var(--tier-oro-rgb) / 0.34)                          */
+  --tier-principal-rgb: 95 107 51;
+  --tier-oro-rgb: 191 90 30;
+  --tier-plata-rgb: 166 123 56;
+  --tier-bronce-rgb: 138 127 107;
+
+  /* ── Curvas de nivel (canvas del cursor) ─────────────────────────────────
+     Antes eran constantes JS en CursorTopoEffect.tsx. En desert la linea es
+     OSCURA sobre crema: se invierte respecto al oscuro, asi que el canvas
+     debe poder ajustar alpha sin tocar el color.
+       --topo-line  linea en reposo
+       --topo-bump  realce bajo el cursor
+       --topo-peak  pico bajo un boton                                      */
+  --topo-line: #B9A98C;
+  --topo-bump: #8A7B5E;
+  --topo-peak: #BF5A1E;
+
+  /* Triplete por COMA — el canvas compone con `rgba(${rgb},${alpha})`.
+     El formato es distinto del de arriba A PROPOSITO: asi vale tal cual en
+     JS (template string) y en CSS: rgba(var(--topo-line-rgb), 0.3)         */
+  --topo-line-rgb: 185, 169, 140;
+  --topo-bump-rgb: 138, 123, 94;
+  --topo-peak-rgb: 191, 90, 30;
+
+  /* ── Color de sombras y glows ────────────────────────────────────────────
+     En claro la sombra es CALIDA (marron, no negro) y mucho mas suave: un
+     negro casi opaco sobre crema ensucia el papel.                         */
+  --shadow-cast: rgb(74 58 38 / 0.22);
+  --shadow-cast-lg: rgb(74 58 38 / 0.30);
+  --glow-amber-ring: rgb(191 90 30 / 0.32);
+  --glow-amber-cast: rgb(191 90 30 / 0.40);
+  --glow-lime-ring: rgb(95 107 51 / 0.32);
+  --glow-lime-cast: rgb(95 107 51 / 0.36);
+
+  /* ── Dosis de las capas decorativas ──────────────────────────────────────
+     Mismas reglas, distinta dosis: una textura pensada para restar luz
+     sobre negro tiene que sumar grano sobre crema.                         */
+  --dust-blend: multiply;          /* overlay en oscuro, multiply en claro  */
+  --dust-opacity: 0.05;
+  --dust-opacity-strong: 0.09;
+  --dust-opacity-soft: 0.028;
+
+  --scanline-alpha: 0.05;          /* lineas OSCURAS sobre crema            */
+  --sweep-alpha-soft: 0.07;
+  --sweep-alpha-peak: 0.12;
+
+  --side-label-alpha: 0.06;        /* rotulo fantasma de fondo              */
+
+  --grid-rgb: var(--slate-strong-rgb); /* el slate claro no se ve: usa strong */
+  --grid-alpha: 0.4;
+  --grid-alpha-fine: 0.28;
+  --grid-alpha-lg: 0.52;
+
+  --scrollbar-thumb: var(--color-slate-strong);
+  --outline-stroke: var(--color-slate-strong); /* titular hueco .text-outline */
 }
 
-/* Grain / Noise texture overlay */
-.noise-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.04;
-  pointer-events: none;
-  z-index: 1;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 128px 128px;
+
+/* ═══ 03 · TEMA TACTICAL ═══════════════════════════════════════════════════
+   El oscuro de siempre. Estos valores ya estan validados por el cliente:
+   NO se tocan. Cualquier cambio aqui es una regresion, no una mejora.
+   Solo se redefine lo que cambia respecto a desert; geometria, tipografia,
+   radios y easings son comunes y viven en @theme.                          */
+
+:root[data-theme="tactical"] {
+  color-scheme: dark;
+
+  /* ── Superficies ─────────────────────────────────────────────────────── */
+  --color-bg-base: #0F1012;        /* fondo de pagina                       */
+  --color-bg-surface: #16181C;     /* tarjeta / panel elevado               */
+  --color-bg-elevated: #1E2127;    /* hover, cabeceras, popovers            */
+  --color-bg-sunken: #0A0B0D;      /* pozos, footer, zonas de contraste     */
+
+  /* ── Acentos ─────────────────────────────────────────────────────────── */
+  --color-amber: #FF6B00;          /* Dakar Amber · accion primaria         */
+  --color-amber-deep: #C24F00;     /* pressed / sombra del ambar            */
+  --color-amber-text: #FF6B00;     /* en oscuro el ambar ya llega para texto */
+  --color-amber-hover: #FF8524;    /* era un hex fijo en .btn-amber:hover   */
+  /* Identicos a --color-amber/-hover: aqui el ambar YA cumplia 4.5:1 con
+     texto inverso (6.67:1). Existen solo para que .btn-amber pueda usar el
+     mismo nombre de token en los dos temas sin cambiar tactical un pixel. */
+  --color-amber-solid: #FF6B00;
+  --color-amber-solid-hover: #FF8524;
+  /* Identico a --color-sand: aqui ya vale con texto inverso (8.32:1). */
+  --color-sand-solid: #D4A359;
+  --color-sand: #D4A359;           /* Sand Gold · secundario, datos         */
+  --color-lime: #CCFF00;           /* High-Viz Lime · estado / alerta       */
+  --color-lime-hover: #DBFF3B;     /* era un hex fijo en .btn-lime:hover    */
+
+  /* ── Estructura ──────────────────────────────────────────────────────── */
+  --color-slate: #2A2E35;          /* bordes, separadores, rejilla          */
+  --color-slate-soft: #202329;     /* hairlines interiores                  */
+  --color-slate-strong: #3A3F47;   /* token nuevo · no lo usaba nadie antes */
+  --color-muted: #8C8275;          /* arena apagada · texto terciario       */
+
+  /* ── Texto ───────────────────────────────────────────────────────────── */
+  --color-text-primary: #F2EFE9;   /* blanco calido: titulares y cuerpo     */
+  --color-text-secondary: #B4AFA6; /* parrafos secundarios                  */
+  --color-text-tertiary: #8C8275;  /* metadatos, captions                   */
+  --color-text-inverse: #0F1012;   /* texto sobre ambar / lima              */
+
+  /* ── Canales RGB · separados por ESPACIO ─────────────────────────────── */
+  --amber-rgb: 255 107 0;
+  --amber-text-rgb: 255 107 0;
+  --sand-rgb: 212 163 89;
+  --lime-rgb: 204 255 0;
+  --slate-rgb: 42 46 53;
+  --slate-strong-rgb: 58 63 71;
+  --muted-rgb: 140 130 117;
+  --base-rgb: 15 16 18;
+  --surface-rgb: 22 24 28;
+  --elevated-rgb: 30 33 39;
+  --sunken-rgb: 10 11 13;
+  --text-rgb: 242 239 233;
+
+  /* ── Tiers de patrocinio ─────────────────────────────────────────────── */
+  --tier-principal: #CCFF00;
+  --tier-oro: #FF6B00;
+  --tier-plata: #D4A359;
+  --tier-bronce: #8C8275;
+
+  --tier-principal-rgb: 204 255 0;
+  --tier-oro-rgb: 255 107 0;
+  --tier-plata-rgb: 212 163 89;
+  --tier-bronce-rgb: 140 130 117;
+
+  /* ── Curvas de nivel · linea CLARA sobre fondo oscuro ────────────────── */
+  --topo-line: #8C8275;
+  --topo-bump: #D8CEBE;
+  --topo-peak: #FF6B00;
+
+  /* Triplete por COMA · los mismos valores que el canvas traia fijos       */
+  --topo-line-rgb: 140, 130, 117;
+  --topo-bump-rgb: 216, 206, 190;
+  --topo-peak-rgb: 255, 107, 0;
+
+  /* ── Color de sombras y glows · negro casi opaco, como estaba ────────── */
+  --shadow-cast: rgb(0 0 0 / 0.95);
+  --shadow-cast-lg: rgb(0 0 0 / 1);
+  --glow-amber-ring: rgb(255 107 0 / 0.35);
+  --glow-amber-cast: rgb(255 107 0 / 0.55);
+  --glow-lime-ring: rgb(204 255 0 / 0.35);
+  --glow-lime-cast: rgb(204 255 0 / 0.45);
+
+  /* ── Dosis de las capas decorativas · valores originales ─────────────── */
+  --dust-blend: overlay;
+  --dust-opacity: 0.055;
+  --dust-opacity-strong: 0.11;
+  --dust-opacity-soft: 0.03;
+
+  --scanline-alpha: 0.035;
+  --sweep-alpha-soft: 0.08;
+  --sweep-alpha-peak: 0.14;
+
+  --side-label-alpha: 0.045;
+
+  --grid-rgb: var(--slate-rgb);
+  --grid-alpha: 0.55;
+  --grid-alpha-fine: 0.38;
+  --grid-alpha-lg: 0.7;
+
+  --scrollbar-thumb: var(--color-slate);
+  --outline-stroke: var(--color-slate);
 }
 
-/* ━━━ Scroll-Triggered Animations ━━━ */
 
-/* Base state: hidden */
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+/* ═══ 04 · TOKENS DE RUNTIME NO TEMATICOS ══════════════════════════════════
+   Geometria y puentes. Fuera de @theme a proposito: no deben generar
+   utilidades de color. Nada de aqui cambia entre temas — lo que si cambia
+   son los tokens de color que estos componen.                              */
+
+:root {
+  /* ── Chaflan ─────────────────────────────────────────────────────────────
+     Un unico path parametrizado por --chamfer-size. Las custom properties
+     se sustituyen en el elemento que las usa, asi que basta redefinir
+     --chamfer-size para reescalar el corte.                                */
+  --chamfer-size: 12px;
+  --chamfer-path: polygon(
+    var(--chamfer-size) 0%,
+    100% 0%,
+    100% calc(100% - var(--chamfer-size)),
+    calc(100% - var(--chamfer-size)) 100%,
+    0% 100%,
+    0% var(--chamfer-size)
+  );
+  --chamfer-path-quad: polygon(
+    var(--chamfer-size) 0%,
+    calc(100% - var(--chamfer-size)) 0%,
+    100% var(--chamfer-size),
+    100% calc(100% - var(--chamfer-size)),
+    calc(100% - var(--chamfer-size)) 100%,
+    var(--chamfer-size) 100%,
+    0% calc(100% - var(--chamfer-size)),
+    0% var(--chamfer-size)
+  );
+
+  /* ── Line-art del coche ──────────────────────────────────────────────────
+     public/car/*.svg son contornos con stroke:currentColor y
+     stroke-width: var(--car-stroke). Ajustable por vista.                  */
+  --car-stroke: 1.75px;
+  --car-stroke-bold: 2.75px;
+  --car-stroke-hair: 1px;
+
+  /* ── Marcas HUD ──────────────────────────────────────────────────────── */
+  --hud-color: var(--color-amber);
+  --hud-length: 14px;
+  --hud-weight: 1.5px;
+  --hud-inset: 0px;
+
+  /* ── Rejilla tecnica ─────────────────────────────────────────────────────
+     Color y alpha son tematicos (seccion 02/03); aqui solo el tamano y la
+     composicion.                                                           */
+  --grid-size: 48px;
+  --grid-color: rgb(var(--grid-rgb) / var(--grid-alpha));
+
+  /* ── Transicion de cambio de tema ────────────────────────────────────────
+     La consume la seccion 05. Se centraliza aqui para poder afinarla en un
+     solo sitio.                                                            */
+  --theme-transition-duration: 200ms;
+
+  /* ── PUENTE LEGACY · DEPRECADO ───────────────────────────────────────────
+     Modulos aun sin migrar leen estos nombres en estilos inline. Se
+     remapean a tokens del sistema, asi que siguen el tema activo solos.
+     Borrar el bloque cuando todos los modulos consuman los tokens nuevos.
+     Ojo: --color-moss apunta a sand por historia (el "moss" del tema arena
+     viejo), NO al rol de senal. El rol de senal es --color-lime.           */
+  --color-rust: var(--color-amber);
+  --color-moss: var(--color-sand);
+  --color-bg-sand: var(--color-bg-base);
+  --color-bg-dark: var(--color-bg-surface);
+  --color-text-light: var(--color-text-primary);
+  --color-border: var(--color-slate);
 }
 
-.animate-on-scroll.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+
+/* ═══ 05 · BASE ════════════════════════════════════════════════════════════
+   Todo en @layer base: cualquier utilidad de Tailwind debe poder ganarle.
+   (Sin capa, `* { border-color }` derrotaria a border-amber y compania.)   */
+
+@layer base {
+
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-slate);
+  }
+
+  /* ── Transicion al cambiar de tema ───────────────────────────────────────
+     Va DENTRO de @layer base por dos razones:
+       · sin capa ganaria a todas las utilidades y componentes (las reglas
+         fuera de capa vencen a las de cualquier capa), y se cargaria las
+         transiciones propias de .btn-tactical, .animate-on-scroll y de las
+         utilidades transition-* de Tailwind;
+       · dentro de base, cualquier regla con transicion propia la sustituye.
+     Solo propiedades de COLOR: transform y opacity quedan fuera a proposito
+     para no frenar animaciones ni provocar saltos de layout.               */
+  @media (prefers-reduced-motion: no-preference) {
+    *,
+    *::before,
+    *::after {
+      transition-property: background-color, border-color, color, fill, stroke;
+      transition-duration: var(--theme-transition-duration);
+      transition-timing-function: var(--ease-snap);
+    }
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    background-color: var(--color-bg-base);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-bg-base);
+    color: var(--color-text-primary);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background-color: var(--color-amber);
+    color: var(--color-text-inverse);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 2px;
+  }
+
+  /* Scrollbar tactica. El pulgar usa su propio token: en claro el slate de
+     borde no se distingue del canal, asi que ahi sube a slate-strong.      */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-sunken);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border: 2px solid var(--color-bg-sunken);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-amber);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--color-bg-sunken);
+  }
+
+  /* Autofill: el navegador no debe reinyectar su propio fondo */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: var(--color-text-primary);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-bg-elevated) inset;
+    caret-color: var(--color-text-primary);
+  }
+
+  img,
+  svg,
+  video {
+    max-width: 100%;
+  }
 }
 
-/* Variants */
-.animate-on-scroll.slide-left {
-  transform: translateX(-40px);
-}
-.animate-on-scroll.slide-left.is-visible {
-  transform: translateX(0);
+
+/* ═══ 06 · KEYFRAMES ═══════════════════════════════════════════════════════ */
+
+/* Trazado progresivo de un path SVG. Ajusta --draw-len al largo real. */
+@keyframes draw-in {
+  0%   { stroke-dashoffset: var(--draw-len, 2400); opacity: 0; }
+  12%  { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
 }
 
-.animate-on-scroll.slide-right {
-  transform: translateX(40px);
-}
-.animate-on-scroll.slide-right.is-visible {
-  transform: translateX(0);
-}
-
-.animate-on-scroll.scale-in {
-  transform: scale(0.9);
-}
-.animate-on-scroll.scale-in.is-visible {
-  transform: scale(1);
-}
-
-.animate-on-scroll.blur-in {
-  filter: blur(8px);
-  transform: translateY(20px);
-}
-.animate-on-scroll.blur-in.is-visible {
-  filter: blur(0);
-  transform: translateY(0);
+/* Latido luminoso para acentos, marcadores y estados vivos.
+   --glow-rgb por defecto = el ambar del tema activo (no un hex fijo). */
+/* SÓLO `opacity`.
+   Antes esto animaba también `filter: drop-shadow()`, y `filter` NO la puede
+   mover el compositor: el propio Firefox lo declara en el perfil de Ramón
+   ("glow-pulse · props=filter, opacity · compositor=false, true"). Eso obliga
+   a repintar y a reconstruir la lista de visualización en cada fotograma, por
+   cada elemento, para siempre — y hay seis `.status-dot` vivos a la vez.
+   `opacity` sí va por GPU, así que el latido sale gratis. El halo ya no se
+   anima: es un `box-shadow` fijo en `.status-dot`, y late con él porque la
+   opacidad del elemento arrastra a su sombra. */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
 }
 
-/* Stagger children */
-.stagger-children > .animate-on-scroll:nth-child(1) { transition-delay: 0.05s; }
-.stagger-children > .animate-on-scroll:nth-child(2) { transition-delay: 0.1s; }
-.stagger-children > .animate-on-scroll:nth-child(3) { transition-delay: 0.15s; }
-.stagger-children > .animate-on-scroll:nth-child(4) { transition-delay: 0.2s; }
-.stagger-children > .animate-on-scroll:nth-child(5) { transition-delay: 0.25s; }
-.stagger-children > .animate-on-scroll:nth-child(6) { transition-delay: 0.3s; }
-.stagger-children > .animate-on-scroll:nth-child(7) { transition-delay: 0.35s; }
-.stagger-children > .animate-on-scroll:nth-child(8) { transition-delay: 0.4s; }
+/* Barrido vertical tipo radar sobre superficies-pantalla. */
+@keyframes scan {
+  0%   { transform: translate3d(0, -110%, 0); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translate3d(0, 110%, 0); opacity: 0; }
+}
 
-/* ━━━ Keyframe Animations ━━━ */
+/* Deriva lenta de la textura de polvo/arena. */
+@keyframes dust-drift {
+  0%   { background-position: 0 0, 0 0; }
+  100% { background-position: 300px -200px, -220px 160px; }
+}
+
+/* Entrada con glitch sutil: cuatro saltos y estabiliza. */
+@keyframes glitch-in {
+  0%   { opacity: 0; transform: translate3d(-8px, 0, 0) skewX(9deg);  clip-path: inset(0 0 68% 0); }
+  20%  { opacity: 1; transform: translate3d(6px, 0, 0)  skewX(-6deg); clip-path: inset(44% 0 26% 0); }
+  40%  { opacity: 1; transform: translate3d(-4px, 0, 0) skewX(4deg);  clip-path: inset(72% 0 6% 0); }
+  60%  { opacity: 1; transform: translate3d(3px, 0, 0)  skewX(-2deg); clip-path: inset(10% 0 56% 0); }
+  80%  { opacity: 1; transform: translate3d(-1px, 0, 0) skewX(1deg);  clip-path: inset(0 0 0 0); }
+  100% { opacity: 1; transform: none;                                 clip-path: inset(0 0 0 0); }
+}
+
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translate3d(0, 28px, 0); }
+  to   { opacity: 1; transform: none; }
 }
 
 @keyframes fade-in {
@@ -184,139 +624,656 @@ body {
 }
 
 @keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-40px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translate3d(-40px, 0, 0); }
+  to   { opacity: 1; transform: none; }
 }
 
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(40px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translate3d(40px, 0, 0); }
+  to   { opacity: 1; transform: none; }
 }
 
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.9); }
+  from { opacity: 0; transform: scale(0.94); }
   to   { opacity: 1; transform: scale(1); }
 }
 
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(8px); }
-}
-
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.6; }
-  50%      { opacity: 1; }
-}
-
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50%      { transform: translateY(-10px); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -10px, 0); }
 }
 
-@keyframes topo-draw {
-  from { stroke-dashoffset: 1000; opacity: 0; }
-  to   { stroke-dashoffset: 0; opacity: 1; }
+@keyframes flicker {
+  0%, 100%  { opacity: 1; }
+  41%, 43%  { opacity: 0.35; }
+  45%       { opacity: 1; }
+  58%, 60%  { opacity: 0.55; }
+  62%       { opacity: 1; }
 }
 
-.animate-topo-draw {
-  animation: topo-draw 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+@keyframes blink {
+  0%, 45%   { opacity: 1; }
+  55%, 100% { opacity: 0.15; }
 }
 
-@keyframes topo-drift {
-  0%   { transform: translateY(0) translateX(0); }
-  100% { transform: translateY(-20px) translateX(10px); }
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
 }
 
-@keyframes heat-haze {
-  0%, 100% { filter: blur(0.5px) contrast(1.1); transform: scale(1.01); }
-  50% { filter: blur(1.5px) contrast(1); transform: scale(1); }
+
+/* ═══ 07 · UTILIDADES ══════════════════════════════════════════════════════ */
+
+@layer utilities {
+
+  /* ── Chaflan · bordes achaflanados a 45 grados via clip-path ─────────────
+     .chamfer / -sm / -lg  corta la diagonal sup-izq + inf-der.
+     .chamfer-quad*        corta las cuatro esquinas.
+     Ojo: clip-path recorta tambien el borde CSS; para un marco de 1px usa
+     .chamfer-outline (el wrapper pinta el borde, el hijo la superficie).   */
+  .chamfer     { --chamfer-size: 12px; clip-path: var(--chamfer-path); }
+  .chamfer-sm  { --chamfer-size: 6px;  clip-path: var(--chamfer-path); }
+  .chamfer-lg  { --chamfer-size: 24px; clip-path: var(--chamfer-path); }
+
+  .chamfer-quad    { --chamfer-size: 12px; clip-path: var(--chamfer-path-quad); }
+  .chamfer-quad-sm { --chamfer-size: 6px;  clip-path: var(--chamfer-path-quad); }
+  .chamfer-quad-lg { --chamfer-size: 24px; clip-path: var(--chamfer-path-quad); }
+
+  /* Marco achaflanado con hairline real:
+     <div class="chamfer-outline"><div> …contenido… </div></div>            */
+  .chamfer-outline {
+    --chamfer-size: 12px;
+    display: block;
+    padding: 1px;
+    background: var(--color-slate);
+    clip-path: var(--chamfer-path);
+  }
+  .chamfer-outline > * {
+    --chamfer-size: 11px;
+    display: block;
+    background: var(--color-bg-surface);
+    clip-path: var(--chamfer-path);
+  }
+  .chamfer-outline-amber { background: var(--color-amber); }
+  .chamfer-outline-lime  { background: var(--color-lime); }
+
+  /* ── Rejilla tecnica de fondo (blueprint) ────────────────────────────────
+     El color sale de --grid-rgb (tematico) y cada variante pone su alpha,
+     tambien tematico: en claro la rejilla necesita menos opacidad y un tono
+     mas marcado que el borde normal para leerse igual de tecnica.          */
+  .grid-blueprint {
+    --grid-size: 48px;
+    --grid-color: rgb(var(--grid-rgb) / var(--grid-alpha));
+    background-image:
+      linear-gradient(to right,  var(--grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    background-position: center center;
+  }
+  .grid-blueprint-fine {
+    --grid-size: 16px;
+    --grid-color: rgb(var(--grid-rgb) / var(--grid-alpha-fine));
+    background-image:
+      linear-gradient(to right,  var(--grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    background-position: center center;
+  }
+  .grid-blueprint-lg {
+    --grid-size: 96px;
+    --grid-color: rgb(var(--grid-rgb) / var(--grid-alpha-lg));
+    background-image:
+      linear-gradient(to right,  var(--grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    background-position: center center;
+  }
+  /* Desvanece la rejilla hacia los bordes para que no corte en seco.
+     El #000 de estas mascaras NO es color: es el canal alpha de la mask. */
+  .grid-fade {
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 35%, transparent 100%);
+  }
+  .grid-fade-y {
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+  }
+
+  /* ── Color: texto ─────────────────────────────────────────────────────── */
+  .text-amber { color: var(--color-amber); }
+  .text-sand  { color: var(--color-sand); }
+  .text-lime  { color: var(--color-lime); }
+  .text-muted { color: var(--color-muted); }
+
+  /* Ambar legible a tamano pequeno (5.08:1 en desert). En tactical vale
+     exactamente lo mismo que .text-amber, asi que es seguro usarla siempre
+     que el texto sea menor de 18px o no vaya en negrita.                   */
+  .text-amber-text { color: var(--color-amber-text); }
+
+  /* ── Color: borde ─────────────────────────────────────────────────────── */
+  .border-amber { border-color: var(--color-amber); }
+  .border-sand  { border-color: var(--color-sand); }
+  .border-lime  { border-color: var(--color-lime); }
+  .border-slate { border-color: var(--color-slate); }
+  .border-slate-strong { border-color: var(--color-slate-strong); }
+
+  /* ── Tipografia ───────────────────────────────────────────────────────── */
+  .font-heading { font-family: var(--font-heading); }
+  .font-body    { font-family: var(--font-body); }
+  .font-mono    { font-family: var(--font-mono); }
+
+  .text-gradient-amber {
+    background-image: linear-gradient(135deg, var(--color-amber) 0%, var(--color-sand) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .text-gradient-steel {
+    background-image: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-muted) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  /* Titular hueco: solo contorno. Usa --outline-stroke porque en claro el
+     borde normal desaparece contra la crema.                              */
+  .text-outline {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--outline-stroke);
+  }
+  .text-outline-amber {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--color-amber);
+  }
+
+  /* ── Line-art del coche ───────────────────────────────────────────────── */
+  .car-line {
+    color: var(--color-text-secondary);
+    --car-stroke: 1.75px;
+  }
+  .car-line-bold  { --car-stroke: var(--car-stroke-bold); }
+  .car-line-hair  { --car-stroke: var(--car-stroke-hair); }
+  .car-line-amber { color: var(--color-amber); }
+
+  /* ── Animacion ────────────────────────────────────────────────────────── */
+
+  /* Trazo SVG progresivo. Sobreescribe --draw-len con la longitud real del
+     path (getTotalLength) y --draw-duration / --draw-delay si hace falta.  */
+  .animate-draw-in {
+    stroke-dasharray: var(--draw-len, 2400);
+    stroke-dashoffset: var(--draw-len, 2400);
+    animation: draw-in var(--draw-duration, 2.4s) var(--ease-tactical) var(--draw-delay, 0s) forwards;
+  }
+
+  .animate-glow      { animation: glow-pulse 2.6s ease-in-out infinite; }
+  .animate-glow-lime { animation: glow-pulse 2.6s ease-in-out infinite; --glow-rgb: var(--lime-rgb); }
+  .animate-glow-sand { animation: glow-pulse 2.6s ease-in-out infinite; --glow-rgb: var(--sand-rgb); }
+
+  .animate-scan      { animation: scan 4.5s linear infinite; }
+  .animate-dust      { animation: dust-drift 90s linear infinite alternate; }
+  .animate-glitch-in { animation: glitch-in 0.7s steps(1, end) both; }
+
+  .animate-fade-up     { animation: fade-up 0.8s var(--ease-tactical) both; }
+  .animate-fade-in     { animation: fade-in 0.6s ease both; }
+  .animate-slide-left  { animation: slide-in-left 0.8s var(--ease-tactical) both; }
+  .animate-slide-right { animation: slide-in-right 0.8s var(--ease-tactical) both; }
+  .animate-scale-in    { animation: scale-in 0.7s var(--ease-tactical) both; }
+  .animate-float       { animation: float 5s ease-in-out infinite; }
+  .animate-flicker     { animation: flicker 6s linear infinite; }
+  .animate-blink       { animation: blink 1.2s steps(1, end) infinite; }
+  .animate-marquee     { animation: marquee 32s linear infinite; }
+
+  /* Retardos de animacion (distintos de los delay-* de transicion). */
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+  .delay-500 { animation-delay: 0.5s; }
+  .delay-600 { animation-delay: 0.6s; }
+  .delay-700 { animation-delay: 0.7s; }
+  .delay-800 { animation-delay: 0.8s; }
 }
 
-/* ━━━ Animation Utilities ━━━ */
-.animate-fade-up      { animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.animate-fade-in      { animation: fade-in 0.6s ease forwards; }
-.animate-bounce-subtle { animation: bounce-subtle 2s ease-in-out infinite; }
-.animate-shimmer      { animation: shimmer 3s ease-in-out infinite; background-size: 200% 100%; }
-.animate-pulse-glow   { animation: pulse-glow 2s ease-in-out infinite; }
-.animate-float        { animation: float 4s ease-in-out infinite; }
 
-/* Delay utilities */
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
-.delay-600 { animation-delay: 0.6s; }
-.delay-700 { animation-delay: 0.7s; }
-.delay-800 { animation-delay: 0.8s; }
+/* ═══ 08 · COMPONENTES ═════════════════════════════════════════════════════
+   En la capa components a proposito: cualquier utilidad de Tailwind puesta
+   en el mismo elemento debe poder ganarle (position, background, color…).  */
 
-/* ━━━ Topographic Lines Background ━━━ */
-.topo-bg {
-  background-image: url("data:image/svg+xml,%3Csvg width='800' height='800' viewBox='0 0 800 800' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-100,500 C0,450 150,550 250,500 C350,450 500,600 650,550 C800,500 900,600 1000,550 M-100,450 C20,380 160,500 280,430 C400,360 490,520 660,450 C800,380 950,500 1050,450 M-50,380 C40,300 170,450 310,360 C460,270 520,440 680,350 C840,260 920,400 1080,310 M0,290 C60,200 200,380 350,280 C500,180 570,360 720,260 C870,160 950,320 1100,220 M-100,100 C 150,250 250,50 450,150 C 650,250 700,50 900,150 C 1050,200 1150,100 1300,150 M-50,600 C 100,650 200,550 400,650 C 600,750 700,600 900,700 C 1000,750 1100,650 1200,700' fill='none' stroke='%232A2522' stroke-opacity='0.06' stroke-width='1'/%3E%3Cpath d='M-100,530 C20,480 130,580 230,530 C330,480 480,630 630,580 C780,530 880,630 980,580 M-100,480 C40,410 140,530 260,460 C380,390 470,550 640,480 C780,410 930,530 1030,480 M-50,410 C60,330 150,480 290,390 C440,300 500,470 660,380 C820,290 900,430 1060,340 M0,320 C80,230 180,410 330,310 C480,210 550,390 700,290 C850,190 930,350 1080,250' fill='none' stroke='%232A2522' stroke-opacity='0.03' stroke-width='0.6'/%3E%3C/svg%3E");
-  background-size: 800px 800px;
-  animation: topo-pan 40s linear infinite alternate;
+@layer components {
+
+  /* ── .hud-frame · marco tipo HUD con marcas en las cuatro esquinas ───────
+     Ocho segmentos pintados con gradientes sobre un pseudo-elemento: sin
+     DOM extra y sin consumir el borde del contenedor. Color: --hud-color. */
+  .hud-frame {
+    position: relative;
+  }
+  .hud-frame::after {
+    content: "";
+    position: absolute;
+    inset: var(--hud-inset);
+    pointer-events: none;
+    z-index: 3;
+    background:
+      linear-gradient(var(--hud-color), var(--hud-color)) 0    0    / var(--hud-length) var(--hud-weight) no-repeat,
+      linear-gradient(var(--hud-color), var(--hud-color)) 0    0    / var(--hud-weight) var(--hud-length) no-repeat,
+      linear-gradient(var(--hud-color), var(--hud-color)) 100% 0    / var(--hud-length) var(--hud-weight) no-repeat,
+      linear-gradient(var(--hud-color), var(--hud-color)) 100% 0    / var(--hud-weight) var(--hud-length) no-repeat,
+      linear-gradient(var(--hud-color), var(--hud-color)) 0    100% / var(--hud-length) var(--hud-weight) no-repeat,
+      linear-gradient(var(--hud-color), var(--hud-color)) 0    100% / var(--hud-weight) var(--hud-length) no-repeat,
+      linear-gradient(var(--hud-color), var(--hud-color)) 100% 100% / var(--hud-length) var(--hud-weight) no-repeat,
+      linear-gradient(var(--hud-color), var(--hud-color)) 100% 100% / var(--hud-weight) var(--hud-length) no-repeat;
+  }
+  .hud-frame-sand  { --hud-color: var(--color-sand); }
+  .hud-frame-lime  { --hud-color: var(--color-lime); }
+  .hud-frame-slate { --hud-color: var(--color-slate); }
+  .hud-frame-lg    { --hud-length: 26px; --hud-weight: 2px; }
+  .hud-frame-inset { --hud-inset: 10px; }
+
+  /* ── .dust-overlay · textura sutil de polvo/arena ────────────────────────
+     Dos capas feTurbulence en data URI, opacidad muy baja, en deriva lenta.
+     El ruido es gris neutro: lo que lo integra en cada tema es la mezcla.
+     En oscuro va en `overlay` (resta luz); en claro en `multiply`, que deja
+     grano de papel en vez de una veladura sucia.                           */
+  .dust-overlay {
+    position: relative;
+    isolation: isolate;
+  }
+  .dust-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: var(--dust-opacity);
+    mix-blend-mode: var(--dust-blend);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23d)'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.28' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='420' height='420' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size: 260px 260px, 420px 420px;
+    background-repeat: repeat, repeat;
+    /* SIN animación. `background-position` no es una propiedad compuesta
+       (no es transform/opacity): cada fotograma del drift obligaba al
+       navegador a REPINTAR toda la superficie del elemento, para siempre,
+       estuviera el ratón quieto o no. Con 11 sitios usando `.dust-overlay`
+       —entre ellos el hero a pantalla completa y cada miniatura de
+       `<RallyImage>`— eso es repintado continuo simultáneo en varios
+       elementos grandes, sumado al lienzo topográfico (que también repinta
+       a pantalla completa 60 veces por segundo). El grano ya llevaba una
+       opacidad "muy baja" (ver el comentario de arriba); congelarlo no se
+       nota y quita ese coste entero. Si se echa en falta el movimiento, se
+       puede recuperar con `transform: translate3d()` sobre una capa
+       sobredimensionada — eso sí es barato — pero exige revisar que las
+       11 zonas que llevan `.dust-overlay` recortan (`overflow: hidden`) su
+       propio contenedor, y una de ellas (TimelineSection) hoy no lo hace.
+    */
+  }
+  .dust-overlay-strong { --dust-opacity: var(--dust-opacity-strong); }
+  .dust-overlay-soft   { --dust-opacity: var(--dust-opacity-soft); }
+
+  /* ── .scanline · lineas de barrido para superficies tipo pantalla ────────
+     Se pintan con el color de TEXTO del tema: claras sobre oscuro, oscuras
+     sobre crema. El alpha es tematico porque una linea oscura sobre crema
+     pesa mas que una clara sobre negro.                                    */
+  .scanline {
+    position: relative;
+    isolation: isolate;
+  }
+  .scanline::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgb(var(--text-rgb) / var(--scanline-alpha)) 0px,
+      rgb(var(--text-rgb) / var(--scanline-alpha)) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+  /* Anade el haz que recorre la superficie de arriba a abajo. */
+  .scanline-sweep::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 28%;
+    z-index: 2;
+    pointer-events: none;
+    background-image: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--amber-rgb) / var(--sweep-alpha-soft)) 45%,
+      rgb(var(--amber-rgb) / var(--sweep-alpha-peak)) 50%,
+      transparent
+    );
+    animation: scan 4.5s linear infinite;
+  }
+
+  /* ── .telemetry-label · la etiqueta mono de toda la UI ───────────────────
+     Mono, mayusculas, tracking amplio. Es el tic tipografico de la marca.
+     Color: text-tertiary, no muted. En tactical los dos valen #8C8275 (no
+     cambia un pixel); en desert text-tertiary da 4.95:1 y muted 3.41:1, y
+     esta etiqueta es texto pequeno que hay que poder leer.                 */
+  .telemetry-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+  }
+  .telemetry-label-amber { color: var(--color-amber-text); }
+  .telemetry-label-lime  { color: var(--color-lime); }
+  .telemetry-label-sand  { color: var(--color-sand); }
+  .telemetry-label-lg    { font-size: 0.8125rem; letter-spacing: 0.28em; }
+
+  /* Variante con guion delante:  ──── ETAPA 04 */
+  .telemetry-label-dash::before {
+    content: "";
+    display: inline-block;
+    width: 1.75rem;
+    height: 1px;
+    margin-right: 0.625rem;
+    vertical-align: middle;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  /* ── Micro-badging tecnico (GPS, grupo sanguineo, specs) ──────────────── */
+  .tech-badge {
+    --chamfer-size: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.28rem 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+    background: rgb(var(--surface-rgb) / 0.9);
+    box-shadow: inset 0 0 0 1px var(--color-slate);
+    clip-path: var(--chamfer-path-quad);
+  }
+  .tech-badge-amber {
+    color: var(--color-amber-text);
+    background: rgb(var(--amber-rgb) / 0.1);
+    box-shadow: inset 0 0 0 1px rgb(var(--amber-rgb) / 0.42);
+  }
+  .tech-badge-lime {
+    color: var(--color-lime);
+    background: rgb(var(--lime-rgb) / 0.08);
+    box-shadow: inset 0 0 0 1px rgb(var(--lime-rgb) / 0.4);
+  }
+
+  /* Coordenadas GPS y micro-metadatos */
+  .gps-label {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.18em;
+    color: var(--color-text-tertiary);
+  }
+
+  /* Waypoint / numeracion de etapa · texto pequeno → ambar de texto */
+  .waypoint-tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--color-amber-text);
+  }
+
+  /* Punto de estado vivo */
+  .status-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--color-lime);
+    /* Anillo + halo, los dos ESTÁTICOS: se pintan una vez y el compositor los
+       guarda. El latido lo pone la opacidad del propio punto, que arrastra a
+       sus sombras. Antes el halo salía de un `drop-shadow` animado, que es lo
+       que obligaba a repintar en cada fotograma. */
+    box-shadow:
+      0 0 0 3px rgb(var(--lime-rgb) / 0.16),
+      0 0 9px 1px rgb(var(--lime-rgb) / 0.55);
+    animation: glow-pulse 2.2s ease-in-out infinite;
+    --glow-rgb: var(--lime-rgb);
+  }
+
+  /* ── Superficies ──────────────────────────────────────────────────────── */
+  .panel {
+    --chamfer-size: 14px;
+    background: var(--color-bg-surface);
+    box-shadow: inset 0 0 0 1px var(--color-slate), var(--shadow-tactical);
+    clip-path: var(--chamfer-path);
+  }
+  .panel-sunken {
+    background: var(--color-bg-sunken);
+    box-shadow: inset 0 0 0 1px var(--color-slate-soft);
+  }
+  .glass-card {
+    background: rgb(var(--surface-rgb) / 0.72);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    box-shadow: inset 0 0 0 1px rgb(var(--slate-rgb) / 0.9);
+  }
+
+  /* Separador tecnico con marca ambar a la izquierda */
+  .divider-tech {
+    height: 1px;
+    border: 0;
+    background-image: linear-gradient(
+      to right,
+      var(--color-amber) 0,
+      var(--color-amber) 42px,
+      var(--color-slate) 42px,
+      var(--color-slate) 100%
+    );
+  }
+
+  /* Rotulo vertical gigante de fondo */
+  .side-label {
+    font-family: var(--font-heading);
+    font-size: clamp(3.5rem, 9vw, 7.5rem);
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: rgb(var(--text-rgb) / var(--side-label-alpha));
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  /* ── Botones ──────────────────────────────────────────────────────────── */
+  .btn-tactical {
+    --chamfer-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1;
+    cursor: pointer;
+    clip-path: var(--chamfer-path);
+    transition:
+      background-color 0.22s var(--ease-snap),
+      color 0.22s var(--ease-snap),
+      transform 0.22s var(--ease-snap);
+  }
+  .btn-tactical:active {
+    transform: translateY(1px);
+  }
+
+  .btn-amber {
+    background: var(--color-amber-solid);
+    color: var(--color-text-inverse);
+  }
+  .btn-amber:hover {
+    background: var(--color-amber-solid-hover);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--color-text-primary);
+    box-shadow: inset 0 0 0 1px var(--color-slate);
+  }
+  .btn-outline:hover {
+    background: var(--color-bg-elevated);
+    color: var(--color-amber);
+    box-shadow: inset 0 0 0 1px var(--color-amber);
+  }
+
+  .btn-lime {
+    background: var(--color-lime);
+    color: var(--color-text-inverse);
+  }
+  .btn-lime:hover {
+    background: var(--color-lime-hover);
+  }
+
+  /* Link con subrayado que se despliega */
+  .link-tactical {
+    position: relative;
+    color: var(--color-text-primary);
+    text-decoration: none;
+  }
+  .link-tactical::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 1px;
+    background: var(--color-amber);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.35s var(--ease-tactical);
+  }
+  .link-tactical:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
 }
 
-@keyframes topo-pan {
-  0% { background-position: 0 0; }
-  100% { background-position: -400px -200px; }
+
+/* ═══ 09 · SCROLL REVEAL ═══════════════════════════════════════════════════
+   Infraestructura compartida: el IntersectionObserver anade .is-visible.   */
+
+@layer components {
+
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+    transition:
+      opacity 0.8s var(--ease-tactical),
+      transform 0.8s var(--ease-tactical),
+      filter 0.8s var(--ease-tactical);
+    will-change: opacity, transform;
+  }
+  .animate-on-scroll.is-visible {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .animate-on-scroll.slide-left  { transform: translate3d(-40px, 0, 0); }
+  .animate-on-scroll.slide-right { transform: translate3d(40px, 0, 0); }
+  .animate-on-scroll.scale-in    { transform: scale(0.94); }
+  .animate-on-scroll.blur-in     { filter: blur(8px); transform: translate3d(0, 20px, 0); }
+
+  .animate-on-scroll.slide-left.is-visible,
+  .animate-on-scroll.slide-right.is-visible,
+  .animate-on-scroll.scale-in.is-visible,
+  .animate-on-scroll.blur-in.is-visible {
+    transform: none;
+    filter: none;
+  }
+
+  .stagger-children > .animate-on-scroll:nth-child(1) { transition-delay: 0.05s; }
+  .stagger-children > .animate-on-scroll:nth-child(2) { transition-delay: 0.10s; }
+  .stagger-children > .animate-on-scroll:nth-child(3) { transition-delay: 0.15s; }
+  .stagger-children > .animate-on-scroll:nth-child(4) { transition-delay: 0.20s; }
+  .stagger-children > .animate-on-scroll:nth-child(5) { transition-delay: 0.25s; }
+  .stagger-children > .animate-on-scroll:nth-child(6) { transition-delay: 0.30s; }
+  .stagger-children > .animate-on-scroll:nth-child(7) { transition-delay: 0.35s; }
+  .stagger-children > .animate-on-scroll:nth-child(8) { transition-delay: 0.40s; }
 }
 
-/* ━━━ Editorial Utilities ━━━ */
-.editorial-rule {
-  height: 1px;
-  background-color: var(--color-border);
-}
 
-.waypoint-tag {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 5px;
-  color: var(--color-rust);
-}
+/* ═══ 10 · PREFERS-REDUCED-MOTION ══════════════════════════════════════════
+   Incluye la transicion de cambio de tema: el bloque universal de la
+   seccion 05 solo se emite bajo (prefers-reduced-motion: no-preference),
+   asi que aqui ni siquiera existe. El reset de abajo lo remata por si
+   alguna regla propia hubiera dejado una transicion viva.                  */
 
-.gps-label {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: var(--color-text-secondary);
-}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 
-.side-label {
-  font-family: var(--font-heading);
-  font-size: 120px;
-  letter-spacing: 6px;
-  color: rgba(42, 37, 34, 0.07);
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-}
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+  }
 
-/* ━━━ Erosion Masks ━━━ */
-.mask-erosion {
-  mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='erosion'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='5'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='10'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23erosion)'/%3E%3C/svg%3E");
-  mask-size: cover;
-}
+  /* El contenido revelado por scroll queda visible, no congelado. */
+  .animate-on-scroll,
+  .animate-on-scroll.slide-left,
+  .animate-on-scroll.slide-right,
+  .animate-on-scroll.scale-in,
+  .animate-on-scroll.blur-in {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
 
-.mask-edge-top {
-  mask-image: linear-gradient(to bottom, transparent, black 15%);
-}
+  /* Trazos SVG completos desde el primer frame. */
+  .animate-draw-in {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
 
-.mask-edge-bottom {
-  mask-image: linear-gradient(to top, transparent, black 15%);
-}
+  /* Capas decorativas en reposo. */
+  .dust-overlay::before,
+  .animate-scan,
+  .animate-dust,
+  .animate-float,
+  .animate-flicker,
+  .animate-blink,
+  .animate-marquee,
+  .animate-glow,
+  .animate-glow-lime,
+  .animate-glow-sand,
+  .status-dot {
+    animation: none !important;
+  }
 
-.topo-label {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary);
-  opacity: 0.5;
-  pointer-events: none;
+  .scanline-sweep::after {
+    display: none;
+  }
+
+  .animate-glitch-in {
+    animation: none !important;
+    opacity: 1;
+    clip-path: none;
+    transform: none;
+  }
 }

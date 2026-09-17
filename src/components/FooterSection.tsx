@@ -1,77 +1,190 @@
 "use client";
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   BOAM RACING — <FooterSection />
+   Cierre de todas las paginas: CTA de patrocinio + barra legal.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   QUE SE ARREGLA AQUI
+   -------------------
+   1. i18n. Estaba escrito a mano en ingles ("HELP US REACH THE FINISH LINE",
+      "Become a Sponsor"...). Ahora TODO el copy sale de `t.footer`, que
+      existe en es/en/ca.
+   2. Numeracion. Rotulaba "[ 04 ]", el mismo indice que la cronologia. El
+      indice ya no se escribe aqui: es `t.footer.waypoint` -> "[ 08 ]", el
+      ultimo de la serie unica del sitio (01 proyecto · 02 coches · 03 ruta ·
+      04 cronologia · 05 equipo · 06 patrocinio · 07 media · 08 footer).
+   3. Copyright. Decia "© 2026 UNIRAID TEAM": ano congelado y marca erronea.
+      Ahora el ano se DERIVA (`new Date().getFullYear()`) y la marca es
+      BOAM RACING, tomada de `BRAND`. La edicion del rally es un dato
+      aparte (`t.footer.editionLine`, que resuelve a FEBRERO 2027 desde
+      `EDITION`), porque el ano de copyright y el ano de la edicion son
+      cosas distintas.
+   4. Tema: ni un color fijo. El cierre se construye con tokens
+      (bg-bg-base + border-slate + rejilla de plano + polvo + hairline
+      ambar), asi que es negro en tactical y crema en desert sin una sola
+      rama en el codigo. Se mantiene a proposito el MISMO fondo que la
+      pagina —no un bloque mas oscuro—: lo que cierra la pagina es el filo
+      superior (border + linea ambar) y la rejilla, no un cambio de color.
+   5. Email, redes y coordenadas del campamento base son DATO
+      (`CONTACT`, `SOCIALS`, `BASECAMP`), no cadenas sueltas. Los iconos "YT"
+      inventados desaparecen: solo se listan los perfiles que existen.
+
+   Lo que NO se pinta, y por que: la columna legal (`t.footer.legal`) y el
+   formulario de newsletter (`t.footer.newsletter`) siguen traducidos en el
+   diccionario pero no se renderizan, porque no hay ni paginas legales ni
+   endpoint de suscripcion. Enlazar a un 404 o a un formulario que no envia
+   es peor que no ponerlo. En cuanto existan, se cuelgan de estas claves.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
 import Link from "next/link";
 
+import DossierLink from "@/components/ui/DossierLink";
+import { useT } from "@/i18n/LanguageProvider";
+import { BASECAMP, BRAND, CONTACT, SOCIALS } from "@/lib/constants";
+
+/** Etiqueta corta de cada red, para el rotulo monoespaciado. */
+const SOCIAL_SHORT: Record<string, string> = {
+  instagram: "IG",
+  tiktok: "TK",
+  linkedin: "IN",
+  youtube: "YT",
+};
+
 export default function FooterSection() {
+  const t = useT();
+  const year = new Date().getFullYear();
+
+  const exploreLinks = [
+    { label: t.nav.project, href: "/#proyecto" },
+    { label: t.nav.route, href: "/#ruta" },
+    { label: t.nav.team, href: "/equipo" },
+    { label: t.nav.sponsorship, href: "/patrocinio" },
+    { label: t.nav.media, href: "/media" },
+  ];
+
   return (
-    <footer className="relative w-full overflow-hidden">
-      {/* Dark Gradient Zone */}
-      <div className="relative" style={{
-        background: "linear-gradient(180deg, var(--color-bg-sand) 0%, var(--color-bg-dark) 80%, var(--color-bg-dark) 100%)"
-      }}>
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-40 pb-12">
+    <footer id="contacto" className="relative w-full overflow-hidden bg-bg-base border-t border-slate">
+      {/* Capas de fondo */}
+      <div aria-hidden className="absolute inset-0 grid-blueprint grid-fade-y opacity-60 pointer-events-none" />
+      <div aria-hidden className="absolute inset-0 dust-overlay dust-overlay-soft pointer-events-none" />
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-px pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, var(--color-amber) 22%, transparent 55%)",
+        }}
+      />
 
-          {/* Waypoint Tag */}
-          <span className="font-mono text-[11px] tracking-[5px] font-semibold text-[var(--color-rust)]/50 block mb-6">
-            [ 04 ]  JOIN THE EXPEDITION
-          </span>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-24 md:pt-32 pb-10">
+        {/* ── CTA ──────────────────────────────────────────────────────── */}
+        <span className="waypoint-tag block mb-6">{t.footer.waypoint}</span>
 
-          {/* Main Title */}
-          <h2 className="font-heading text-[clamp(3rem,7vw,96px)] text-[var(--color-text-light)] leading-[0.88] tracking-[3px] mb-8 max-w-[800px]">
-            HELP US<br />
-            REACH THE<br />
-            FINISH LINE
-          </h2>
+        <div className="divider-tech mb-10" />
 
-          {/* Description */}
-          <p className="font-body text-base text-[var(--color-text-light)]/70 leading-[1.7] max-w-[550px] mb-10">
-            We&apos;re looking for sponsors, partners, and supporters who believe in adventure, perseverance, and the spirit of exploration. Your logo on our car. Your brand in the desert.
-          </p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
+          <div className="lg:col-span-7">
+            <h2 className="font-heading text-[clamp(2.5rem,6.5vw,5.5rem)] text-text-primary leading-[0.9] tracking-[2px] uppercase mb-7">
+              {t.footer.title.map((line, i) => (
+                <span key={i} className="block">
+                  {line}
+                </span>
+              ))}
+            </h2>
 
-          {/* CTAs */}
-          <div className="flex items-center gap-4 flex-wrap mb-20">
-            <Link
-              href="/patrocinio"
-              className="inline-flex items-center gap-3 px-11 py-4 bg-[var(--color-rust)] text-[var(--color-text-light)] font-body text-xs font-semibold uppercase tracking-[3px] transition-colors hover:bg-[var(--color-rust)]/80"
-            >
-              Become a Sponsor
-              <span className="text-base">-&gt;</span>
-            </Link>
-            <Link
-              href="mailto:hola@boamracing.com"
-              className="inline-flex items-center px-11 py-4 border border-[var(--color-text-light)]/20 text-[var(--color-text-light)] font-body text-xs font-medium uppercase tracking-[3px] transition-colors hover:border-[var(--color-text-light)]/40"
-            >
-              Contact Us
-            </Link>
-          </div>
+            <p className="font-body text-[15px] md:text-base text-text-secondary leading-[1.75] max-w-[560px] mb-9">
+              {t.footer.description}
+            </p>
 
-          {/* Contact Info */}
-          <div className="flex flex-col md:flex-row gap-8 mb-16">
-            <div className="flex flex-col gap-2">
-              <span className="font-mono text-[9px] tracking-[3px] text-[var(--color-text-light)]/40 uppercase">Email</span>
-              <a href="mailto:hola@boamracing.com" className="font-body text-sm text-[var(--color-text-light)]/70 hover:text-[var(--color-text-light)] transition-colors">
-                hola@boamracing.com
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/patrocinio" className="btn-tactical btn-amber">
+                {t.footer.ctaPrimary}
+                <span aria-hidden>{t.footer.ctaArrow}</span>
+              </Link>
+              <a href={CONTACT.mailto} className="btn-tactical btn-outline">
+                {t.footer.ctaSecondary}
               </a>
             </div>
-            <div className="flex flex-col gap-2">
-              <span className="font-mono text-[9px] tracking-[3px] text-[var(--color-text-light)]/40 uppercase">Social</span>
-              <div className="flex items-center gap-4">
-                <a href="#" className="font-mono text-xs text-[var(--color-text-light)]/50 hover:text-[var(--color-text-light)] transition-colors tracking-wider">IG</a>
-                <a href="#" className="font-mono text-xs text-[var(--color-text-light)]/50 hover:text-[var(--color-text-light)] transition-colors tracking-wider">TK</a>
-                <a href="#" className="font-mono text-xs text-[var(--color-text-light)]/50 hover:text-[var(--color-text-light)] transition-colors tracking-wider">YT</a>
-              </div>
+
+            {/* El dossier, siempre a mano desde el pie: es el documento que
+                pide una empresa que llega a la web sin pasar por /patrocinio. */}
+            <div className="mt-5">
+              <DossierLink />
             </div>
           </div>
 
-          {/* Footer Bar */}
-          <div className="flex flex-col md:flex-row items-center justify-between pt-5 border-t border-[var(--color-text-light)]/5">
-            <span className="font-mono text-[9px] tracking-[3px] text-[var(--color-text-light)]/20">
-              &copy; 2026 UNIRAID TEAM
-            </span>
-            <span className="font-mono text-[9px] tracking-[3px] text-[var(--color-text-light)]/20">
-              43&deg;28&apos;05.2&quot;N &nbsp;1&deg;33&apos;28.1&quot;W &middot; BASECAMP
-            </span>
+          {/* ── Columnas de datos ──────────────────────────────────────── */}
+          <div className="lg:col-span-5 grid grid-cols-2 sm:grid-cols-3 gap-8 lg:pt-4">
+            <nav aria-label={t.footer.columns.explore} className="flex flex-col gap-3">
+              <span className="telemetry-label telemetry-label-sand">{t.footer.columns.explore}</span>
+              <ul className="flex flex-col gap-2">
+                {exploreLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="font-body text-sm text-text-secondary hover:text-amber-text transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="flex flex-col gap-3">
+              <span className="telemetry-label telemetry-label-sand">{t.footer.columns.follow}</span>
+              <ul className="flex flex-col gap-2">
+                {SOCIALS.map((social) => (
+                  <li key={social.platform}>
+                    <a
+                      href={social.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-body text-sm text-text-secondary hover:text-amber-text transition-colors inline-flex items-center gap-2"
+                    >
+                      <span className="font-mono text-[10px] text-text-tertiary tracking-[2px]">
+                        {SOCIAL_SHORT[social.platform] ?? social.platform.slice(0, 2).toUpperCase()}
+                      </span>
+                      {social.handle}
+                      <span className="sr-only"> ({t.common.a11y.externalLink})</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex flex-col gap-3 col-span-2 sm:col-span-1">
+              <span className="telemetry-label telemetry-label-sand">{t.footer.columns.contact}</span>
+              <a
+                href={CONTACT.mailto}
+                className="font-body text-sm text-text-secondary hover:text-amber-text transition-colors break-all"
+              >
+                {CONTACT.email}
+              </a>
+              <span className="font-mono text-[9px] tracking-[2px] text-text-tertiary uppercase mt-2">
+                {t.footer.locationLabel}
+              </span>
+              <p className="gps-label leading-[1.7]">
+                {t.footer.basecamp}
+                <br />
+                {BASECAMP.dms}
+              </p>
+            </div>
           </div>
+        </div>
+
+        {/* ── Barra inferior ───────────────────────────────────────────── */}
+        <div className="mt-16 pt-6 border-t border-slate flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <span className="font-mono text-[9px] tracking-[3px] text-text-tertiary uppercase">
+            &copy; {year} {BRAND.name} · {t.footer.rights}
+          </span>
+          <span className="font-mono text-[9px] tracking-[3px] text-text-tertiary uppercase text-center md:text-right">
+            {t.footer.editionLine}
+          </span>
+          <span className="font-mono text-[9px] tracking-[3px] text-text-tertiary/70 uppercase md:text-right">
+            {t.footer.madeBy}
+          </span>
         </div>
       </div>
     </footer>
