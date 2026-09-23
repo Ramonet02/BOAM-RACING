@@ -371,6 +371,28 @@ export interface SponsorsSection {
      */
     dossierNote: string;
   };
+  /**
+   * Acuse de recibo que se manda al CLIENTE cuando la solicitud llega al
+   * equipo (`src/app/api/sponsor/request/route.ts`). Texto fijo a proposito:
+   * el destinatario lo teclea cualquiera, asi que el correo NUNCA repite nada
+   * escrito por el visitante (ni nombre, ni empresa, ni mensaje). Solo el
+   * nivel y las zonas, que el servidor resuelve desde ids conocidos.
+   */
+  confirmationEmail: {
+    subject: string;
+    greeting: string;
+    intro: string;
+    summaryTitle: string;
+    tierLabel: string;
+    zonesLabel: string;
+    /** Nivel sin elegir. */
+    none: string;
+    dossierLead: string;
+    dossierCta: string;
+    signoff: string;
+    /** Pie: por que le llega este correo. */
+    footer: string;
+  };
 }
 
 export const sponsors: LocalizedSection<SponsorsSection> = {
@@ -730,6 +752,21 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       dossierMeta: "PDF · {pages} páginas · {size} MB",
       dossierNote: "",
     },
+    confirmationEmail: {
+      subject: "Hemos recibido tu solicitud de patrocinio · BOAM Racing",
+      greeting: "Hola:",
+      intro:
+        "Gracias por tu interés en patrocinar a BOAM Racing en la UniRaid 2027. Tu solicitud ya está en nuestro buzón y el equipo te responderá en menos de 48 horas.",
+      summaryTitle: "Resumen de tu solicitud",
+      tierLabel: "Nivel",
+      zonesLabel: "Zonas elegidas",
+      none: "Sin especificar",
+      dossierLead: "Mientras tanto, aquí tienes el dossier con toda la información del proyecto:",
+      dossierCta: "Descargar el dossier (PDF)",
+      signoff: "Un saludo,\nEl equipo de BOAM Racing",
+      footer:
+        "Recibes este correo porque alguien ha enviado una solicitud de patrocinio con esta dirección desde nuestra web. Si no has sido tú, puedes ignorarlo.",
+    },
   },
 
   /* ═════════════════════════════ EN ═════════════════════════════ */
@@ -1085,6 +1122,21 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       dossierCta: "Download the dossier",
       dossierMeta: "PDF · {pages} pages · {size} MB",
       dossierNote: "in Spanish",
+    },
+    confirmationEmail: {
+      subject: "We've received your sponsorship request · BOAM Racing",
+      greeting: "Hello,",
+      intro:
+        "Thank you for your interest in sponsoring BOAM Racing at UniRaid 2027. Your request is in our inbox and the team will get back to you within 48 hours.",
+      summaryTitle: "Your request",
+      tierLabel: "Level",
+      zonesLabel: "Selected zones",
+      none: "Not specified",
+      dossierLead: "In the meantime, here is the dossier with all the project details (in Spanish):",
+      dossierCta: "Download the dossier (PDF)",
+      signoff: "Best regards,\nThe BOAM Racing team",
+      footer:
+        "You are receiving this email because someone submitted a sponsorship request with this address on our website. If it wasn't you, you can ignore it.",
     },
   },
 
@@ -1447,6 +1499,21 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       dossierCta: "Descarregar el dossier",
       dossierMeta: "PDF · {pages} pàgines · {size} MB",
       dossierNote: "en castellà",
+    },
+    confirmationEmail: {
+      subject: "Hem rebut la teva sol·licitud de patrocini · BOAM Racing",
+      greeting: "Hola,",
+      intro:
+        "Gràcies pel teu interès a patrocinar BOAM Racing a la UniRaid 2027. La teva sol·licitud ja és a la nostra bústia i l'equip et respondrà en menys de 48 hores.",
+      summaryTitle: "Resum de la teva sol·licitud",
+      tierLabel: "Nivell",
+      zonesLabel: "Zones escollides",
+      none: "Sense especificar",
+      dossierLead: "Mentrestant, aquí tens el dossier amb tota la informació del projecte (en castellà):",
+      dossierCta: "Descarregar el dossier (PDF)",
+      signoff: "Salutacions,\nL'equip de BOAM Racing",
+      footer:
+        "Reps aquest correu perquè algú ha enviat una sol·licitud de patrocini amb aquesta adreça des del nostre web. Si no has estat tu, pots ignorar-lo.",
     },
   },
 };

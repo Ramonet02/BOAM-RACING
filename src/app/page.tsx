@@ -3,25 +3,21 @@
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
    NUMERACION DE SECCIONES — una sola serie, unica y correlativa.
-   Antes habia DOS "[ 04 ]" (cronologia y footer) porque el footer escribia
-   su indice a mano. Los indices ya no se escriben en ningun componente:
-   cada seccion rotula su `t.<seccion>.waypoint`, y el diccionario reparte
-   la serie completa una sola vez:
+   Los indices no se escriben en ningun componente: cada seccion rotula su
+   `t.<seccion>.waypoint`, y el diccionario reparte la serie una sola vez:
 
-       [ 01 ]  El proyecto      <ProjectStory />      #proyecto
-       [ 02 ]  Los coches       <UniRaidInfo />       #uniraid
-       [ 03 ]  La ruta          <TimelineSection />   #ruta
-       [ 04 ]  Cronologia       <TimelineSection />   #cronologia
-       [ 05 ]  El equipo        <TeamSection />       #equipo
-       [ 06 ]  Patrocinio       <SponsorshipSection />#patrocinio
-       [ 07 ]  Media            <MediaSection />      #media
+       [ 01 ]  El proyecto      <ProjectStory />      #proyecto   (home)
+       [ 02 ]  Los coches       <UniRaidInfo />       #uniraid    (home)
+       [ 03 ]  La ruta          <TimelineSection />   #ruta       (home)
+       [ 04 ]  Cronologia       <TimelineSection />   #cronologia (home)
+       [ 05 ]  El equipo        <TeamSection />       /equipo
+       [ 06 ]  Patrocinio       <SponsorshipSection />/patrocinio
+       [ 07 ]  Media            <MediaSection />      /media
        [ 08 ]  Unete            <FooterSection />     (en el layout)
 
-   Por eso la home monta la serie ENTERA 01→07 y el footer cierra con 08:
-   asi la numeracion que ve el visitante es 01,02,03,04,05,06,07,08 sin
-   huecos ni repeticiones. Las paginas /equipo, /patrocinio y /media son
-   los enlaces permanentes de las secciones 05, 06 y 07 con su propia
-   cabecera; comparten componente, asi que no hay copy duplicado.
+   La home termina en la ruta (01→04). Equipo, patrocinio y media viven SOLO
+   en sus paginas, cada una con su propia cabecera; la navegacion ya enlaza
+   ahi, no a anclas de la home.
 
    Sin `overflow-hidden` en el <main> a proposito: ese overflow rompia el
    `position: sticky` de la columna del mapa del roadbook (Modulo 3). Cada
@@ -32,9 +28,6 @@ import HeroSection from "@/components/HeroSection";
 import ProjectStory from "@/components/ProjectStory";
 import UniRaidInfo from "@/components/UniRaidInfo";
 import TimelineSection from "@/components/TimelineSection";
-import TeamSection from "@/components/TeamSection";
-import SponsorshipSection from "@/components/SponsorshipSection";
-import MediaSection from "@/components/MediaSection";
 import RidgeDivider from "@/components/ui/RidgeDivider";
 
 export default function Home() {
@@ -55,15 +48,6 @@ export default function Home() {
       <TimelineSection />
 
       <RidgeDivider depth={2} toColor="var(--color-bg-base)" height={96} />
-
-      {/* [ 05 ] */}
-      <TeamSection />
-
-      {/* [ 06 ] */}
-      <SponsorshipSection />
-
-      {/* [ 07 ] */}
-      <MediaSection />
     </main>
   );
 }

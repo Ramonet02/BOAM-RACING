@@ -7,14 +7,13 @@
    aviso de que sólo existe en castellano y el `rel` de seguridad— y aquí sólo
    hay un sitio donde corregirlas.
 
-   ABRE EN PESTAÑA NUEVA, NO DESCARGA
-   Sin `download`: un dossier se hojea antes de guardarlo, y el visor de PDF
-   del navegador hace eso mejor que la carpeta de descargas. Quien lo quiera
-   en disco lo guarda desde el visor.
-
-   `target="_blank"` obliga a `rel="noopener"`: sin él, la pestaña que se abre
-   puede manipular la nuestra vía `window.opener`. Los navegadores modernos ya
-   lo asumen, pero escribirlo cuesta nada y no depende de la versión.
+   DESCARGA, CON SU NOMBRE
+   `download` con `DOSSIER.filename`: el fichero llega a disco como
+   "Boam_Racing_Team_UNIRAID_2027.pdf" y no con el slug de la ruta. Es un
+   documento para reenviar dentro de la empresa, no para hojear y cerrar.
+   `target="_blank"` se queda como red: el navegador que ignore `download`
+   (algunos en iOS) lo abre en su visor en otra pestaña sin sacar al
+   visitante de la web. Y `target="_blank"` obliga a `rel="noopener"`.
 
    EL IDIOMA
    El PDF está en castellano y la web va en tres idiomas. En inglés y en
@@ -59,6 +58,7 @@ export default function DossierLink({
     return (
       <a
         href={DOSSIER.href}
+        download={DOSSIER.filename}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={label}
@@ -73,6 +73,7 @@ export default function DossierLink({
     <span className={`inline-flex flex-wrap items-baseline gap-x-2 gap-y-0.5 ${className}`.trim()}>
       <a
         href={DOSSIER.href}
+        download={DOSSIER.filename}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={label}

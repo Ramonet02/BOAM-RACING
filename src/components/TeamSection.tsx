@@ -36,6 +36,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 
 import PilotPassport from "@/components/team/PilotPassport";
+import DossierLink from "@/components/ui/DossierLink";
 import VehicleSpecCard from "@/components/team/VehicleSpecCard";
 import { useT } from "@/i18n/LanguageProvider";
 import { CONTACT, formatDMS } from "@/lib/constants";
@@ -292,6 +293,8 @@ export default function TeamSection() {
             </a>
 
             <p className="gps-label mt-6 break-all">{CONTACT.email}</p>
+
+            <DossierLink className="mt-5 justify-center" />
           </div>
         </motion.div>
       </div>

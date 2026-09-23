@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function EquipoPage() {
   return (
     <main id="contenido" className="relative bg-bg-base">
-      <SubPageHero section="team" imageId="portada-equipo" ridge="atlas" />
+      <SubPageHero section="team" ridge="atlas" />
       <TeamSection />
     </main>
   );

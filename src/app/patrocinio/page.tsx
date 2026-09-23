@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function PatrocinioPage() {
   return (
     <main id="contenido" className="relative bg-bg-base">
-      <SubPageHero section="sponsors" imageId="portada-patrocinio" ridge="erg" mirrorRidge />
+      <SubPageHero section="sponsors" ridge="erg" mirrorRidge />
       <SponsorshipSection />
     </main>
   );

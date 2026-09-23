@@ -61,6 +61,7 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
+import DossierLink from "@/components/ui/DossierLink";
 import RallyImage from "@/components/ui/RallyImage";
 import RidgeDivider from "@/components/ui/RidgeDivider";
 import { HERO_COORDS, PROJECT_FACTS } from "@/lib/constants";
@@ -107,20 +108,21 @@ const HERO_STYLES = `
 .boam-hero-line { animation: boam-hero-line 1.05s var(--ease-tactical) both; }
 .boam-hero-rule { transform-origin: left; animation: boam-hero-rule 0.85s var(--ease-tactical) both; }
 
-/* DESERT · la foto se lava hacia crema. Sigue viva en el tercio alto
-   (0.46-0.52) y desaparece bajo el bloque de texto, donde manda
-   --hero-text-wash. El flanco pesa menos que en oscuro: aqui el trabajo de
-   legibilidad lo hace el lavado del texto, no el lateral. */
+/* DESERT · la foto se lava hacia crema, pero se tiene que VER: con foto real
+   el velo anterior (0.46-0.94 + lavado de texto a todo el ancho) la dejaba
+   invisible. Ahora el centro queda en 0.18-0.28 y la legibilidad la pone el
+   lavado del texto, que en md+ solo cubre la columna del titular (ver la
+   mascara en TEXT_WASH_MASK) y deja la mitad derecha a la foto. */
 .boam-hero {
   --hero-scrim-v: linear-gradient(180deg,
-    rgb(var(--base-rgb) / 0.88) 0%,
-    rgb(var(--base-rgb) / 0.52) 22%,
-    rgb(var(--base-rgb) / 0.46) 46%,
-    rgb(var(--base-rgb) / 0.70) 76%,
-    rgb(var(--base-rgb) / 0.94) 100%);
+    rgb(var(--base-rgb) / 0.80) 0%,
+    rgb(var(--base-rgb) / 0.28) 22%,
+    rgb(var(--base-rgb) / 0.18) 46%,
+    rgb(var(--base-rgb) / 0.50) 76%,
+    rgb(var(--base-rgb) / 0.92) 100%);
   --hero-scrim-h: linear-gradient(90deg,
-    rgb(var(--base-rgb) / 0.66) 0%,
-    rgb(var(--base-rgb) / 0.28) 42%,
+    rgb(var(--base-rgb) / 0.62) 0%,
+    rgb(var(--base-rgb) / 0.22) 42%,
     transparent 72%);
   /* Suelo del bloque de texto. 0.985 y no 0.90: con 0.90, una foto oscura
      por debajo dejaba .telemetry-label (4.95:1 en limpio) en 4.1:1. */
@@ -161,18 +163,30 @@ const TEXT_WASH =
   " rgb(var(--base-rgb) / var(--hero-text-wash)) 18%," +
   " rgb(var(--base-rgb) / var(--hero-text-wash)) 100%)";
 
-/** Plancha del HUD derecho: se disuelve hacia la foto, hacia la izquierda. */
+/** En md+ el titular ocupa la mitad izquierda: el lavado se queda ahi y se
+ *  disuelve hacia la derecha para no tapar la foto. En movil el texto va a
+ *  todo el ancho y el lavado tambien. En tactical el lavado vale 0, asi que
+ *  la mascara no cambia nada. */
+const TEXT_WASH_MASK =
+  "md:[mask-image:linear-gradient(90deg,#000_0%,#000_42%,transparent_72%)]";
+
+/* Planchas bajo el HUD y el rotulo vertical. Radiales y no lineales: un
+   degradado lineal solo disuelve un eje, y con la foto ya visible los otros
+   dos cantos se leian como una caja pegada encima. La elipse se apaga hacia
+   todos los lados, asi que queda un halo detras del texto, sin bordes. */
+
+/** Plancha del HUD derecho: halo centrado en el texto, que va pegado a la derecha. */
 const PLATE_RIGHT =
-  "linear-gradient(to left," +
-  " rgb(var(--base-rgb) / var(--hero-plate)) 46%," +
+  "radial-gradient(ellipse 62% 58% at 78% 50%," +
+  " rgb(var(--base-rgb) / var(--hero-plate)) 0%," +
+  " rgb(var(--base-rgb) / calc(var(--hero-plate) * 0.75)) 45%," +
   " rgb(var(--base-rgb) / 0) 100%)";
 
-/** Plancha del rotulo vertical: tira estrecha, disuelta por los dos cantos. */
+/** Plancha del rotulo vertical: halo alargado, se apaga por los cuatro cantos. */
 const PLATE_VERTICAL =
-  "linear-gradient(to bottom," +
-  " rgb(var(--base-rgb) / 0) 0%," +
-  " rgb(var(--base-rgb) / var(--hero-plate)) 14%," +
-  " rgb(var(--base-rgb) / var(--hero-plate)) 86%," +
+  "radial-gradient(ellipse 50% 50% at 50% 50%," +
+  " rgb(var(--base-rgb) / var(--hero-plate)) 0%," +
+  " rgb(var(--base-rgb) / calc(var(--hero-plate) * 0.75)) 55%," +
   " rgb(var(--base-rgb) / 0) 100%)";
 
 /** Retardo de entrada en linea; lo anula el bloque de reduced-motion. */
@@ -418,7 +432,7 @@ export default function HeroSection() {
         <div className="relative">
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-16 -top-14 left-1/2 -z-10 w-screen -translate-x-1/2"
+            className={`pointer-events-none absolute -bottom-16 -top-14 left-1/2 -z-10 w-screen -translate-x-1/2 ${TEXT_WASH_MASK}`}
             style={{ backgroundImage: TEXT_WASH }}
           />
 
@@ -503,6 +517,11 @@ export default function HeroSection() {
                   {t.hero.secondaryCta}
                 </Link>
               </div>
+
+              {/* El dossier, desde la primera pantalla: es lo que se reenvia
+                  dentro de una empresa, y no tiene por que llegar a /patrocinio
+                  para encontrarlo. */}
+              <DossierLink className="mt-4" />
 
               {/* Tira de estado + pista de scroll. La pista va AQUI, y no
                   suelta en una esquina, porque en el fondo a la derecha

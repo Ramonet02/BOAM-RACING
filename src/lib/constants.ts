@@ -158,10 +158,10 @@ export const EDITION_COUNTDOWN_TARGET_MS: number =
 
 /** Datos de contacto del equipo. */
 export const CONTACT = {
-  /** Correo principal. DATO REAL, ya publicado en el footer. */
-  email: "hola@boamracing.com",
+  /** Correo del equipo, el mismo que publica el dossier. */
+  email: "boamracingteam@gmail.com",
   /** `mailto:` listo para usar. */
-  mailto: "mailto:hola@boamracing.com",
+  mailto: "mailto:boamracingteam@gmail.com",
   /** Teléfono: el equipo aún no publica ninguno. */
   phone: PENDING,
   city: BRAND.city,
@@ -194,19 +194,19 @@ export const DOSSIER = {
 } as const;
 
 /** Handle común del equipo en redes. DATO REAL. */
-export const SOCIAL_HANDLE = "@boamracing" as const;
+export const SOCIAL_HANDLE = "@boamracingteam" as const;
 
 /** Perfiles sociales del equipo. */
 export const SOCIALS: readonly SocialProfile[] = [
   {
     platform: "instagram",
     handle: SOCIAL_HANDLE,
-    url: "https://www.instagram.com/boamracing",
+    url: "https://www.instagram.com/boamracingteam/",
   },
   {
     platform: "tiktok",
     handle: SOCIAL_HANDLE,
-    url: "https://www.tiktok.com/@boamracing",
+    url: "https://www.tiktok.com/@boamracingteam",
   },
 ];
 

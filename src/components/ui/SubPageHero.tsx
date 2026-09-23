@@ -70,17 +70,19 @@ export type SubPageSection = "team" | "sponsors" | "media";
  */
 const SUBHERO_STYLES = `
 .boam-subhero {
-  /* DESERT · la foto se lava hacia crema; queda viva arriba y desaparece
-     bajo el texto, donde manda --subhero-text-wash. */
+  /* DESERT · con foto real, el velo anterior (0.50-0.88, foto al 66 % y
+     lavado de texto a todo el ancho) la dejaba invisible. Ahora el centro
+     baja a 0.22 y el lavado del texto, en md+, solo cubre la columna del
+     titular (TEXT_WASH_MASK): la mitad derecha es de la foto. */
   --subhero-scrim: linear-gradient(180deg,
-    rgb(var(--base-rgb) / 0.88) 0%,
-    rgb(var(--base-rgb) / 0.50) 34%,
-    rgb(var(--base-rgb) / 0.74) 74%,
+    rgb(var(--base-rgb) / 0.80) 0%,
+    rgb(var(--base-rgb) / 0.22) 34%,
+    rgb(var(--base-rgb) / 0.55) 74%,
     rgb(var(--base-rgb)) 100%);
   --subhero-text-wash: 0.985;
   --subhero-plate: 0.94;
 }
-.boam-subhero-photo { opacity: 0.66; }
+.boam-subhero-photo { opacity: 0.9; }
 
 /* TACTICAL · el degradado original, stop a stop, y los lavados a cero: no
    habia plancha ni suelo, y la foto iba al 55 %. */
@@ -103,10 +105,19 @@ const TEXT_WASH =
   " rgb(var(--base-rgb) / var(--subhero-text-wash)) 20%," +
   " rgb(var(--base-rgb) / var(--subhero-text-wash)) 100%)";
 
-/** Plancha del HUD izquierdo: se disuelve hacia la foto, a la derecha. */
+/** En md+ el titular ocupa la mitad izquierda: el lavado se queda ahi y se
+ *  disuelve hacia la derecha. En movil el texto va a todo el ancho y el
+ *  lavado tambien. En tactical el lavado vale 0 y la mascara no cambia nada. */
+const TEXT_WASH_MASK =
+  "md:[mask-image:linear-gradient(90deg,#000_0%,#000_50%,transparent_80%)]";
+
+/** Plancha del HUD izquierdo. Radial y no lineal: un degradado lineal solo
+ *  disuelve un eje y, con la foto visible, los otros cantos se leian como
+ *  una caja. La elipse se apaga hacia todos los lados. */
 const PLATE_LEFT =
-  "linear-gradient(to right," +
-  " rgb(var(--base-rgb) / var(--subhero-plate)) 46%," +
+  "radial-gradient(ellipse 62% 58% at 22% 50%," +
+  " rgb(var(--base-rgb) / var(--subhero-plate)) 0%," +
+  " rgb(var(--base-rgb) / calc(var(--subhero-plate) * 0.75)) 45%," +
   " rgb(var(--base-rgb) / 0) 100%)";
 
 /** Seccion -> clave de `PAGE_COORDS`. Las coordenadas son DATO, no copy. */
@@ -125,8 +136,12 @@ export interface SubPageHeroProps {
    * que pasaba antes).
    */
   section: SubPageSection;
-  /** Entrada del manifiesto de imagenes. Tipada: un id que no exista no compila. */
-  imageId: RallyImageId;
+  /**
+   * Entrada del manifiesto de imagenes. Tipada: un id que no exista no compila.
+   * Sin ella la cabecera va sin foto y SIN placeholder: solo el fondo del
+   * tema con scrim, rejilla y polvo (asi van /equipo y /patrocinio).
+   */
+  imageId?: RallyImageId;
   /** Perfil de la divisoria inferior. */
   ridge?: RidgeVariant;
   /** Espeja la divisoria para que dos cabeceras del sitio no rimen. */
@@ -176,6 +191,7 @@ export default function SubPageHero({
       <style>{SUBHERO_STYLES}</style>
 
       {/* ── 00 · Foto de archivo (o su placeholder tactico) ─────────────── */}
+      {imageId && (
       <motion.div
         className="absolute inset-0 z-0 will-change-transform"
         style={reduceMotion ? undefined : { y: bgY, scale: bgScale }}
@@ -199,6 +215,7 @@ export default function SubPageHero({
           />
         </motion.div>
       </motion.div>
+      )}
 
       {/* ── 10 · Scrims + rejilla de plano ──────────────────────────────── */}
       <div
@@ -251,7 +268,7 @@ export default function SubPageHero({
             de apoyarse en una fotografia de brillo desconocido. */}
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-0 -top-14 left-1/2 -z-10 w-screen -translate-x-1/2"
+          className={`pointer-events-none absolute bottom-0 -top-14 left-1/2 -z-10 w-screen -translate-x-1/2 ${TEXT_WASH_MASK}`}
           style={{ backgroundImage: TEXT_WASH }}
         />
 

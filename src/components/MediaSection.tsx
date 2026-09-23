@@ -25,6 +25,7 @@
 
 import { ArrowUpRight, Mail, Play, Radio } from "lucide-react";
 import BentoGallery from "@/components/gallery/BentoGallery";
+import DossierLink from "@/components/ui/DossierLink";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useT } from "@/i18n/LanguageProvider";
 import { CONTACT, PAGE_COORDS, SOCIALS } from "@/lib/constants";
@@ -285,6 +286,8 @@ export default function MediaSection() {
                   {CONTACT.email}
                 </a>
               </span>
+              {/* El dossier es la ficha del proyecto que pide la prensa. */}
+              <DossierLink />
             </div>
           </div>
         </ScrollReveal>

@@ -30,7 +30,11 @@
       (`CONTACT`, `SOCIALS`, `BASECAMP`), no cadenas sueltas. Los iconos "YT"
       inventados desaparecen: solo se listan los perfiles que existen.
 
-   Lo que NO se pinta, y por que: la columna legal (`t.footer.legal`) y el
+   6. Creditos fotograficos: de `t.footer.legal` solo se pinta `credits`,
+      como bloque plegable con las fotos de `getCreditedImages()` (paisajes
+      de Wikimedia Commons que exigen atribucion).
+
+   Lo que NO se pinta, y por que: el resto de la columna legal y el
    formulario de newsletter (`t.footer.newsletter`) siguen traducidos en el
    diccionario pero no se renderizan, porque no hay ni paginas legales ni
    endpoint de suscripcion. Enlazar a un 404 o a un formulario que no envia
@@ -42,6 +46,7 @@ import Link from "next/link";
 import DossierLink from "@/components/ui/DossierLink";
 import { useT } from "@/i18n/LanguageProvider";
 import { BASECAMP, BRAND, CONTACT, SOCIALS } from "@/lib/constants";
+import { getCreditedImages } from "@/lib/imagery";
 
 /** Etiqueta corta de cada red, para el rotulo monoespaciado. */
 const SOCIAL_SHORT: Record<string, string> = {
@@ -54,6 +59,7 @@ const SOCIAL_SHORT: Record<string, string> = {
 export default function FooterSection() {
   const t = useT();
   const year = new Date().getFullYear();
+  const credited = getCreditedImages();
 
   const exploreLinks = [
     { label: t.nav.project, href: "/#proyecto" },
@@ -174,8 +180,42 @@ export default function FooterSection() {
           </div>
         </div>
 
+        {/* ── Creditos fotograficos ────────────────────────────────────── */}
+        {/* Los paisajes de Wikimedia Commons en CC BY / CC BY-SA exigen
+            atribucion visible con autor, licencia y enlace a la ficha. Va
+            plegado para que no le robe el cierre a la CTA. */}
+        {credited.length > 0 && (
+          <details className="mt-16 group">
+            <summary className="telemetry-label telemetry-label-sand cursor-pointer list-none inline-flex items-center gap-2 hover:text-amber-text transition-colors">
+              <span aria-hidden className="font-mono transition-transform group-open:rotate-90">›</span>
+              {t.footer.legal.credits} · {credited.length}
+            </summary>
+            <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-1.5">
+              {credited.map((entry) => (
+                <li key={entry.id} className="font-mono text-[10px] leading-relaxed text-text-tertiary">
+                  <span className="text-text-secondary">{entry.rally?.location ?? entry.alt}</span>
+                  {" — "}
+                  {entry.creditUrl ? (
+                    <a
+                      href={entry.creditUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline decoration-dotted underline-offset-2 hover:text-amber-text transition-colors"
+                    >
+                      {entry.credit}
+                      <span className="sr-only"> ({t.common.a11y.externalLink})</span>
+                    </a>
+                  ) : (
+                    entry.credit
+                  )}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+
         {/* ── Barra inferior ───────────────────────────────────────────── */}
-        <div className="mt-16 pt-6 border-t border-slate flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className={`${credited.length > 0 ? "mt-8" : "mt-16"} pt-6 border-t border-slate flex flex-col md:flex-row md:items-center justify-between gap-4`}>
           <span className="font-mono text-[9px] tracking-[3px] text-text-tertiary uppercase">
             &copy; {year} {BRAND.name} · {t.footer.rights}
           </span>

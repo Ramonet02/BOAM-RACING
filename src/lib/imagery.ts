@@ -5,10 +5,14 @@
 
    REGLA DE NEGOCIO
    ----------------
-   Queda PROHIBIDO el uso de fotografia generica de stock (unsplash y similares).
-   Toda imagen de la web sale de este manifiesto y apunta a un fichero que el
-   equipo aportara desde su propio archivo. Hasta que ese fichero exista, el
-   componente <RallyImage /> pinta un placeholder tactico de calidad.
+   Toda imagen de la web sale de este manifiesto. Lo que solo puede ser del
+   equipo (retratos, los cuatro Escort, taller, entregas solidarias) sale de su
+   propio archivo. Los paisajes de la ruta pueden venir de Wikimedia Commons
+   con licencia libre (CC0, dominio publico, CC BY, CC BY-SA): en ese caso la
+   entrada lleva `credit` ("Autor · Licencia") y `creditUrl` (ficha de
+   Commons), y el footer los lista en "Creditos" — CC BY y CC BY-SA obligan a
+   atribuir. Hasta que un fichero exista, <RallyImage /> pinta un placeholder
+   tactico de calidad.
 
    COMO SE ANADE UNA FOTO REAL (flujo para el equipo)
    --------------------------------------------------
@@ -134,8 +138,10 @@ export interface RallyImageEntry {
   member?: string;
   /** Numero de coche (1..4) al que pertenece la imagen, si aplica. */
   carNumber?: number;
-  /** Credito fotografico cuando el equipo lo aporte. */
+  /** Credito fotografico: "Autor · Licencia". Obligatorio en fotos CC BY / CC BY-SA. */
   credit?: string;
+  /** Ficha de origen de la foto (p. ej. Wikimedia Commons), enlazada desde el credito. */
+  creditUrl?: string;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -204,11 +210,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "portada-home-duna-amanecer",
     src: "/images/portada/home-duna-amanecer.jpg",
-    alt: "Ford Escort del equipo BOAM RACING recortado contra una duna del Sahara al amanecer",
+    alt: "Dunas del Erg Chebbi a primera hora, con una figura diminuta caminando entre la arena",
     caption: "Amanecer sobre el Erg. Punto de partida del dia mas largo.",
     category: "portada",
     aspect: "ultrawide",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Adrian Farwell · CC BY 3.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Dunes_at_Sunrise,_Erg_Chebbi_-_Lone_Wanderer_-_panoramio.jpg",
     featured: true,
     tags: ["hero", "dunas", "coche"],
     rally: {
@@ -219,23 +227,15 @@ export const IMAGE_MANIFEST = [
     },
   },
   {
-    id: "portada-equipo",
-    src: "/images/portada/equipo-formacion.jpg",
-    alt: "Los ocho miembros de BOAM RACING posando delante de los cuatro Ford Escort",
-    caption: "Ocho universitarios, cuatro coches, una travesia.",
-    category: "portada",
-    aspect: "ultrawide",
-    hasAsset: false,
-    tags: ["hero", "equipo"],
-  },
-  {
     id: "portada-media",
     src: "/images/portada/media-diario-visual.jpg",
-    alt: "Pista de tierra atravesando el Atlas marroqui con el convoy del equipo a lo lejos",
+    alt: "Valle del Alto Atlas junto al Tizi n'Tichka, con laderas desnudas y una franja verde de cultivos en el fondo",
     caption: "Diario visual de la expedicion.",
     category: "portada",
     aspect: "ultrawide",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Ingo Mehling · CC BY-SA 4.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Tizi_n%27Tichka_Pass_-_1.jpg",
     tags: ["hero", "pista"],
     rally: {
       location: "Alto Atlas, Tizi n'Tichka",
@@ -244,26 +244,18 @@ export const IMAGE_MANIFEST = [
       terrain: "montana",
     },
   },
-  {
-    id: "portada-patrocinio",
-    src: "/images/portada/patrocinio-rotulacion.jpg",
-    alt: "Detalle de la carroceria de un Ford Escort con los espacios de patrocinio rotulados",
-    caption: "Tu marca, toda la travesia de Marruecos.",
-    category: "portada",
-    aspect: "ultrawide",
-    hasAsset: false,
-    tags: ["hero", "patrocinio", "coche"],
-  },
 
   /* ── ETAPAS (ruta de la edicion de febrero 2027) ──────────── */
   {
     id: "etapa-d01-embarque-algeciras",
     src: "/images/etapas/d01-embarque-algeciras.jpg",
-    alt: "Los coches de BOAM RACING en la cola de embarque del ferry en el puerto de Algeciras",
+    alt: "Buque atracado bajo las gruas del puerto de Algeciras",
     caption: "Dia 1. Embarque en Algeciras rumbo a Tanger Med.",
     category: "etapas",
     aspect: "landscape",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Melenn14 · CC0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Port_of_Algeciras_2023_and_BF_CARODA_ship.jpg",
     gallery: true,
     tags: ["salida", "puerto", "convoy"],
     rally: {
@@ -276,11 +268,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d02-salida-tanger",
     src: "/images/etapas/d02-salida-tanger.jpg",
-    alt: "Convoy del equipo saliendo de Tanger Med por la carretera costera del norte de Marruecos",
+    alt: "Vista aerea del puerto de Tanger Med y la costa del norte de Marruecos",
     caption: "Dia 2. Primeros kilometros en suelo marroqui.",
     category: "etapas",
     aspect: "wide",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Adam Cli · CC BY-SA 4.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:PortofTangerMed1.jpg",
     gallery: true,
     tags: ["convoy", "carretera"],
     rally: {
@@ -293,11 +287,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d03-cedros-azrou",
     src: "/images/etapas/d03-cedros-azrou.jpg",
-    alt: "Pista forestal entre cedros centenarios en el Atlas Medio, cerca de Azrou",
+    alt: "Bosque de cedros del Atlas Medio cerca de Azrou, con troncos altos y luz filtrada entre las copas",
     caption: "Dia 3. Cedros del Atlas Medio antes de bajar al sur.",
     category: "etapas",
-    aspect: "landscape",
-    hasAsset: false,
+    aspect: "portrait",
+    hasAsset: true,
+    credit: "Reda Abouakil · CC BY-SA 3.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:C%C3%A9draie_Azrou.jpg",
     gallery: true,
     tags: ["bosque", "pista"],
     rally: {
@@ -310,11 +306,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d04-pistas-midelt",
     src: "/images/etapas/d04-pistas-midelt.jpg",
-    alt: "Pista de piedra suelta en la meseta de Midelt con el coche levantando polvo",
-    caption: "Dia 4. Pista de piedra: donde se rompen las suspensiones.",
+    alt: "Laderas nevadas del Alto Atlas oriental con la meseta de Midelt extendiendose al fondo",
+    caption: "Dia 4. Djebel Ayachi y la meseta de Midelt: aqui empieza la piedra.",
     category: "etapas",
     aspect: "wide",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Mounir Neddi · CC BY-SA 4.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Djebel_Ayachi,_Eastern_High_Atlas,_Morocco.jpg",
     gallery: true,
     featured: true,
     tags: ["pista", "polvo"],
@@ -328,11 +326,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d05-erg-chebbi-amanecer",
     src: "/images/etapas/d05-erg-chebbi-amanecer.jpg",
-    alt: "Dunas del Erg Chebbi al amanecer con las huellas del convoy marcadas en la arena",
+    alt: "Sol asomando sobre las crestas de las dunas del Erg Chebbi, en Merzouga",
     caption: "Dia 5. Erg Chebbi. Las dunas grandes del roadbook.",
     category: "etapas",
     aspect: "wide",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Nomadz · CC BY-SA 3.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Dunes-Leve_soleil-Sunrise-Merzouga.JPG",
     gallery: true,
     featured: true,
     tags: ["dunas", "amanecer", "sahara"],
@@ -346,11 +346,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d05-erg-chebbi-travesia",
     src: "/images/etapas/d05-erg-chebbi-travesia.jpg",
-    alt: "Ford Escort atravesando un cordon de dunas de arena naranja en el Erg Chebbi",
+    alt: "Arena ondulada por el viento en las dunas del Erg Chebbi bajo un cielo despejado",
     caption: "Dia 5. Travesia del cordon de dunas con los neumaticos deshinchados.",
     category: "etapas",
     aspect: "landscape",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "JanSuchy · Dominio publico",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Erg_chebbi_sunrise.jpg",
     gallery: true,
     tags: ["dunas", "coche", "sahara"],
     rally: {
@@ -363,11 +365,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d06-gargantas-todra",
     src: "/images/etapas/d06-gargantas-todra.jpg",
-    alt: "Paredes verticales de las Gargantas del Todra con la pista estrecha en el fondo del canon",
+    alt: "Paredes rojizas de las Gargantas del Todra sobre el palmeral del fondo del canon",
     caption: "Dia 6. Gargantas del Todra: 300 metros de pared a cada lado.",
     category: "etapas",
     aspect: "portrait",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Angela Stefanoni · CC BY 3.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Todra_Gorge_-_panoramio.jpg",
     gallery: true,
     tags: ["garganta", "canon"],
     rally: {
@@ -380,11 +384,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d06-valle-dades",
     src: "/images/etapas/d06-valle-dades.jpg",
-    alt: "Curvas en zigzag de la carretera del valle del Dades vistas desde lo alto",
+    alt: "Carretera en zigzag del valle del Dades vista desde lo alto",
     caption: "Dia 6. Las lazadas del Dades, prueba de frenos y de estomago.",
     category: "etapas",
     aspect: "landscape",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "csanjuanfer · CC0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Dad%C3%A8s_Gorges_Road_in_Morocco.jpg",
     gallery: true,
     tags: ["valle", "carretera"],
     rally: {
@@ -397,11 +403,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d07-oasis-draa",
     src: "/images/etapas/d07-oasis-draa.jpg",
-    alt: "Palmeral del valle del Draa con kasbahs de adobe entre las palmeras",
+    alt: "Palmeral de Agdz, en el valle del Draa, con una kasbah de adobe y el Jebel Kissane detras",
     caption: "Dia 7. Palmeral del Draa, el ultimo verde antes del desierto.",
     category: "etapas",
     aspect: "landscape",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Sylvestre Bocco · CC BY-SA 4.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Jebel_Kissane_et_Palmeraie_d_Agdz_Maroc_2026.jp.jpg",
     gallery: true,
     tags: ["oasis", "palmeral"],
     rally: {
@@ -414,11 +422,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d07-erg-chigaga",
     src: "/images/etapas/d07-erg-chigaga.jpg",
-    alt: "Extension infinita de arena del Erg Chigaga al sur de Mhamid",
+    alt: "Caravana de dromedarios cruzando las dunas del Erg Chigaga con luz de tarde",
     caption: "Dia 7. Erg Chigaga. Navegacion pura a rumbo y brujula.",
     category: "etapas",
     aspect: "wide",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Dan Lundberg · CC BY-SA 2.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:20151122_Morocco_2777_Erg_Chigaga_sRGB.jpg",
     gallery: true,
     tags: ["dunas", "navegacion", "sahara"],
     rally: {
@@ -431,11 +441,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d08-pedregal-ouarzazate",
     src: "/images/etapas/d08-pedregal-ouarzazate.jpg",
-    alt: "Llanura pedregosa cerca de Ouarzazate con el coche cruzando un lecho seco",
-    caption: "Dia 8. Reg pedregoso camino de Ouarzazate.",
+    alt: "Campos y palmeras a las afueras de Ouarzazate, con casas de adobe en el horizonte",
+    caption: "Dia 8. Ultimo verde a las afueras de Ouarzazate.",
     category: "etapas",
     aspect: "wide",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Radosław Botev · CC BY 3.0 PL",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Landscape_at_the_outskirts_of_Ouarzazate_2007.jpg",
     gallery: true,
     tags: ["pedregal", "coche"],
     rally: {
@@ -448,11 +460,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d09-tizi-n-tichka",
     src: "/images/etapas/d09-tizi-n-tichka.jpg",
-    alt: "Puerto de montana del Tizi n'Tichka con la carretera serpenteando entre las cumbres nevadas",
+    alt: "Valle del Alto Atlas visto desde el puerto del Tizi n'Tichka, con cumbres peladas al fondo",
     caption: "Dia 9. Tizi n'Tichka, 2.260 m. Ultimo puerto antes de Marrakech.",
     category: "etapas",
     aspect: "landscape",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Ingo Mehling · CC BY-SA 4.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Tizi_n%27Tichka_Pass_-_2.jpg",
     gallery: true,
     tags: ["puerto", "montana"],
     rally: {
@@ -465,11 +479,13 @@ export const IMAGE_MANIFEST = [
   {
     id: "etapa-d09-llegada-marrakech",
     src: "/images/etapas/d09-llegada-marrakech.jpg",
-    alt: "Llegada del equipo a Marrakech con los coches cubiertos de polvo del desierto",
+    alt: "Minarete de la Koutoubia asomando sobre los tejados de la medina de Marrakech",
     caption: "Meta en Marrakech. Cuatro coches enteros.",
     category: "etapas",
     aspect: "landscape",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Schorle · CC BY-SA 4.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Koutoubia_minaret_from_the_city.JPG",
     gallery: true,
     tags: ["meta", "equipo"],
     rally: {
@@ -673,11 +689,11 @@ export const IMAGE_MANIFEST = [
   {
     id: "coches-formacion",
     src: "/images/coches/formacion-completa.jpg",
-    alt: "Los cuatro Ford Escort del equipo alineados en formacion antes de la salida",
+    alt: "Los cuatro Ford Escort blancos del equipo, ya rotulados, aparcados en formacion al atardecer",
     caption: "Los cuatro clasicos de raid, listos para la travesia.",
     category: "coches",
     aspect: "wide",
-    hasAsset: false,
+    hasAsset: true,
     gallery: true,
     featured: true,
     tags: ["coche", "formacion"],
@@ -697,11 +713,11 @@ export const IMAGE_MANIFEST = [
   {
     id: "coche-detalle-rotulacion",
     src: "/images/coches/detalle-rotulacion.jpg",
-    alt: "Detalle de la rotulacion de patrocinadores sobre la aleta de un Ford Escort",
-    caption: "Vinilo de patrocinio sobre chapa y polvo del Sahara.",
+    alt: "Capo de un Ford Escort del equipo visto desde arriba, con la rotulacion de UniRaid y de un patrocinador",
+    caption: "Vinilo de patrocinio sobre el capo: el primer sitio que se mira.",
     category: "coches",
     aspect: "square",
-    hasAsset: false,
+    hasAsset: true,
     gallery: true,
     tags: ["patrocinio", "detalle"],
   },
@@ -756,22 +772,24 @@ export const IMAGE_MANIFEST = [
   {
     id: "solidario-material-deportivo",
     src: "/images/solidario/material-deportivo.jpg",
-    alt: "Reparto de balones y material deportivo en el patio de tierra de una escuela rural",
+    alt: "Maletero abierto de un Ford Escort del equipo lleno de balones, ropa y zapatillas, con cajas de donacion de material deportivo",
     caption: "Material deportivo para el patio de tierra.",
     category: "solidario",
     aspect: "square",
-    hasAsset: false,
+    hasAsset: true,
     gallery: true,
     tags: ["deporte", "entrega"],
   },
   {
     id: "solidario-comunidad-local",
     src: "/images/solidario/comunidad-local.jpg",
-    alt: "Encuentro del equipo con vecinos de una aldea bereber del sur de Marruecos",
+    alt: "Aldea bereber de Imlil, en el Alto Atlas, escalonada sobre una ladera con terrazas de cultivo",
     caption: "Sin la gente de las aldeas esto seria solo una carrera.",
     category: "solidario",
     aspect: "portrait",
-    hasAsset: false,
+    hasAsset: true,
+    credit: "Mounir Neddi · CC BY-SA 4.0",
+    creditUrl: "https://commons.wikimedia.org/wiki/File:Imlil_village,_High_Atlas_Mountains.jpg",
     gallery: true,
     tags: ["comunidad", "retrato"],
     rally: {
@@ -919,6 +937,14 @@ export function getAllTags(): string[] {
     for (const tag of entry.tags ?? []) set.add(tag);
   }
   return [...set].sort();
+}
+
+/**
+ * Fotos con fichero y credito, para la lista de creditos del footer.
+ * Solo las que ya se pintan: un credito de una foto pendiente no atribuye nada.
+ */
+export function getCreditedImages(): RallyImageEntry[] {
+  return ALL.filter((entry) => entry.hasAsset && entry.credit !== undefined);
 }
 
 /**

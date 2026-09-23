@@ -54,7 +54,7 @@ import type { CarView } from "@/lib/types";
 import { SPONSOR_TIERS, TIER_COLORS, formatTierPrice } from "@/lib/sponsors";
 import type { SponsorTierId } from "@/lib/types";
 import DossierLink from "@/components/ui/DossierLink";
-import { useT } from "@/i18n/LanguageProvider";
+import { useLocale, useT } from "@/i18n/LanguageProvider";
 import { fill } from "@/i18n/translations";
 
 import { SPONSOR_SCRIM } from "./sponsorPaint";
@@ -119,6 +119,7 @@ export default function SponsorModal({
   brand,
 }: SponsorModalProps) {
   const t = useT();
+  const { locale } = useLocale();
   const copy = t.sponsors.contactModal;
 
   /* Los ids del diálogo y de los mensajes de error tienen que ser ÚNICOS en el
@@ -357,6 +358,11 @@ export default function SponsorModal({
             message: values.message,
             consent: values.consent,
             summary: requestBody,
+            /* Para el acuse al cliente: ids que el servidor traduce él
+               mismo, nunca texto libre (ver la ruta). */
+            locale,
+            tierId: values.tier ?? "",
+            slotIds: selection.map((zone) => zone.slot.id),
             attachments: rendered.map((plate) => ({
               filename: plate.filename,
               content: base64Of(plate.dataUrl),
@@ -375,7 +381,7 @@ export default function SponsorModal({
       handOver(rendered);
       setStatus("fallback");
     },
-    [validate, plateRequests, values, brand, requestBody, handOver, t],
+    [validate, plateRequests, values, brand, requestBody, handOver, t, locale, selection],
   );
 
   if (!mounted || !open) return null;

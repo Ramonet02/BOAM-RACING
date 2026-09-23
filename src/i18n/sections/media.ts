@@ -207,13 +207,13 @@ export const media: LocalizedSection<MediaSection> = {
       items: [
         {
           name: "Instagram",
-          handle: "@boamracing",
+          handle: "@boamracingteam",
           signal: "443.8 MHz",
           desc: "El día a día del taller y, en {editionMonth}, las fotos desde la pista.",
         },
         {
           name: "TikTok",
-          handle: "@boamracing",
+          handle: "@boamracingteam",
           signal: "612.0 MHz",
           desc: "Lo que sale mal, contado rápido y sin filtro.",
         },
@@ -333,13 +333,13 @@ export const media: LocalizedSection<MediaSection> = {
       items: [
         {
           name: "Instagram",
-          handle: "@boamracing",
+          handle: "@boamracingteam",
           signal: "443.8 MHz",
           desc: "Day-to-day from the workshop and, come {editionMonth}, shots from the track.",
         },
         {
           name: "TikTok",
-          handle: "@boamracing",
+          handle: "@boamracingteam",
           signal: "612.0 MHz",
           desc: "Everything that goes wrong, told fast and unfiltered.",
         },
@@ -459,13 +459,13 @@ export const media: LocalizedSection<MediaSection> = {
       items: [
         {
           name: "Instagram",
-          handle: "@boamracing",
+          handle: "@boamracingteam",
           signal: "443.8 MHz",
           desc: "El dia a dia del taller i, al {editionMonth}, les fotos des de la pista.",
         },
         {
           name: "TikTok",
-          handle: "@boamracing",
+          handle: "@boamracingteam",
           signal: "612.0 MHz",
           desc: "El que surt malament, explicat de pressa i sense filtre.",
         },
