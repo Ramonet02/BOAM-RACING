@@ -75,8 +75,9 @@ function Reveal({
  * pieza grafica (3 px de ancho): le vale el acento pleno. El rotulo es texto
  * de 10-11 px, y ahi los acentos plenos no llegan al contraste minimo sobre
  * crema: --color-amber da 3.87:1 y --color-muted 3.41:1. Para eso existen las
- * variantes de texto, que en tactical valen EXACTAMENTE lo mismo que el
- * acento pleno (#FF6B00 y #8C8275) y en desert suben a 5.08:1 y 4.95:1:
+ * variantes de texto. En tactical el ambar vale lo mismo que el acento
+ * pleno (#FF6B00) y el terciario sube a #A0988C (#8C8275 no llegaba a AA
+ * sobre las tarjetas); en desert suben a 5.08:1 y 4.95:1:
  *   text-amber      -> text-amber-text
  *   text-muted      -> text-text-tertiary
  * El lima no necesita variante: --color-lime ya es 5.00:1 en desert (moss).

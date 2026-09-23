@@ -45,6 +45,9 @@ export interface HeroSection {
   };
   /** Scrolling ticker strip. Free length — it just loops. */
   marquee: readonly string[];
+  /** Accessible names of the ticker pause toggle (WCAG 2.2.2). */
+  marqueePause: string;
+  marqueePlay: string;
   /** Alt text for the hero background placeholder. */
   imageAlt: string;
 }
@@ -74,6 +77,8 @@ export const hero: LocalizedSection<HeroSection> = {
       statusLabel: "Estado",
       statusValue: "En preparación",
     },
+    marqueePause: "Pausar el teletipo",
+    marqueePlay: "Reanudar el teletipo",
     marquee: [
       "BOAM RACING",
       "SIN GPS",
@@ -110,6 +115,8 @@ export const hero: LocalizedSection<HeroSection> = {
       statusLabel: "Status",
       statusValue: "In preparation",
     },
+    marqueePause: "Pause the ticker",
+    marqueePlay: "Resume the ticker",
     marquee: [
       "BOAM RACING",
       "NO GPS",
@@ -146,6 +153,8 @@ export const hero: LocalizedSection<HeroSection> = {
       statusLabel: "Estat",
       statusValue: "En preparació",
     },
+    marqueePause: "Pausa el teletip",
+    marqueePlay: "Reprèn el teletip",
     marquee: [
       "BOAM RACING",
       "SENSE GPS",

@@ -221,6 +221,11 @@ export interface SponsorsSection {
     submit: string;
     submitHint: string;
     resetView: string;
+    /** Botones de camara del visor (se leen asi; el visible es + / −). */
+    zoomIn: string;
+    zoomOut: string;
+    /** Estado de una zona ya elegida, dentro de su nombre accesible. */
+    zoneSelected: string;
     strokeLabel: string;
   };
 
@@ -514,6 +519,9 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       submit: "Solicitar dossier",
       submitHint: "Elige al menos una zona para pedir el dossier.",
       resetView: "Volver a la vista inicial",
+      zoomIn: "Acercar",
+      zoomOut: "Alejar",
+      zoneSelected: "En tu propuesta",
       strokeLabel: "Trazo",
     },
 
@@ -885,6 +893,9 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       submit: "Request the dossier",
       submitHint: "Pick at least one zone to request the dossier.",
       resetView: "Back to the default view",
+      zoomIn: "Zoom in",
+      zoomOut: "Zoom out",
+      zoneSelected: "In your proposal",
       strokeLabel: "Stroke",
     },
 
@@ -1262,6 +1273,9 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       submit: "Sol·licitar el dossier",
       submitHint: "Tria com a mínim una zona per demanar el dossier.",
       resetView: "Tornar a la vista inicial",
+      zoomIn: "Apropa",
+      zoomOut: "Allunya",
+      zoneSelected: "A la teva proposta",
       strokeLabel: "Traç",
     },
 

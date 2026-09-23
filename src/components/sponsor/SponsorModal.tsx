@@ -392,7 +392,7 @@ export default function SponsorModal({
   });
 
   const inputClass =
-    "chamfer-quad-sm font-body w-full bg-bg-sunken px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary/70 focus:outline-none";
+    "chamfer-quad-sm font-body w-full bg-bg-sunken px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none";
   const inputStyle = { boxShadow: "inset 0 0 0 1px var(--color-slate)" } as const;
   const errorStyle = { boxShadow: "inset 0 0 0 1px var(--color-amber)" } as const;
 
@@ -439,7 +439,7 @@ export default function SponsorModal({
               type="button"
               onClick={onClose}
               aria-label={copy.close}
-              className="chamfer-quad-sm bg-bg-elevated text-text-secondary hover:text-amber-text shrink-0 px-3 py-2 font-mono text-[11px] tracking-[0.18em] uppercase transition-colors"
+              className="chamfer-quad-sm bg-bg-elevated text-text-secondary hover:text-amber-text shrink-0 px-3 py-2 font-mono text-[0.6875rem] tracking-[0.18em] uppercase transition-colors"
             >
               ✕
             </button>
@@ -638,7 +638,7 @@ export default function SponsorModal({
                               {zone.label}
                             </span>
                           </span>
-                          <span className="font-mono text-text-tertiary shrink-0 text-[10px] tracking-[0.1em]">
+                          <span className="font-mono text-text-tertiary shrink-0 text-[0.625rem] tracking-[0.1em]">
                             {zone.vinylLabel}
                           </span>
                         </li>
@@ -692,7 +692,7 @@ export default function SponsorModal({
               ) : null}
 
               {plateRequests.length > 0 ? (
-                <p className="font-mono text-amber-text text-[11px] tracking-[0.12em]">
+                <p className="font-mono text-amber-text text-[0.6875rem] tracking-[0.12em]">
                   {fill(copy.attachments, { n: String(plateRequests.length) })}
                 </p>
               ) : null}
@@ -704,7 +704,7 @@ export default function SponsorModal({
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="font-mono text-text-tertiary text-[10px] tracking-[0.14em] uppercase">
+                <p className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.14em] uppercase">
                   {copy.responseTime} · {CONTACT.email}
                 </p>
                 <button

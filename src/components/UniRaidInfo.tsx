@@ -100,7 +100,7 @@ export default function UniRaidInfo() {
             </motion.div>
 
             {/* Spec line */}
-            <p className="font-mono text-[9px] tracking-[2px] text-text-secondary mt-16">
+            <p className="font-mono text-[0.5625rem] tracking-[2px] text-text-secondary mt-16">
               {t.car.specLineShort}
             </p>
           </div>
@@ -129,7 +129,7 @@ export default function UniRaidInfo() {
 
                 {/* Machine Spec Line */}
                 <div className="h-px bg-slate mb-8"></div>
-                <p className="font-mono text-[10px] tracking-[2px] text-text-secondary mb-12">
+                <p className="font-mono text-[0.625rem] tracking-[2px] text-text-secondary mb-12">
                   {t.car.specLine}
                 </p>
 
@@ -164,7 +164,7 @@ export default function UniRaidInfo() {
                         (5.30-5.34:1); diluirlos habria vuelto a romper el
                         mismo caso que arregla el token.
                       */}
-                      <span className={`font-mono text-[8px] tracking-[4px] ${
+                      <span className={`font-mono text-[0.5rem] tracking-[4px] ${
                         badge.variant === "light" ? "text-text-secondary" : "text-text-inverse"
                       }`}>
                         {badge.label}
@@ -174,7 +174,7 @@ export default function UniRaidInfo() {
                       }`}>
                         {badge.value}
                       </span>
-                      <span className={`font-body text-[11px] ${
+                      <span className={`font-body text-[0.6875rem] ${
                         badge.variant === "light" ? "text-text-secondary" : "text-text-inverse"
                       }`}>
                         {badge.desc}

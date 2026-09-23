@@ -143,7 +143,8 @@ function TerrainGlyph({ terrain }: { terrain: TerrainType }) {
  * tema activo. La equivalencia conserva el valor EXACTO que se veía en
  * tactical salvo donde ya estaba roto:
  *
- *   asfalto    #8C8275 → --color-text-tertiary  idéntico en tactical
+ *   asfalto    #8C8275 → --color-text-tertiary  (#A0988C en tactical desde que
+ *                                               #8C8275 no llegaba a AA)
  *   pista      #D4A359 → --color-sand           idéntico
  *   dunas      #FF6B00 → --color-amber-text     idéntico (5,08:1 en desert)
  *   gargantas  #CCFF00 → --color-lime           idéntico (moss en desert)

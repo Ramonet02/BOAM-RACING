@@ -9,8 +9,10 @@
 
    ACCESIBILIDAD
    Cada zona vendible es un control real: `role="button"`, `tabIndex=0`,
-   `aria-label` con nombre + estado + nivel + medida del vinilo, `aria-pressed`
-   con la selección, y Enter/Espacio la activan. Una zona apagada por el filtro
+   `aria-label` con nombre + estado + nivel + medida del vinilo, y Enter/Espacio
+   la activan. Si activarla abre el estudio de rotulado (`opensStudio`, el caso
+   de /patrocinio) se anuncia como `aria-haspopup="dialog"` con "En tu
+   propuesta" dentro del nombre; si solo conmuta, lleva `aria-pressed`. Una zona apagada por el filtro
    sale del orden de tabulación y del árbol de accesibilidad: sigue viéndose
    como contexto del dibujo, pero no es un control.
 
@@ -53,6 +55,13 @@ export interface SponsorZoneProps {
   /** Id del <pattern> con la trama de "ocupada". */
   occupiedPatternId: string;
   /**
+   * Activar la zona abre el estudio de rotulado (un dialogo) en vez de
+   * conmutarla. Cambia la semantica: `aria-haspopup="dialog"` y el estado de
+   * seleccion dentro del nombre, NO `aria-pressed` — un conmutador que al
+   * pulsarlo abre un dialogo en lugar de desmarcarse miente al lector.
+   */
+  opensStudio?: boolean;
+  /**
    * Activar la zona. El segundo argumento dice si vino del puntero o del
    * teclado: el visor descarta el `click` que cierra un arrastre, y ese
    * descarte no debe alcanzar nunca a un Enter/Espacio.
@@ -68,6 +77,7 @@ export default function SponsorZone({
   selected,
   active,
   occupiedPatternId,
+  opensStudio = false,
   onActivate,
   onHoverChange,
   onFocusChange,
@@ -156,7 +166,7 @@ export default function SponsorZone({
       `${label} · ${interpolate(t.sponsors.configurator.zoneLinksTo, { view: viewLabel })}`
     : occupied
       ? `${label} · ${statusLabel} · ${tierLabel} · ${slot.sponsor ? slot.sponsor.name : ""}`.trim()
-      : `${label} · ${statusLabel} · ${tierLabel} · ${vinylLabel}`;
+      : [label, opensStudio && selected ? t.sponsors.configurator.zoneSelected : statusLabel, tierLabel, vinylLabel].join(" · ");
 
   return (
     <g>
@@ -165,7 +175,8 @@ export default function SponsorZone({
         role="button"
         tabIndex={0}
         aria-label={ariaLabel}
-        aria-pressed={occupied ? undefined : selected}
+        aria-pressed={occupied || opensStudio || viewLabel ? undefined : selected}
+        aria-haspopup={opensStudio && !occupied && !viewLabel ? "dialog" : undefined}
         aria-disabled={occupied ? true : undefined}
         data-tier={slot.tier}
         data-status={slot.status}

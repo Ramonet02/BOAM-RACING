@@ -99,7 +99,7 @@ export default function FooterSection() {
               ))}
             </h2>
 
-            <p className="font-body text-[15px] md:text-base text-text-secondary leading-[1.75] max-w-[560px] mb-9">
+            <p className="font-body text-[0.9375rem] md:text-base text-text-secondary leading-[1.75] max-w-[560px] mb-9">
               {t.footer.description}
             </p>
 
@@ -149,7 +149,7 @@ export default function FooterSection() {
                       rel="noopener noreferrer"
                       className="font-body text-sm text-text-secondary hover:text-amber-text transition-colors inline-flex items-center gap-2"
                     >
-                      <span className="font-mono text-[10px] text-text-tertiary tracking-[2px]">
+                      <span className="font-mono text-[0.625rem] text-text-tertiary tracking-[2px]">
                         {SOCIAL_SHORT[social.platform] ?? social.platform.slice(0, 2).toUpperCase()}
                       </span>
                       {social.handle}
@@ -168,7 +168,7 @@ export default function FooterSection() {
               >
                 {CONTACT.email}
               </a>
-              <span className="font-mono text-[9px] tracking-[2px] text-text-tertiary uppercase mt-2">
+              <span className="font-mono text-[0.5625rem] tracking-[2px] text-text-tertiary uppercase mt-2">
                 {t.footer.locationLabel}
               </span>
               <p className="gps-label leading-[1.7]">
@@ -192,7 +192,7 @@ export default function FooterSection() {
             </summary>
             <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-1.5">
               {credited.map((entry) => (
-                <li key={entry.id} className="font-mono text-[10px] leading-relaxed text-text-tertiary">
+                <li key={entry.id} className="font-mono text-[0.625rem] leading-relaxed text-text-tertiary">
                   <span className="text-text-secondary">{entry.rally?.location ?? entry.alt}</span>
                   {" — "}
                   {entry.creditUrl ? (
@@ -216,13 +216,13 @@ export default function FooterSection() {
 
         {/* ── Barra inferior ───────────────────────────────────────────── */}
         <div className={`${credited.length > 0 ? "mt-8" : "mt-16"} pt-6 border-t border-slate flex flex-col md:flex-row md:items-center justify-between gap-4`}>
-          <span className="font-mono text-[9px] tracking-[3px] text-text-tertiary uppercase">
+          <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase">
             &copy; {year} {BRAND.name} · {t.footer.rights}
           </span>
-          <span className="font-mono text-[9px] tracking-[3px] text-text-tertiary uppercase text-center md:text-right">
+          <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase text-center md:text-right">
             {t.footer.editionLine}
           </span>
-          <span className="font-mono text-[9px] tracking-[3px] text-text-tertiary/70 uppercase md:text-right">
+          <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase md:text-right">
             {t.footer.madeBy}
           </span>
         </div>

@@ -57,17 +57,17 @@ export default function ProjectStory() {
                 ))}
               </h2>
 
-              <div className="space-y-6 text-[15px] text-text-primary/80 font-body leading-[1.7] max-w-[460px]">
+              <div className="space-y-6 text-[0.9375rem] text-text-primary/80 font-body leading-[1.7] max-w-[460px]">
                 <p>{t.project.p1}</p>
                 <p>{t.project.p2}</p>
               </div>
 
               {/* Technical Rules */}
               <div className="mt-10 space-y-1">
-                <p className="font-mono text-[10px] tracking-[2px] text-sand">
+                <p className="font-mono text-[0.625rem] tracking-[2px] text-sand">
                   {t.project.rules1}
                 </p>
-                <p className="font-mono text-[10px] tracking-[2px] text-sand">
+                <p className="font-mono text-[0.625rem] tracking-[2px] text-sand">
                   {t.project.rules2}
                 </p>
               </div>
@@ -116,7 +116,7 @@ export default function ProjectStory() {
                   pagina (--color-bg-base) y tinta de texto del tema—, asi que
                   la banda es negra en tactical y crema en desert sola. */}
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-bg-base/85 to-transparent">
-                <p className="font-mono text-[9px] tracking-[2px] text-text-secondary">
+                <p className="font-mono text-[0.5625rem] tracking-[2px] text-text-secondary">
                   {t.project.imageCaption}
                 </p>
               </div>

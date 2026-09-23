@@ -46,13 +46,13 @@
                  resueltos por el compositor de i18n).
      · cifras -> `PROJECT_FACTS`, derivado de route.ts y team.ts.
      · coords -> `HERO_COORDS.dms` de constants.ts.
-     · imagen -> manifiesto de `src/lib/imagery.ts`. Cero banco de
-                 imagenes generico: hasta que llegue la foto real del
-                 equipo se pinta el placeholder tactico.
+     · imagen -> manifiesto de `src/lib/imagery.ts` (hoy, paisaje del Erg
+                 Chebbi de Wikimedia Commons con su credito en el footer).
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 import Link from "next/link";
-import { useEffect, useRef, type CSSProperties, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
+import { Pause, Play } from "lucide-react";
 import {
   motion,
   useMotionValue,
@@ -223,6 +223,7 @@ export default function HeroSection() {
   const { locale } = useLocale();
   const sectionRef = useRef<HTMLElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const [marqueePaused, setMarqueePaused] = useState(false);
   const parallax = prefersReducedMotion !== true;
 
   /* ── Parallax de scroll ─────────────────────────────────────────────── */
@@ -600,25 +601,47 @@ export default function HeroSection() {
           Lo que se pierde: nada visible. El desenfoque era de 2 px y esta
           banda ya es opaca al 94 % en desierto y al 55 % en táctico — detrás
           de eso, 2 px de blur no se distinguen. */}
+      {/* PAUSA (WCAG 2.2.2). El teletipo desplaza texto sin fin, y todo
+          movimiento automatico de mas de 5 s necesita una forma de pararlo:
+          reduced-motion lo apaga, pero no todo el que se marea lo tiene
+          activado. Se para al pasar el raton y tiene boton propio. La cinta
+          sigue siendo `aria-hidden` (es decorativa y va triplicada); el boton
+          NO puede estar dentro de ese aria-hidden, por eso va aparte. */}
       <div
-        aria-hidden="true"
-        className="relative z-20 w-full overflow-hidden border-y border-slate/70 py-2.5"
+        className="group/marquee relative z-20 flex w-full items-center border-y border-slate/70"
         style={{ backgroundColor: "rgb(var(--base-rgb) / var(--hero-marquee))" }}
       >
-        <div className="animate-marquee flex w-max will-change-transform">
-          {marqueeTrack.map((entry, i) => (
-            <span
-              key={`${i}-${entry}`}
-              className="telemetry-label flex shrink-0 items-center gap-5 px-5"
-            >
-              {/* Mono de 11px: mismo motivo que la unidad de los contadores. */}
-              <span className={i % 3 === 1 ? "text-amber-text" : "text-text-tertiary"}>
-                {entry}
+        <div aria-hidden="true" className="min-w-0 flex-1 overflow-hidden py-2.5">
+          <div
+            className="animate-marquee flex w-max will-change-transform group-hover/marquee:[animation-play-state:paused]"
+            style={marqueePaused ? { animationPlayState: "paused" } : undefined}
+          >
+            {marqueeTrack.map((entry, i) => (
+              <span
+                key={`${i}-${entry}`}
+                className="telemetry-label flex shrink-0 items-center gap-5 px-5"
+              >
+                {/* Mono de 11px: mismo motivo que la unidad de los contadores. */}
+                <span className={i % 3 === 1 ? "text-amber-text" : "text-text-tertiary"}>
+                  {entry}
+                </span>
+                <span className="text-amber/50">&#9670;</span>
               </span>
-              <span className="text-amber/50">&#9670;</span>
-            </span>
-          ))}
+            ))}
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => setMarqueePaused((paused) => !paused)}
+          aria-label={marqueePaused ? t.hero.marqueePlay : t.hero.marqueePause}
+          className="mx-2 flex h-7 w-7 shrink-0 items-center justify-center text-text-tertiary transition-colors hover:text-amber-text motion-reduce:hidden"
+        >
+          {marqueePaused ? (
+            <Play size={12} strokeWidth={2} aria-hidden="true" />
+          ) : (
+            <Pause size={12} strokeWidth={2} aria-hidden="true" />
+          )}
+        </button>
       </div>
 
       {/* ═══ 20 · Divisoria "sierra de montanas" ══════════════════════════ */}

@@ -29,7 +29,7 @@
      01 · Tokens de tema        (@theme → utilidades Tailwind) · valores DESERT
      02 · Tema DESERT           (:root, :root[data-theme="desert"])
      03 · Tema TACTICAL         (:root[data-theme="tactical"])
-     04 · Runtime no tematico   (chaflan, coche, geometria HUD, puente legacy)
+     04 · Runtime no tematico   (chaflan, coche, geometria HUD)
      05 · Base / reset tematico + transicion de cambio de tema
      06 · Keyframes
      07 · Utilidades
@@ -322,7 +322,12 @@
   /* ── Texto ───────────────────────────────────────────────────────────── */
   --color-text-primary: #F2EFE9;   /* blanco calido: titulares y cuerpo     */
   --color-text-secondary: #B4AFA6; /* parrafos secundarios                  */
-  --color-text-tertiary: #8C8275;  /* metadatos, captions                   */
+  /* Metadatos, captions. Era #8C8275 (= --color-muted): 4.27:1 sobre
+     elevated y 3.56:1 sobre la columna lima de la matriz, por debajo de AA.
+     #A0988C da 5.66 sobre elevated, 4.71 sobre lima al 7 % y sigue a 1.31
+     del secundario, asi que la jerarquia no se aplana. --color-muted se
+     queda en #8C8275: solo pinta puntos y adornos, no texto. */
+  --color-text-tertiary: #A0988C;
   --color-text-inverse: #0F1012;   /* texto sobre ambar / lima              */
 
   /* ── Canales RGB · separados por ESPACIO ─────────────────────────────── */
@@ -391,7 +396,7 @@
 
 
 /* ═══ 04 · TOKENS DE RUNTIME NO TEMATICOS ══════════════════════════════════
-   Geometria y puentes. Fuera de @theme a proposito: no deben generar
+   Geometria. Fuera de @theme a proposito: no deben generar
    utilidades de color. Nada de aqui cambia entre temas — lo que si cambia
    son los tokens de color que estos componen.                              */
 
@@ -444,18 +449,9 @@
      solo sitio.                                                            */
   --theme-transition-duration: 200ms;
 
-  /* ── PUENTE LEGACY · DEPRECADO ───────────────────────────────────────────
-     Modulos aun sin migrar leen estos nombres en estilos inline. Se
-     remapean a tokens del sistema, asi que siguen el tema activo solos.
-     Borrar el bloque cuando todos los modulos consuman los tokens nuevos.
-     Ojo: --color-moss apunta a sand por historia (el "moss" del tema arena
-     viejo), NO al rol de senal. El rol de senal es --color-lime.           */
-  --color-rust: var(--color-amber);
-  --color-moss: var(--color-sand);
-  --color-bg-sand: var(--color-bg-base);
-  --color-bg-dark: var(--color-bg-surface);
-  --color-text-light: var(--color-text-primary);
-  --color-border: var(--color-slate);
+  /* El PUENTE LEGACY (--color-rust, -moss, -bg-sand, -bg-dark, -text-light,
+     -border) se retiro cuando ya ningun modulo lo leia: todos consumen los
+     tokens del sistema. No reintroducir alias: usar el token con su nombre. */
 }
 
 
@@ -953,9 +949,9 @@
 
   /* ── .telemetry-label · la etiqueta mono de toda la UI ───────────────────
      Mono, mayusculas, tracking amplio. Es el tic tipografico de la marca.
-     Color: text-tertiary, no muted. En tactical los dos valen #8C8275 (no
-     cambia un pixel); en desert text-tertiary da 4.95:1 y muted 3.41:1, y
-     esta etiqueta es texto pequeno que hay que poder leer.                 */
+     Color: text-tertiary, no muted: es el token de TEXTO. En desert da
+     4.95:1 frente a los 3.41:1 de muted; en tactical #A0988C frente a
+     #8C8275. Esta etiqueta es texto pequeno que hay que poder leer.                 */
   .telemetry-label {
     font-family: var(--font-mono);
     font-size: 0.6875rem;

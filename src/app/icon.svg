@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>BOAM RACING</title>
+  <!-- Placa: la marca del navbar (cuadrado ambar con el canto inferior
+       derecho achaflanado), a sangre para que se lea a 16 px.
+       Reticula de 4 unidades = 1 px a 16 px: todos los cantos caen en pixel
+       entero a 16, 32 y 48 px, y el trazo de 8 son 2 px nitidos a 16. -->
+  <path d="M0 0H64V48L48 64H0Z" fill="#FF6B00"/>
+  <!-- "BR" en trazo angular, con los chaflanes de Chakra Petch. Trazos y no
+       texto: un favicon no puede depender de una fuente instalada. -->
+  <g fill="none" stroke="#0F1012" stroke-width="8" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M12 20V44M12 20H20L24 24V28L20 32H12M20 32L24 36V40L20 44H12"/>
+    <path d="M40 20V44M40 20H48L52 24V28L48 32H40"/>
+  </g>
+  <!-- Pata de la R maciza, con la base plana a la altura de los fustes. -->
+  <path d="M45 32H53L58 48H50Z" fill="#0F1012"/>
+</svg>

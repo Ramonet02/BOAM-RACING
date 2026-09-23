@@ -146,7 +146,7 @@ export default function ThemeToggle({ showLabel = false, className = "" }: Theme
       aria-pressed={theme === "tactical"}
       aria-label={ariaLabel}
       title={ariaLabel}
-      className={`group relative inline-flex items-center justify-center gap-2 h-8 border border-slate text-text-secondary hover:text-amber hover:border-amber transition-colors duration-300 cursor-pointer ${
+      className={`group relative inline-flex items-center justify-center gap-2 h-8 border border-slate text-text-secondary hover:text-amber-text hover:border-amber transition-colors duration-300 cursor-pointer ${
         showLabel ? "px-3" : "w-8"
       } ${className}`}
     >
@@ -179,7 +179,7 @@ export default function ThemeToggle({ showLabel = false, className = "" }: Theme
       {showLabel && (
         <span
           aria-hidden
-          className="font-mono text-[10px] tracking-[2px] uppercase font-semibold whitespace-nowrap"
+          className="font-mono text-[0.625rem] tracking-[2px] uppercase font-semibold whitespace-nowrap"
         >
           {copy.names[theme]}
         </span>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Chakra_Petch, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import CursorTopoEffect from "@/components/ui/CursorTopoEffect";
+import LocalizedTitle from "@/components/ui/LocalizedTitle";
 import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
@@ -55,7 +56,25 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+/**
+ * Base de las URLs absolutas de los metadatos (og:image, iconos del
+ * manifest). Sale de `SITE_URL`, la misma variable que usa el correo de
+ * confirmacion. Sin ella, Next compone `og:image` contra localhost y las
+ * previsualizaciones de WhatsApp o LinkedIn salen sin imagen: en el hosting
+ * TIENE que estar definida en el momento del build.
+ */
+function siteUrl(): URL | undefined {
+  const raw = process.env.SITE_URL?.trim();
+  if (!raw) return undefined;
+  try {
+    return new URL(raw);
+  } catch {
+    return undefined;
+  }
+}
+
 export const metadata: Metadata = {
+  metadataBase: siteUrl(),
   title: {
     default: SITE_META.title,
     template: `%s · ${BRAND.name}`,
@@ -139,6 +158,7 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>
             <CursorTopoEffect />
+            <LocalizedTitle />
             <Navbar />
             {children}
             <FooterSection />

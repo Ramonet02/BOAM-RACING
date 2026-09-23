@@ -488,7 +488,7 @@ export default function ZoneStudio({
             <h2 id={titleId} className="font-heading text-text-primary truncate text-lg font-bold sm:text-xl">
               {zone.label}
             </h2>
-            <p className="font-mono text-text-tertiary mt-0.5 text-[11px] tracking-[0.14em] uppercase">
+            <p className="font-mono text-text-tertiary mt-0.5 text-[0.6875rem] tracking-[0.14em] uppercase">
               {t.sponsors.tierLabels[zone.slot.tier]} · {zone.vinylLabel}
             </p>
           </div>
@@ -585,7 +585,7 @@ export default function ZoneStudio({
               {marker}
             </svg>
 
-            <p className="font-mono text-text-tertiary pointer-events-none absolute bottom-2 left-3 z-[2] text-[10px] tracking-[0.12em] uppercase">
+            <p className="font-mono text-text-tertiary pointer-events-none absolute bottom-2 left-3 z-[2] text-[0.625rem] tracking-[0.12em] uppercase">
               {copy.canvasHint}
             </p>
           </div>
@@ -613,6 +613,11 @@ export default function ZoneStudio({
               ref={fileRef}
               type="file"
               accept={ACCEPTED_IMAGE_TYPES}
+              /* Fuera del arbol de accesibilidad y del tabulador: el control
+                 real es el boton "Subir logo", que lo abre. Sin esto, el lector
+                 y el Tab encontraban un campo de fichero sin nombre (axe: label). */
+              aria-hidden="true"
+              tabIndex={-1}
               className="sr-only"
               onChange={(event) => {
                 void handleFile(event.target.files?.[0]);
@@ -621,14 +626,14 @@ export default function ZoneStudio({
               }}
             />
             {uploadError ? (
-              <p role="alert" className="font-mono text-[11px] text-amber-text">
+              <p role="alert" className="font-mono text-[0.6875rem] text-amber-text">
                 {copy.uploadErrors[uploadError]}
               </p>
             ) : null}
 
             {/* ── Elementos ── */}
             <section className="min-h-0">
-              <h3 className="font-mono text-text-tertiary mb-2 text-[10px] tracking-[0.18em] uppercase">
+              <h3 className="font-mono text-text-tertiary mb-2 text-[0.625rem] tracking-[0.18em] uppercase">
                 {copy.itemsLabel} ({artwork.items.length})
               </h3>
               {artwork.items.length === 0 ? (
@@ -656,7 +661,7 @@ export default function ZoneStudio({
                         onClick={() => bringToFront(item.id)}
                         aria-label={copy.bringToFront}
                         title={copy.bringToFront}
-                        className="border-slate border px-2 py-1 font-mono text-[10px]"
+                        className="border-slate border px-2 py-1 font-mono text-[0.625rem]"
                       >
                         ▲
                       </button>
@@ -665,7 +670,7 @@ export default function ZoneStudio({
                         onClick={() => removeItem(item.id)}
                         aria-label={copy.removeItem}
                         title={copy.removeItem}
-                        className="border-slate border px-2 py-1 font-mono text-[10px]"
+                        className="border-slate border px-2 py-1 font-mono text-[0.625rem]"
                       >
                         ✕
                       </button>
@@ -678,14 +683,14 @@ export default function ZoneStudio({
             {/* ── Propiedades del elemento activo ── */}
             {activeItem ? (
               <section className="flex flex-col gap-3">
-                <h3 className="font-mono text-text-tertiary text-[10px] tracking-[0.18em] uppercase">
+                <h3 className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.18em] uppercase">
                   {copy.propertiesLabel}
                 </h3>
 
                 {activeItem.kind === "text" ? (
                   <>
                     <label className="flex flex-col gap-1">
-                      <span className="font-mono text-text-tertiary text-[10px] tracking-[0.14em] uppercase">
+                      <span className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.14em] uppercase">
                         {copy.textLabel}
                       </span>
                       <input
@@ -699,7 +704,7 @@ export default function ZoneStudio({
                     </label>
 
                     <label className="flex flex-col gap-1">
-                      <span className="font-mono text-text-tertiary text-[10px] tracking-[0.14em] uppercase">
+                      <span className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.14em] uppercase">
                         {copy.fontLabel}
                       </span>
                       <select
@@ -761,7 +766,7 @@ export default function ZoneStudio({
                     />
 
                     <div>
-                      <span className="font-mono text-text-tertiary mb-1.5 block text-[10px] tracking-[0.14em] uppercase">
+                      <span className="font-mono text-text-tertiary mb-1.5 block text-[0.625rem] tracking-[0.14em] uppercase">
                         {copy.colorLabel}
                       </span>
                       <div className="flex flex-wrap gap-1.5">
@@ -818,7 +823,7 @@ export default function ZoneStudio({
                 {/* La medida REAL del elemento sobre la chapa. Es el dato que
                     convierte el juguete en una herramienta: un logo que se ve
                     bien en pantalla puede salir de 4 cm en el coche. */}
-                <p className="font-mono text-amber-text text-[11px] tracking-[0.1em]">
+                <p className="font-mono text-amber-text text-[0.6875rem] tracking-[0.1em]">
                   {(() => {
                     const cm = itemVinylCm(activeItem, box, cmPerUnit);
                     return `${cm.w} × ${cm.h} cm`;
@@ -832,8 +837,10 @@ export default function ZoneStudio({
         </div>
 
         {/* ══════════════ Pie ══════════════ */}
-        <footer className="border-slate flex border-t shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <p className="font-mono text-text-tertiary text-[11px] tracking-[0.1em]">
+        {/* <div> y no <footer>: dentro de un dialogo, un <footer> suelto cuenta
+            como el pie (contentinfo) de la pagina, que ya tiene el suyo. */}
+        <div className="border-slate flex border-t shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <p className="font-mono text-text-tertiary text-[0.6875rem] tracking-[0.1em]">
             {selected ? copy.zoneIncluded : copy.zoneNotIncluded}
           </p>
           <div className="flex gap-2">
@@ -846,7 +853,7 @@ export default function ZoneStudio({
               {copy.done}
             </button>
           </div>
-        </footer>
+        </div>
       </div>
     </div>,
     document.body,
@@ -869,7 +876,7 @@ interface SliderProps {
 function Slider({ label, value, min, max, step, onChange }: SliderProps) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="font-mono text-text-tertiary text-[10px] tracking-[0.14em] uppercase">
+      <span className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.14em] uppercase">
         {label}
       </span>
       <input

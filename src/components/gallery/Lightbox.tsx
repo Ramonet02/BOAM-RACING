@@ -377,8 +377,11 @@ export default function Lightbox({
           )}
         </div>
 
-        {/* ── Ficha tecnica ────────────────────────────────────── */}
-        <footer className="pointer-events-auto shrink-0 border-t border-slate/70 bg-bg-base/80 px-4 py-4 sm:px-6 sm:py-5">
+        {/* ── Ficha tecnica ──────────────────────────────────────
+            <div> y no <footer>: dentro de un dialogo, un <footer> sin
+            <article> padre cuenta como el pie (contentinfo) de la pagina, y
+            la pagina ya tiene el suyo. */}
+        <div className="pointer-events-auto shrink-0 border-t border-slate/70 bg-bg-base/80 px-4 py-4 sm:px-6 sm:py-5">
           <div className="mx-auto flex max-w-5xl flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2">
               {stage && (
@@ -425,7 +428,7 @@ export default function Lightbox({
               )}
             </dl>
           </div>
-        </footer>
+        </div>
       </div>
     </div>,
     document.body,

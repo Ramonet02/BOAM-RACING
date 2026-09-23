@@ -298,18 +298,6 @@ const STROKE_STEPS = [1, 1.75, 2.75] as const;
 /** Un nombre más largo que esto no cabe en ningún vinilo: se recorta. */
 const BRAND_STAMP_MAX_CHARS = 18;
 
-/**
- * Nombre accesible de los botones de cámara.
- *
- * `t.sponsors.configurator` NO tiene hoy claves para acercar/alejar, y los
- * ficheros de i18n no son de este módulo, así que aquí no se inventa una.
- * "Zoom" se escribe igual en castellano, inglés y catalán, que son los tres
- * idiomas de la web, de modo que sirve de nombre accesible honesto hasta que
- * existan `configurator.zoomIn` / `configurator.zoomOut`. Lo que NO puede
- * quedarse es el nombre anterior ("Vista −"), que describía otra cosa.
- */
-const ZOOM_IN_LABEL = "Zoom +";
-const ZOOM_OUT_LABEL = "Zoom −";
 
 /**
  * Cuerpo de letra, en unidades de viewBox, para estampar `chars` caracteres
@@ -711,14 +699,23 @@ export default function CarViewer({
     setPinnedId(null);
   }, [view]);
 
+  /* Escape descarta el tooltip que haya, anclado o no (WCAG 1.4.13: lo que
+     aparece al pasar el raton o al enfocar se tiene que poder cerrar sin
+     mover ni el puntero ni el foco). Antes solo cerraba el anclado: el de
+     hover/foco se quedaba tapando el coche hasta sacar el raton de la zona.
+     Vuelve en cuanto el puntero o el foco pasan a otra zona. */
+  const tooltipShown = Boolean(pinnedId ?? hoveredId ?? focusedId);
   useEffect(() => {
-    if (!pinnedId) return;
+    if (!tooltipShown) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setPinnedId(null);
+      if (event.key !== "Escape") return;
+      setPinnedId(null);
+      setHoveredId(null);
+      setFocusedId(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [pinnedId]);
+  }, [tooltipShown]);
 
   const selected = useMemo(() => new Set(selectedIds), [selectedIds]);
 
@@ -877,6 +874,7 @@ export default function CarViewer({
                 zone={zone}
                 muted={isMuted(zone)}
                 selected={selected.has(zone.slot.id)}
+                opensStudio={Boolean(onOpenStudio)}
                 active={activeId === zone.slot.id}
                 occupiedPatternId={`occupied-${uid}`}
                 onActivate={handleActivate}
@@ -983,8 +981,8 @@ export default function CarViewer({
               type="button"
               onClick={() => stepZoom(1 / 1.45)}
               disabled={zoom <= MIN_ZOOM + 0.001}
-              aria-label={ZOOM_OUT_LABEL}
-              title={ZOOM_OUT_LABEL}
+              aria-label={t.sponsors.configurator.zoomOut}
+              title={t.sponsors.configurator.zoomOut}
               className="font-mono h-8 w-8 text-sm text-text-secondary transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
             >
               −
@@ -993,8 +991,8 @@ export default function CarViewer({
               type="button"
               onClick={() => stepZoom(1.45)}
               disabled={zoom >= MAX_ZOOM - 0.001}
-              aria-label={ZOOM_IN_LABEL}
-              title={ZOOM_IN_LABEL}
+              aria-label={t.sponsors.configurator.zoomIn}
+              title={t.sponsors.configurator.zoomIn}
               className="font-mono h-8 w-8 text-sm text-text-secondary transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
             >
               +
@@ -1005,7 +1003,7 @@ export default function CarViewer({
               disabled={zoom <= MIN_ZOOM + 0.001}
               aria-label={t.sponsors.configurator.resetView}
               title={t.sponsors.configurator.resetView}
-              className="font-mono h-8 px-2 text-[10px] tracking-[0.18em] text-text-secondary uppercase transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
+              className="font-mono h-8 px-2 text-[0.625rem] tracking-[0.18em] text-text-secondary uppercase transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
             >
               1:1
             </button>
@@ -1023,7 +1021,7 @@ export default function CarViewer({
                 onClick={() => setStrokeIndex(index)}
                 aria-pressed={strokeIndex === index}
                 aria-label={`${t.sponsors.configurator.strokeLabel} ${index + 1}`}
-                className={`font-mono h-6 w-6 text-[10px] transition-colors ${
+                className={`font-mono h-6 w-6 text-[0.625rem] transition-colors ${
                   strokeIndex === index
                     ? "bg-amber-solid text-text-inverse"
                     : "text-text-tertiary hover:text-text-primary"

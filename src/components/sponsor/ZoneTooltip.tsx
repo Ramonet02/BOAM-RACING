@@ -114,13 +114,13 @@ export default function ZoneTooltip({
           {/* Cabecera: nivel + estado */}
           <div className="flex items-center justify-between gap-2">
             <span
-              className="font-mono text-[10px] leading-none font-semibold tracking-[0.22em] uppercase"
+              className="font-mono text-[0.625rem] leading-none font-semibold tracking-[0.22em] uppercase"
               style={{ color: tierInk }}
             >
               {t.sponsors.tierLabels[slot.tier]}
             </span>
             <span
-              className={`font-mono text-[10px] leading-none tracking-[0.18em] uppercase ${
+              className={`font-mono text-[0.625rem] leading-none tracking-[0.18em] uppercase ${
                 occupied ? "text-text-tertiary" : "text-lime"
               }`}
             >
@@ -128,7 +128,7 @@ export default function ZoneTooltip({
             </span>
           </div>
 
-          <p className="font-heading text-text-primary text-[15px] leading-tight font-semibold tracking-wide uppercase">
+          <p className="font-heading text-text-primary text-[0.9375rem] leading-tight font-semibold tracking-wide uppercase">
             {label}
           </p>
 
@@ -144,14 +144,14 @@ export default function ZoneTooltip({
                   className="max-h-9 w-auto object-contain"
                 />
               </div>
-              <p className="font-body text-text-secondary text-[13px] leading-snug">
+              <p className="font-body text-text-secondary text-[0.8125rem] leading-snug">
                 {slot.sponsor.name}
               </p>
               <a
                 href={slot.sponsor.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="link-tactical font-mono text-[11px] tracking-[0.14em] text-amber-text uppercase"
+                className="link-tactical font-mono text-[0.6875rem] tracking-[0.14em] text-amber-text uppercase"
               >
                 {slot.sponsor.url.replace(/^https?:\/\//, "")}
                 <span className="sr-only"> ({t.common.a11y.externalLink})</span>
@@ -171,7 +171,7 @@ export default function ZoneTooltip({
               <div className="border-slate flex items-baseline justify-between gap-2 border-t pt-2.5">
                 <span className="telemetry-label">{t.sponsors.price.label}</span>
                 <span
-                  className="font-heading text-[17px] leading-none font-bold"
+                  className="font-heading text-[1.0625rem] leading-none font-bold"
                   style={{ color: tierInk }}
                 >
                   {formatTierPrice(tier)}
@@ -186,7 +186,7 @@ export default function ZoneTooltip({
             <button
               type="button"
               onClick={onClose}
-              className="font-mono text-text-tertiary hover:text-amber-text mt-1 w-full border-t border-slate pt-2.5 text-[10px] tracking-[0.2em] uppercase transition-colors"
+              className="font-mono text-text-tertiary hover:text-amber-text mt-1 w-full border-t border-slate pt-2.5 text-[0.625rem] tracking-[0.2em] uppercase transition-colors"
             >
               {t.common.actions.close}
             </button>

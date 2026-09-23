@@ -90,7 +90,7 @@ export default function TierFilter({
                 /* Pastilla, no bisel. El chaflán de `chamfer-quad-sm` corta
                    las cuatro esquinas en ángulo y a 10 px de cuerpo endurece
                    mucho un control tan pequeño. */
-                className="font-mono flex items-center gap-2 rounded-full px-3.5 py-2 text-[10px] tracking-[0.16em] uppercase transition-colors"
+                className="font-mono flex items-center gap-2 rounded-full px-3.5 py-2 text-[0.625rem] tracking-[0.16em] uppercase transition-colors"
                 style={{
                   color: isActive
                     ? "var(--color-text-inverse)"
@@ -127,7 +127,7 @@ export default function TierFilter({
           role="switch"
           aria-checked={availableOnly}
           onClick={() => onAvailableOnlyChange(!availableOnly)}
-          className={`font-mono ml-auto flex items-center gap-2 rounded-full px-3.5 py-2 text-[10px] tracking-[0.16em] uppercase transition-colors ${
+          className={`font-mono ml-auto flex items-center gap-2 rounded-full px-3.5 py-2 text-[0.625rem] tracking-[0.16em] uppercase transition-colors ${
             availableOnly
               ? "bg-lime text-text-inverse"
               : "text-text-secondary hover:text-text-primary bg-bg-elevated"
@@ -159,10 +159,10 @@ export default function TierFilter({
                 style={{ background: TIER_COLORS[tier.id] }}
               />
               <span className="min-w-0">
-                <span className="font-mono block text-[11px] leading-tight tracking-[0.14em] text-text-primary uppercase">
+                <span className="font-mono block text-[0.6875rem] leading-tight tracking-[0.14em] text-text-primary uppercase">
                   {t.sponsors.tierLabels[tier.id]}
                 </span>
-                <span className="font-mono text-text-tertiary block text-[10px] leading-tight tracking-[0.1em]">
+                <span className="font-mono text-text-tertiary block text-[0.625rem] leading-tight tracking-[0.1em]">
                   {formatTierPrice(tier)} · {formatTierAvailabilityShort(tier, t)}
                 </span>
               </span>

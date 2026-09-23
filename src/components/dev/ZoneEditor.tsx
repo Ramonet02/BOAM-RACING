@@ -648,7 +648,7 @@ export default function ZoneEditor() {
                 key={v}
                 type="button"
                 onClick={() => setView(v)}
-                className={`chamfer-sm font-mono px-3 py-2 text-[11px] tracking-[0.14em] uppercase transition-colors ${
+                className={`chamfer-sm font-mono px-3 py-2 text-[0.6875rem] tracking-[0.14em] uppercase transition-colors ${
                   v === view
                     ? "bg-amber-solid text-text-inverse"
                     : "bg-bg-surface text-text-secondary hover:bg-bg-elevated"
@@ -657,7 +657,7 @@ export default function ZoneEditor() {
                 {VIEW_LABEL[v]}
               </button>
             ))}
-            <span className="font-mono ml-auto text-[11px] text-text-tertiary">
+            <span className="font-mono ml-auto text-[0.6875rem] text-text-tertiary">
               {Math.round(zoom * 100)}%
             </span>
             <button
@@ -666,7 +666,7 @@ export default function ZoneEditor() {
                 setZoom(1);
                 setFocus(null);
               }}
-              className="chamfer-sm font-mono bg-bg-surface px-3 py-2 text-[11px] uppercase"
+              className="chamfer-sm font-mono bg-bg-surface px-3 py-2 text-[0.6875rem] uppercase"
             >
               1:1
             </button>
@@ -848,7 +848,7 @@ export default function ZoneEditor() {
           </div>
 
           {/* Controles de lienzo */}
-          <div className="font-mono mt-2 flex flex-wrap items-center gap-4 text-[11px] text-text-secondary">
+          <div className="font-mono mt-2 flex flex-wrap items-center gap-4 text-[0.6875rem] text-text-secondary">
             <label className="flex items-center gap-2">
               Opacidad línea
               <input
@@ -893,7 +893,7 @@ export default function ZoneEditor() {
               <button
                 type="button"
                 onClick={save}
-                className="chamfer-sm font-mono flex-1 bg-amber-solid px-3 py-2 text-[11px] tracking-[0.14em] text-text-inverse uppercase"
+                className="chamfer-sm font-mono flex-1 bg-amber-solid px-3 py-2 text-[0.6875rem] tracking-[0.14em] text-text-inverse uppercase"
               >
                 Guardar
               </button>
@@ -901,7 +901,7 @@ export default function ZoneEditor() {
                 type="button"
                 onClick={undo}
                 disabled={past.length === 0}
-                className="chamfer-sm font-mono bg-bg-surface px-3 py-2 text-[11px] uppercase disabled:opacity-40"
+                className="chamfer-sm font-mono bg-bg-surface px-3 py-2 text-[0.6875rem] uppercase disabled:opacity-40"
               >
                 ↶
               </button>
@@ -909,14 +909,14 @@ export default function ZoneEditor() {
                 type="button"
                 onClick={redo}
                 disabled={future.length === 0}
-                className="chamfer-sm font-mono bg-bg-surface px-3 py-2 text-[11px] uppercase disabled:opacity-40"
+                className="chamfer-sm font-mono bg-bg-surface px-3 py-2 text-[0.6875rem] uppercase disabled:opacity-40"
               >
                 ↷
               </button>
             </div>
 
             {status ? (
-              <p className="font-mono mb-3 text-[11px] text-amber-text">{status}</p>
+              <p className="font-mono mb-3 text-[0.6875rem] text-amber-text">{status}</p>
             ) : null}
 
             <ul className="max-h-64 space-y-1 overflow-y-auto">
@@ -950,7 +950,7 @@ export default function ZoneEditor() {
                           return n;
                         })
                       }
-                      className="font-mono text-[10px] text-text-tertiary"
+                      className="font-mono text-[0.625rem] text-text-tertiary"
                       aria-label={hidden.has(z.id) ? `Mostrar ${z.label}` : `Ocultar ${z.label}`}
                     >
                       {hidden.has(z.id) ? "○" : "●"}
@@ -967,7 +967,7 @@ export default function ZoneEditor() {
               <p className="telemetry-label mb-1">{selected.id}</p>
               <p className="font-heading text-lg tracking-[1px]">{selected.label}</p>
 
-              <dl className="font-mono mt-3 space-y-1 text-[11px]">
+              <dl className="font-mono mt-3 space-y-1 text-[0.6875rem]">
                 <div className="flex justify-between">
                   <dt className="text-text-tertiary">Vinilo</dt>
                   <dd>{report.vinyl}</dd>
@@ -982,7 +982,7 @@ export default function ZoneEditor() {
                 </div>
               </dl>
 
-              <label className="font-mono mt-3 flex items-center gap-2 text-[11px]">
+              <label className="font-mono mt-3 flex items-center gap-2 text-[0.6875rem]">
                 Chaflán
                 <input
                   type="range"
@@ -1004,27 +1004,27 @@ export default function ZoneEditor() {
                 <button
                   type="button"
                   onClick={resetZone}
-                  className="chamfer-sm font-mono flex-1 bg-bg-surface px-2 py-1.5 text-[10px] uppercase"
+                  className="chamfer-sm font-mono flex-1 bg-bg-surface px-2 py-1.5 text-[0.625rem] uppercase"
                 >
                   Resetear zona
                 </button>
                 <button
                   type="button"
                   onClick={() => mutate(selected.id, (z) => (z.anchor = null))}
-                  className="chamfer-sm font-mono flex-1 bg-bg-surface px-2 py-1.5 text-[10px] uppercase"
+                  className="chamfer-sm font-mono flex-1 bg-bg-surface px-2 py-1.5 text-[0.625rem] uppercase"
                 >
                   Ancla auto
                 </button>
               </div>
 
               {report.warnings.length > 0 ? (
-                <ul className="font-mono mt-3 space-y-1 text-[11px] text-amber-text">
+                <ul className="font-mono mt-3 space-y-1 text-[0.6875rem] text-amber-text">
                   {report.warnings.map((w, i) => (
                     <li key={i}>⚠ {w}</li>
                   ))}
                 </ul>
               ) : (
-                <p className="font-mono mt-3 text-[11px] text-lime">✓ Sin avisos</p>
+                <p className="font-mono mt-3 text-[0.6875rem] text-lime">✓ Sin avisos</p>
               )}
             </div>
           ) : (
@@ -1036,7 +1036,7 @@ export default function ZoneEditor() {
           <button
             type="button"
             onClick={restoreLocal}
-            className="chamfer-sm font-mono mt-3 w-full bg-bg-surface px-3 py-2 text-[10px] uppercase"
+            className="chamfer-sm font-mono mt-3 w-full bg-bg-surface px-3 py-2 text-[0.625rem] uppercase"
           >
             Restaurar copia local
           </button>

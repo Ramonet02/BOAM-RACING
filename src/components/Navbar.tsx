@@ -185,7 +185,7 @@ export default function Navbar() {
               >
                 {BRAND.name}
               </motion.span>
-              <span className="hidden md:block font-mono text-[8px] tracking-[3px] text-muted uppercase mt-1 truncate">
+              <span className="hidden md:block font-mono text-[0.5rem] tracking-[3px] text-text-tertiary uppercase mt-1 truncate">
                 {t.nav.statusLine}
               </span>
             </span>
@@ -213,7 +213,7 @@ export default function Navbar() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="link-tactical font-mono whitespace-nowrap text-[11px] uppercase tracking-[1.5px] 2xl:tracking-[2.5px]"
+                    className="link-tactical font-mono whitespace-nowrap text-[0.6875rem] uppercase tracking-[1.5px] 2xl:tracking-[2.5px]"
                   >
                     {link.label}
                   </Link>
@@ -231,7 +231,7 @@ export default function Navbar() {
               <ThemeToggle />
             </div>
 
-            <Link href="/patrocinio" className="btn-tactical btn-amber text-[11px]">
+            <Link href="/patrocinio" className="btn-tactical btn-amber text-[0.6875rem]">
               {t.nav.sponsorCta}
             </Link>
           </div>
@@ -333,7 +333,7 @@ export default function Navbar() {
               </Link>
 
               <div className="mt-8 flex items-center justify-between gap-4">
-                <span className="font-mono text-[9px] tracking-[3px] text-muted uppercase">
+                <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase">
                   {t.nav.languageLabel}
                 </span>
                 <LanguageSwitcher />
@@ -343,7 +343,7 @@ export default function Navbar() {
                   entra solo en el ciclo de foco atrapado del panel (FOCUSABLE
                   ya cubre button) y no cierra el menu al pulsarlo. */}
               <div className="mt-4 flex items-center justify-between gap-4">
-                <span className="font-mono text-[9px] tracking-[3px] text-muted uppercase">
+                <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase">
                   {themeCopy.label}
                 </span>
                 <ThemeToggle showLabel />

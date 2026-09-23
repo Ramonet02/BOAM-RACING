@@ -94,16 +94,19 @@ import {
 const BASE = "var(--color-bg-base)";
 const SURFACE = "var(--color-bg-surface)";
 const SLATE = "var(--color-slate)";
-/** Tinta de los micro-rotulos. text-tertiary y no muted a proposito:
- *  en tactical valen lo mismo (#8C8275, ni un pixel de diferencia) y en
- *  desert sube de 3.41:1 a 4.95:1, que es lo que pide texto de 9-10px. */
+/** Tinta de los micro-rotulos. text-tertiary y no muted a proposito: es el
+ *  token de TEXTO (en desert 4.95:1 frente a los 3.41:1 de muted; en tactical
+ *  #A0988C frente a #8C8275), que es lo que pide texto de 9-10px. */
 const META_INK = "var(--color-text-tertiary)";
 
 /* ── B · suelo y tinta del overlay sobre foto (fijos en los dos temas) */
 /** Scrim fotografico. Fijo A PROPOSITO: ver la nota B de arriba. */
 const PHOTO_SCRIM = "15, 16, 18";
-/** Tinta secundaria sobre ese scrim. 6.1:1 contra el, en ambos temas. */
-const PHOTO_META = "#8C8275";
+/** Tinta secundaria sobre ese scrim, en ambos temas. Era #8C8275, que da
+ *  5.04:1 sobre el scrim OPACO — y el scrim solo llega al 92 %: con un 8 % de
+ *  arena o cielo claro detras bajaba a ~4:1 en texto de 9 px. #A0988C (el
+ *  mismo terciario de tactical) da 6.7:1 opaco y >5:1 en el peor caso. */
+const PHOTO_META = "#A0988C";
 
 /** Acento del HUD. Se elige por categoria salvo que se pase `tone`. */
 export type RallyImageTone = "amber" | "sand" | "lime";
@@ -128,9 +131,11 @@ const TONES: Record<RallyImageTone, Tone> = {
   sand: {
     line: "var(--color-sand)",
     rgb: "var(--sand-rgb)",
-    // No existe --color-sand-text: ver "gaps". Se queda en 3.30:1 sobre
-    // crema, que es el unico par del componente por debajo de AA.
-    ink: "var(--color-sand)",
+    // sand-solid y no sand: --color-sand se quedaba en 3.30:1 sobre crema,
+    // por debajo de AA en los rotulos de 9-10 px del placeholder (retratos
+    // de /equipo). sand-solid da 4.90 sobre base y 5.30 sobre surface; en
+    // tactical vale lo mismo que sand, cero cambio alli.
+    ink: "var(--color-sand-solid)",
   },
   lime: {
     line: "var(--color-lime)",
@@ -478,13 +483,13 @@ function PendingPlaceholder({
         ) : (
           <div className="flex shrink-0 items-start justify-between gap-2 p-3">
             <span
-              className="min-w-0 truncate text-[10px] uppercase tracking-[0.18em]"
+              className="min-w-0 truncate text-[0.625rem] uppercase tracking-[0.18em]"
               style={{ ...MONO, color: META_INK }}
             >
               {formatAssetCode(entry)}
             </span>
             <span
-              className="flex shrink-0 items-center gap-1.5 px-2 py-1 text-[9px] uppercase tracking-[0.16em]"
+              className="flex shrink-0 items-center gap-1.5 px-2 py-1 text-[0.5625rem] uppercase tracking-[0.16em]"
               style={{
                 ...MONO,
                 color: accent.ink,
@@ -525,7 +530,7 @@ function PendingPlaceholder({
 
           {!isMicro && (
             <span
-              className="shrink-0 truncate text-[9px] uppercase tracking-[0.28em]"
+              className="shrink-0 truncate text-[0.5625rem] uppercase tracking-[0.28em]"
               style={{ ...MONO, color: accent.ink }}
             >
               {CATEGORY_LABELS[entry.category]}
@@ -535,7 +540,7 @@ function PendingPlaceholder({
 
           {isFull && (
             <p
-              className="line-clamp-3 max-w-[34ch] text-balance text-[13px] uppercase leading-snug tracking-[0.04em]"
+              className="line-clamp-3 max-w-[34ch] text-balance text-[0.8125rem] uppercase leading-snug tracking-[0.04em]"
               style={{ ...DISPLAY, color: "rgb(var(--text-rgb) / 0.88)" }}
             >
               {entry.alt}
@@ -544,7 +549,7 @@ function PendingPlaceholder({
 
           {showCaption && isFull && (
             <p
-              className="line-clamp-2 max-w-[40ch] text-[11px] leading-relaxed"
+              className="line-clamp-2 max-w-[40ch] text-[0.6875rem] leading-relaxed"
               style={{ color: META_INK }}
             >
               {entry.caption}
@@ -553,7 +558,7 @@ function PendingPlaceholder({
 
           {density === "compact" && (
             <p
-              className="line-clamp-2 max-w-[30ch] text-[11px] uppercase leading-snug tracking-[0.03em]"
+              className="line-clamp-2 max-w-[30ch] text-[0.6875rem] uppercase leading-snug tracking-[0.03em]"
               style={{ ...DISPLAY, color: "rgb(var(--text-rgb) / 0.78)" }}
             >
               {entry.caption}
@@ -564,7 +569,7 @@ function PendingPlaceholder({
         {/* Barra inferior: telemetria */}
         {showBottomBar && (
           <div
-            className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-t px-3 py-2 text-[9px] uppercase tracking-[0.14em]"
+            className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-t px-3 py-2 text-[0.5625rem] uppercase tracking-[0.14em]"
             style={{
               ...MONO,
               color: META_INK,
@@ -644,7 +649,7 @@ function PhotoOverlay({
 
       {stage && (
         <span
-          className="absolute left-3 top-3 px-2 py-1 text-[9px] uppercase tracking-[0.18em]"
+          className="absolute left-3 top-3 px-2 py-1 text-[0.5625rem] uppercase tracking-[0.18em]"
           // Aqui SI se usa el acento pleno y no `ink`: el chip se apoya en
           // su propio fondo casi negro, no en el fondo de la pagina. Sube
           // de 0.6 a 0.72 porque el chip cae en la zona alta del overlay,
@@ -664,14 +669,14 @@ function PhotoOverlay({
       <div className="flex flex-col gap-1 p-3">
         {showCaption && (
           <p
-            className="line-clamp-2 text-[13px] uppercase leading-tight tracking-[0.04em] text-white"
+            className="line-clamp-2 text-[0.8125rem] uppercase leading-tight tracking-[0.04em] text-white"
             style={DISPLAY}
           >
             {entry.caption}
           </p>
         )}
         <div
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] uppercase tracking-[0.14em]"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.5625rem] uppercase tracking-[0.14em]"
           style={{ ...MONO, color: PHOTO_META }}
         >
           {isFull && entry.rally?.location && (

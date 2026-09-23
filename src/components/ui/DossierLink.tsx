@@ -81,7 +81,7 @@ export default function DossierLink({
       >
         {copy.dossierCta}
       </a>
-      <span className="font-mono text-text-tertiary text-[10px] tracking-[0.1em]">
+      <span className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.1em]">
         {meta}
         {note ? ` · ${note}` : ""}
       </span>
