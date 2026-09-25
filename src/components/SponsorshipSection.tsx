@@ -55,6 +55,8 @@ import { SPONSOR_PAINT_CSS } from "@/components/sponsor/sponsorPaint";
 import DossierLink from "@/components/ui/DossierLink";
 import RallyImage from "@/components/ui/RallyImage";
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import TiltCard, { TiltDepth } from "@/components/ui/TiltCard";
+import { topoSolidRef } from "@/components/ui/topoState";
 
 import {
   EMPTY_ARTWORK,
@@ -603,79 +605,82 @@ export default function SponsorshipSection() {
         </div>
 
         {/* ══════════════════ CTA final ══════════════════ */}
-        <div className="border-slate chamfer-lg bg-bg-surface relative mt-20 overflow-hidden border lg:mt-28">
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
-            <div className="relative z-10 p-7 sm:p-10 lg:p-12">
-              <p className="waypoint-tag mb-5">{t.sponsors.cta.tag}</p>
-              <h3 className="font-heading text-text-primary mb-5 text-[clamp(1.9rem,4.4vw,3.25rem)] leading-[0.9] font-bold tracking-wide uppercase">
-                {t.sponsors.cta.title.map((line) => (
-                  <span key={line} className="block">
-                    {line}
-                  </span>
-                ))}
-              </h3>
-              <p className="font-body text-text-secondary mb-8 max-w-md text-sm leading-relaxed">
-                {t.sponsors.cta.desc}
-              </p>
+        {/* Bloque grande: giro muy corto, que a este tamaño 3° ya se notan. */}
+        <TiltCard className="mt-20 lg:mt-28" maxTilt={3} lift={10}>
+          <div className="border-slate chamfer-lg bg-bg-surface relative overflow-hidden border">
+            <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
+              <div className="relative z-10 p-7 sm:p-10 lg:p-12">
+                <p className="waypoint-tag mb-5">{t.sponsors.cta.tag}</p>
+                <h3 className="font-heading text-text-primary mb-5 text-[clamp(1.9rem,4.4vw,3.25rem)] leading-[0.9] font-bold tracking-wide uppercase">
+                  {t.sponsors.cta.title.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </h3>
+                <p className="font-body text-text-secondary mb-8 max-w-md text-sm leading-relaxed">
+                  {t.sponsors.cta.desc}
+                </p>
 
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => dispatch({ type: "openModal" })}
-                  className="btn-tactical btn-amber"
-                >
-                  {t.sponsors.cta.primary}
-                </button>
-                <a href={CONTACT.mailto} className="btn-tactical btn-outline">
-                  {t.sponsors.cta.secondary}
-                </a>
-                <DossierLink variant="button" />
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => dispatch({ type: "openModal" })}
+                    className="btn-tactical btn-amber"
+                  >
+                    {t.sponsors.cta.primary}
+                  </button>
+                  <a href={CONTACT.mailto} className="btn-tactical btn-outline">
+                    {t.sponsors.cta.secondary}
+                  </a>
+                  <DossierLink variant="button" />
+                </div>
+
+                <dl className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
+                  <div>
+                    <dt className="telemetry-label">{t.sponsors.contact.emailLabel}</dt>
+                    <dd className="mt-1">
+                      <a
+                        href={CONTACT.mailto}
+                        className="link-tactical font-mono text-text-primary text-xs tracking-[0.1em]"
+                      >
+                        {CONTACT.email}
+                      </a>
+                    </dd>
+                  </div>
+                  {/* Esta fila ya existía, pero su valor era el tiempo de
+                      respuesta: decía "Dossier de patrocinio → Respuesta en
+                      menos de 48 h". Era el hueco esperando al documento. */}
+                  <div>
+                    <dt className="telemetry-label">{t.sponsors.contact.dossierLabel}</dt>
+                    <dd className="mt-1">
+                      <DossierLink />
+                    </dd>
+                  </div>
+                </dl>
+
+                {/* El tiempo de respuesta ya es una frase entera ("Respuesta en
+                    menos de 48 h"), así que no necesita etiqueta: como fila de
+                    <dl> habría que inventarle un <dt> que no existe en i18n. */}
+                <p className="font-mono text-text-tertiary mt-4 text-[0.6875rem] tracking-[0.12em]">
+                  {t.sponsors.contact.responseTime}
+                </p>
               </div>
 
-              <dl className="mt-8 flex flex-wrap gap-x-8 gap-y-3">
-                <div>
-                  <dt className="telemetry-label">{t.sponsors.contact.emailLabel}</dt>
-                  <dd className="mt-1">
-                    <a
-                      href={CONTACT.mailto}
-                      className="link-tactical font-mono text-text-primary text-xs tracking-[0.1em]"
-                    >
-                      {CONTACT.email}
-                    </a>
-                  </dd>
-                </div>
-                {/* Esta fila ya existía, pero su valor era el tiempo de
-                    respuesta: decía "Dossier de patrocinio → Respuesta en
-                    menos de 48 h". Era el hueco esperando al documento. */}
-                <div>
-                  <dt className="telemetry-label">{t.sponsors.contact.dossierLabel}</dt>
-                  <dd className="mt-1">
-                    <DossierLink />
-                  </dd>
-                </div>
-              </dl>
-
-              {/* El tiempo de respuesta ya es una frase entera ("Respuesta en
-                  menos de 48 h"), así que no necesita etiqueta: como fila de
-                  <dl> habría que inventarle un <dt> que no existe en i18n. */}
-              <p className="font-mono text-text-tertiary mt-4 text-[0.6875rem] tracking-[0.12em]">
-                {t.sponsors.contact.responseTime}
-              </p>
-            </div>
-
-            {/* El archivo fotográfico aún no existe: RallyImage pinta su propio
-                placeholder técnico, no una foto de stock. */}
-            <div className="relative min-h-[240px] lg:min-h-full">
-              <RallyImage
-                image="coche-detalle-rotulacion"
-                fillParent
-                overlay="always"
-                chamfer={false}
-                showCaption={false}
-              />
+              {/* Foto del vinilo sobre el capó, del manifiesto de imágenes. Si
+                  faltara, RallyImage pinta su placeholder técnico. */}
+              <div className="relative min-h-[240px] lg:min-h-full">
+                <RallyImage
+                  image="coche-detalle-rotulacion"
+                  fillParent
+                  overlay="always"
+                  chamfer={false}
+                  showCaption={false}
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </TiltCard>
       </div>
 
       {/* Estudio de rotulación. Se monta siempre: gestiona él mismo el portal
@@ -937,147 +942,156 @@ function SelectionPanel({
   return (
     /* <div> y no <aside>: el panel vive DENTRO de la seccion de patrocinio,
        y un complementary anidado en otro landmark es un error de ARIA
-       (axe: landmark-complementary-is-top-level). */
-    <div className="panel hud-frame hud-frame-slate lg:sticky lg:top-24">
-      <div className="space-y-6 p-5 sm:p-6">
-        <p className="telemetry-label telemetry-label-dash">{copy.summaryTitle}</p>
+       (axe: landmark-complementary-is-top-level).
+       Tarjeta con volumen de giro corto: lleva un campo de texto y botones, y
+       un giro amplio los movería bajo el puntero. El `sticky` va en la raíz de
+       la tarjeta, que es la que ocupa la celda de la retícula. */
+    <TiltCard className="lg:sticky lg:top-24" maxTilt={4} lift={12}>
+      <div className="panel hud-frame hud-frame-slate">
+        <div className="space-y-6 p-5 sm:p-6">
+          <p className="telemetry-label telemetry-label-dash">{copy.summaryTitle}</p>
 
-        {/* ── Marca ── */}
-        <label className="block">
-          <span className="telemetry-label mb-2 block">{copy.brandLabel}</span>
-          <input
-            type="text"
-            value={brand}
-            onChange={(event) => onBrandChange(event.target.value)}
-            placeholder={copy.brandPlaceholder}
-            maxLength={40}
-            autoComplete="organization"
-            className="chamfer-quad-sm font-mono bg-bg-sunken text-text-primary placeholder:text-text-tertiary w-full px-3.5 py-2.5 text-sm tracking-[0.12em] uppercase focus:outline-none"
-            style={{ boxShadow: "inset 0 0 0 1px var(--color-slate)" }}
-          />
-        </label>
+          {/* ── Marca ── */}
+          <label className="block">
+            <span className="telemetry-label mb-2 block">{copy.brandLabel}</span>
+            <input
+              type="text"
+              value={brand}
+              onChange={(event) => onBrandChange(event.target.value)}
+              placeholder={copy.brandPlaceholder}
+              maxLength={40}
+              autoComplete="organization"
+              className="chamfer-quad-sm font-mono bg-bg-sunken text-text-primary placeholder:text-text-tertiary w-full px-3.5 py-2.5 text-sm tracking-[0.12em] uppercase focus:outline-none"
+              style={{ boxShadow: "inset 0 0 0 1px var(--color-slate)" }}
+            />
+          </label>
 
-        {/* ── Zonas elegidas ── */}
-        <div className="border-slate border-t pt-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <span className="telemetry-label">
-              {copy.zonesLabel} ({selection.length})
-            </span>
-            {!empty ? (
-              <button
-                type="button"
-                onClick={onClear}
-                className="font-mono text-text-tertiary hover:text-amber-text text-[0.625rem] tracking-[0.16em] uppercase transition-colors"
-              >
-                {copy.clearAll}
-              </button>
-            ) : null}
-          </div>
-
-          {empty ? (
-            <p className="font-body text-text-tertiary text-xs leading-relaxed">
-              {copy.zonesEmpty}
-            </p>
-          ) : (
-            <ul className="space-y-1.5">
-              {selection.map((zone) => (
-                <li
-                  key={zone.slot.id}
-                  className="bg-bg-elevated chamfer-quad-sm flex items-center gap-2 py-1.5 pr-1.5 pl-2.5"
+          {/* ── Zonas elegidas ── */}
+          <div className="border-slate border-t pt-5">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <span className="telemetry-label">
+                {copy.zonesLabel} ({selection.length})
+              </span>
+              {!empty ? (
+                <button
+                  type="button"
+                  onClick={onClear}
+                  className="font-mono text-text-tertiary hover:text-amber-text text-[0.625rem] tracking-[0.16em] uppercase transition-colors"
                 >
-                  <span
-                    aria-hidden="true"
-                    className="h-2 w-2 shrink-0"
-                    style={{ background: TIER_COLORS[zone.slot.tier] }}
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="font-mono text-text-primary block truncate text-[0.6875rem] tracking-[0.1em] uppercase">
-                      {zone.label}
+                  {copy.clearAll}
+                </button>
+              ) : null}
+            </div>
+
+            {empty ? (
+              <p className="font-body text-text-tertiary text-xs leading-relaxed">
+                {copy.zonesEmpty}
+              </p>
+            ) : (
+              <ul className="space-y-1.5">
+                {selection.map((zone) => (
+                  <li
+                    key={zone.slot.id}
+                    className="bg-bg-elevated chamfer-quad-sm flex items-center gap-2 py-1.5 pr-1.5 pl-2.5"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="h-2 w-2 shrink-0"
+                      style={{ background: TIER_COLORS[zone.slot.tier] }}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="font-mono text-text-primary block truncate text-[0.6875rem] tracking-[0.1em] uppercase">
+                        {zone.label}
+                      </span>
+                      <span className="font-mono text-text-tertiary block text-[0.625rem] tracking-[0.1em]">
+                        {zone.vinylLabel}
+                        {isArtworkEmpty(artwork[zone.slot.id])
+                          ? ""
+                          : ` · ${t.sponsors.studio.lettered}`}
+                      </span>
                     </span>
-                    <span className="font-mono text-text-tertiary block text-[0.625rem] tracking-[0.1em]">
-                      {zone.vinylLabel}
-                      {isArtworkEmpty(artwork[zone.slot.id])
-                        ? ""
-                        : ` · ${t.sponsors.studio.lettered}`}
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => onEditArtwork(zone)}
-                    aria-label={`${t.sponsors.studio.edit}: ${zone.label}`}
-                    className="font-mono text-text-tertiary hover:text-amber-text shrink-0 px-2 text-[0.625rem] tracking-[0.14em] uppercase transition-colors"
-                  >
-                    {t.sponsors.studio.edit}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onRemove(zone)}
-                    aria-label={`${copy.removeZone}: ${zone.label}`}
-                    className="font-mono text-text-tertiary hover:text-amber-text h-7 w-7 shrink-0 text-xs transition-colors"
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* ── Desglose y total ── */}
-        <div className="border-slate border-t pt-5">
-          <span className="telemetry-label mb-3 block">{copy.summaryTierLabel}</span>
-
-          {tiers.length === 0 ? (
-            <p className="font-mono text-text-tertiary text-[0.6875rem] tracking-[0.12em] uppercase">
-              {t.common.labels.tbd}
-            </p>
-          ) : (
-            <ul className="mb-4 space-y-1.5">
-              {tiers.map((tier) => (
-                <li key={tier.id} className="flex items-baseline justify-between gap-3">
-                  <span
-                    className="font-mono text-[0.6875rem] tracking-[0.14em] uppercase"
-                    style={{ color: TIER_TEXT_COLORS[tier.id] }}
-                  >
-                    {t.sponsors.tierLabels[tier.id]}
-                  </span>
-                  <span className="font-mono text-text-secondary text-[0.6875rem] tracking-[0.1em]">
-                    {formatTierPrice(tier)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <div className="border-slate flex items-baseline justify-between gap-3 border-t pt-3">
-            <span className="telemetry-label">{copy.summaryTotalLabel}</span>
-            <span className="font-heading text-amber text-2xl leading-none font-bold">
-              {totalLabel}
-            </span>
+                    <button
+                      type="button"
+                      onClick={() => onEditArtwork(zone)}
+                      aria-label={`${t.sponsors.studio.edit}: ${zone.label}`}
+                      className="font-mono text-text-tertiary hover:text-amber-text shrink-0 px-2 text-[0.625rem] tracking-[0.14em] uppercase transition-colors"
+                    >
+                      {t.sponsors.studio.edit}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onRemove(zone)}
+                      aria-label={`${copy.removeZone}: ${zone.label}`}
+                      className="font-mono text-text-tertiary hover:text-amber-text h-7 w-7 shrink-0 text-xs transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          <p className="font-mono text-text-tertiary mt-2 text-[0.625rem] leading-relaxed tracking-[0.08em]">
-            {t.sponsors.price.vatNote}
-          </p>
-        </div>
 
-        {/* ── Enviar ── */}
-        <div className="border-slate border-t pt-5">
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={empty}
-            className="btn-tactical btn-amber w-full disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {copy.submit}
-          </button>
-          {empty ? (
-            <p className="telemetry-label mt-2.5">{copy.submitHint}</p>
-          ) : (
-            <p className="telemetry-label mt-2.5">{t.sponsors.contact.responseTime}</p>
-          )}
+          {/* ── Desglose y total ── */}
+          <div className="border-slate border-t pt-5">
+            <span className="telemetry-label mb-3 block">{copy.summaryTierLabel}</span>
+
+            {tiers.length === 0 ? (
+              <p className="font-mono text-text-tertiary text-[0.6875rem] tracking-[0.12em] uppercase">
+                {t.common.labels.tbd}
+              </p>
+            ) : (
+              <ul className="mb-4 space-y-1.5">
+                {tiers.map((tier) => (
+                  <li key={tier.id} className="flex items-baseline justify-between gap-3">
+                    <span
+                      className="font-mono text-[0.6875rem] tracking-[0.14em] uppercase"
+                      style={{ color: TIER_TEXT_COLORS[tier.id] }}
+                    >
+                      {t.sponsors.tierLabels[tier.id]}
+                    </span>
+                    <span className="font-mono text-text-secondary text-[0.6875rem] tracking-[0.1em]">
+                      {formatTierPrice(tier)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* El total flota por delante del panel */}
+            <TiltDepth
+              depth={26}
+              className="border-slate flex items-baseline justify-between gap-3 border-t pt-3"
+            >
+              <span className="telemetry-label">{copy.summaryTotalLabel}</span>
+              <span className="font-heading text-amber text-2xl leading-none font-bold">
+                {totalLabel}
+              </span>
+            </TiltDepth>
+            <p className="font-mono text-text-tertiary mt-2 text-[0.625rem] leading-relaxed tracking-[0.08em]">
+              {t.sponsors.price.vatNote}
+            </p>
+          </div>
+
+          {/* ── Enviar ── */}
+          <div className="border-slate border-t pt-5">
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={empty}
+              className="btn-tactical btn-amber w-full disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {copy.submit}
+            </button>
+            {empty ? (
+              <p className="telemetry-label mt-2.5">{copy.submitHint}</p>
+            ) : (
+              <p className="telemetry-label mt-2.5">{t.sponsors.contact.responseTime}</p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </TiltCard>
   );
 }
 
@@ -1107,86 +1121,91 @@ function TierCard({ tier, matrix, onRequest, t }: TierCardProps) {
   const bullets = matrixColumn(matrix, tier.id);
 
   return (
-    <li
-      className={`bg-bg-surface relative flex flex-col border p-6 ${
-        tier.highlight ? "border-lime" : "border-slate"
-      }`}
-      style={tier.highlight ? { boxShadow: "0 0 0 1px var(--color-lime)" } : undefined}
-    >
-      {/* Filo de color del nivel. */}
-      <span
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-[3px]"
-        style={{ background: color }}
-      />
-
-      {tier.highlight ? (
-        <span className="tech-badge tech-badge-lime absolute top-4 right-4">
-          {t.sponsors.featuredLabel}
-        </span>
-      ) : null}
-
-      <p
-        className="font-mono mb-3 text-[0.6875rem] font-semibold tracking-[0.24em] uppercase"
-        style={{ color: ink }}
+    <TiltCard as="li" shape="rect">
+      <div
+        className={`bg-bg-surface relative flex h-full flex-col border p-6 ${
+          tier.highlight ? "border-lime" : "border-slate"
+        }`}
+        style={tier.highlight ? { boxShadow: "0 0 0 1px var(--color-lime)" } : undefined}
       >
-        {t.sponsors.tierLabels[tier.id]}
-      </p>
+        {/* Filo de color del nivel. */}
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-[3px]"
+          style={{ background: color }}
+        />
 
-      <p className="font-heading text-text-primary mb-1 text-4xl leading-none font-bold tracking-wide">
-        {formatTierPrice(tier)}
-      </p>
-      <p className="font-mono text-text-tertiary mb-4 text-[0.625rem] tracking-[0.14em] uppercase">
-        {t.sponsors.price.oneOff}
-      </p>
-
-      {/* Disponibilidad: PRINCIPAL deja claro que es plaza única y exclusiva. */}
-      <p className="mb-4 flex flex-wrap items-center gap-1.5">
-        <span className={`tech-badge font-mono ${exclusive ? "tech-badge-lime" : ""}`}>
-          {formatTierAvailability(tier, t)}
-        </span>
-        {exclusive ? (
-          <span className="tech-badge tech-badge-lime font-mono">
-            {t.sponsors.availability.exclusive}
+        {tier.highlight ? (
+          <span className="tech-badge tech-badge-lime absolute top-4 right-4">
+            {t.sponsors.featuredLabel}
           </span>
         ) : null}
-      </p>
 
-      <p className="font-body text-text-secondary mb-5 text-sm leading-relaxed">
-        {t.sponsors.tierHeadlines[tier.id]}
-      </p>
+        <p
+          className="font-mono mb-3 text-[0.6875rem] font-semibold tracking-[0.24em] uppercase"
+          style={{ color: ink }}
+        >
+          {t.sponsors.tierLabels[tier.id]}
+        </p>
 
-      {/* Banda de visibilidad que le asigna el dossier. */}
-      <div className="border-slate mb-5 border-t pt-4">
-        <p className="telemetry-label mb-1.5">
-          {t.sponsors.visibility[tier.visibility].label}
+        {/* El precio flota por delante de la tarjeta */}
+        <TiltDepth depth={30}>
+          <p className="font-heading text-text-primary mb-1 text-4xl leading-none font-bold tracking-wide">
+            {formatTierPrice(tier)}
+          </p>
+          <p className="font-mono text-text-tertiary mb-4 text-[0.625rem] tracking-[0.14em] uppercase">
+            {t.sponsors.price.oneOff}
+          </p>
+        </TiltDepth>
+
+        {/* Disponibilidad: PRINCIPAL deja claro que es plaza única y exclusiva. */}
+        <p className="mb-4 flex flex-wrap items-center gap-1.5">
+          <span className={`tech-badge font-mono ${exclusive ? "tech-badge-lime" : ""}`}>
+            {formatTierAvailability(tier, t)}
+          </span>
+          {exclusive ? (
+            <span className="tech-badge tech-badge-lime font-mono">
+              {t.sponsors.availability.exclusive}
+            </span>
+          ) : null}
         </p>
-        <p className="font-body text-text-tertiary text-xs leading-relaxed">
-          {t.sponsors.visibility[tier.visibility].areas}
+
+        <p className="font-body text-text-secondary mb-5 text-sm leading-relaxed">
+          {t.sponsors.tierHeadlines[tier.id]}
         </p>
+
+        {/* Banda de visibilidad que le asigna el dossier. */}
+        <div className="border-slate mb-5 border-t pt-4">
+          <p className="telemetry-label mb-1.5">
+            {t.sponsors.visibility[tier.visibility].label}
+          </p>
+          <p className="font-body text-text-tertiary text-xs leading-relaxed">
+            {t.sponsors.visibility[tier.visibility].areas}
+          </p>
+        </div>
+
+        <ul className="mb-6 flex-1 space-y-2">
+          {bullets.map((bullet) => (
+            <li key={bullet} className="flex gap-2.5">
+              <span aria-hidden="true" className="shrink-0" style={{ color: ink }}>
+                ▸
+              </span>
+              <span className="font-body text-text-secondary text-xs leading-relaxed">
+                {bullet}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <button
+          type="button"
+          onClick={onRequest}
+          className={`btn-tactical w-full ${tier.highlight ? "btn-lime" : "btn-outline"}`}
+        >
+          {t.sponsors.tierCta[tier.id]}
+        </button>
       </div>
-
-      <ul className="mb-6 flex-1 space-y-2">
-        {bullets.map((bullet) => (
-          <li key={bullet} className="flex gap-2.5">
-            <span aria-hidden="true" className="shrink-0" style={{ color: ink }}>
-              ▸
-            </span>
-            <span className="font-body text-text-secondary text-xs leading-relaxed">
-              {bullet}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      <button
-        type="button"
-        onClick={onRequest}
-        className={`btn-tactical w-full ${tier.highlight ? "btn-lime" : "btn-outline"}`}
-      >
-        {t.sponsors.tierCta[tier.id]}
-      </button>
-    </li>
+    </TiltCard>
   );
 }
 
@@ -1276,7 +1295,10 @@ function InvestmentMatrix({ entries, t }: InvestmentMatrixProps) {
       </header>
 
       {/* ── Escritorio: tabla comparativa ─────────────────────────────── */}
-      <div className="border-slate hidden overflow-x-auto border lg:block">
+      {/* Sólida (topoSolidRef): las curvas de nivel del cursor no cruzan la
+          tabla. La de escritorio y la de móvil se registran las dos; la que
+          está en `display: none` no mide nada y no recorta. */}
+      <div ref={topoSolidRef} className="border-slate hidden overflow-x-auto border lg:block">
         <table className="w-full min-w-[54rem] border-collapse text-left">
           <caption className="sr-only">
             {copy.title.join(" ")} — {copy.intro}
@@ -1355,7 +1377,7 @@ function InvestmentMatrix({ entries, t }: InvestmentMatrixProps) {
       </div>
 
       {/* ── Móvil y tableta: una tarjeta apilada por nivel ─────────────── */}
-      <ul className="grid gap-4 sm:grid-cols-2 lg:hidden">
+      <ul ref={topoSolidRef} className="grid gap-4 sm:grid-cols-2 lg:hidden">
         {SPONSOR_TIERS.map((tier) => (
           <li
             key={tier.id}

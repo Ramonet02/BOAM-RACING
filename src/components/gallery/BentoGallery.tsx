@@ -28,9 +28,9 @@
 
    ANIMACION (toda condicionada a prefers-reduced-motion)
    ------------------------------------------------------
-   · Tilt 3D al pasar el raton, calculado sobre la posicion real del puntero
-     dentro de la tarjeta y escrito como variables CSS (--tilt-x/y/s) desde
-     un rAF: cero renders de React por movimiento del raton.
+   · Tarjeta con volumen al pasar el raton (<TiltCard />): giro 3D hacia el
+     puntero, canto, sombra en el suelo y reflejo, con muelles de
+     framer-motion: cero renders de React por movimiento del raton.
    · Parallax vertical sutil: un unico listener de scroll en el contenedor
      recorre solo las celdas visibles y desplaza la capa de imagen segun su
      profundidad. La capa sobresale por arriba y por abajo tantos px como
@@ -54,11 +54,11 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
 } from "react";
 import { useReducedMotion } from "framer-motion";
 import { Compass, MapPin, Maximize2, Mountain } from "lucide-react";
 import RallyImage from "@/components/ui/RallyImage";
+import TiltCard from "@/components/ui/TiltCard";
 import Lightbox from "@/components/gallery/Lightbox";
 import { useT } from "@/i18n/LanguageProvider";
 import {
@@ -231,8 +231,6 @@ function computeTileShapes(entries: readonly RallyImageEntry[]): TileShape[] {
    Parametros de animacion
    ──────────────────────────────────────────────────────────── */
 
-/** Grados maximos de inclinacion del tilt 3D. */
-const MAX_TILT_DEG = 6;
 /** Recorrido del parallax por celda, en px. Se alterna para dar profundidad. */
 const PARALLAX_DEPTHS = [7, 12, 17] as const;
 /** Holgura extra sobre el recorrido, para absorber el redondeo subpixel. */
@@ -478,7 +476,6 @@ export default function BentoGallery({
               shape={shapes[index]}
               depth={PARALLAX_DEPTHS[index % PARALLAX_DEPTHS.length]}
               priority={index < 2}
-              tiltEnabled={!reducedMotion}
               zoomOnHover={renderMotion}
               actionLabel={`${t.common.actions.more} · ${entry.caption}`}
               onOpen={(trigger) => openAt(index, trigger)}
@@ -523,18 +520,10 @@ export { BentoGallery };
    Celda
    ──────────────────────────────────────────────────────────── */
 
-/** Valores de reposo del tilt. Tambien son los que se renderizan en servidor. */
+/** Hairline interior del marco: `clip-path` recortaria un borde CSS. */
 const CARD_STYLE: CSSProperties = {
-  transform:
-    "rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) scale3d(var(--tilt-s, 1), var(--tilt-s, 1), 1)",
-  transformStyle: "preserve-3d",
   boxShadow: "inset 0 0 0 1px var(--color-slate)",
-  "--tilt-x": "0deg",
-  "--tilt-y": "0deg",
-  "--tilt-s": "1",
-  "--glow-x": "50%",
-  "--glow-y": "50%",
-} as CSSProperties;
+};
 
 /**
  * Capa de imagen: sobresale del marco por ARRIBA y por ABAJO para que el
@@ -558,19 +547,11 @@ function mediaLayerStyle(depth: number): CSSProperties {
   };
 }
 
-/** Brillo especular que sigue al puntero. */
-const SHEEN_STYLE: CSSProperties = {
-  backgroundImage:
-    "radial-gradient(38% 55% at var(--glow-x) var(--glow-y), rgb(var(--amber-rgb) / 0.22), transparent 70%)",
-} as CSSProperties;
-
 interface BentoCellProps {
   entry: RallyImageEntry;
   shape: TileShape;
   depth: number;
   priority: boolean;
-  /** Tilt 3D con el puntero. Solo afecta a manejadores, nunca al HTML. */
-  tiltEnabled: boolean;
   /** Zoom de :hover sobre la imagen. Afecta a una clase RENDERIZADA. */
   zoomOnHover: boolean;
   actionLabel: string;
@@ -582,189 +563,120 @@ function BentoCell({
   shape,
   depth,
   priority,
-  tiltEnabled,
   zoomOnHover,
   actionLabel,
   onOpen,
 }: BentoCellProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef(0);
-  /** Caja de la tile, medida una vez por pasada del puntero. */
-  const rectRef = useRef<DOMRect | null>(null);
-
-  const resetTilt = useCallback(() => {
-    if (frameRef.current !== 0) {
-      cancelAnimationFrame(frameRef.current);
-      frameRef.current = 0;
-    }
-    // Al salir se olvida la caja: si la rejilla se ha recolocado o la página
-    // ha hecho scroll, la próxima entrada vuelve a medir.
-    rectRef.current = null;
-    const node = cardRef.current;
-    if (!node) return;
-    node.style.setProperty("--tilt-x", "0deg");
-    node.style.setProperty("--tilt-y", "0deg");
-    node.style.setProperty("--tilt-s", "1");
-  }, []);
-
-  const handlePointerMove = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
-      if (!tiltEnabled || event.pointerType === "touch") return;
-      const node = cardRef.current;
-      if (!node) return;
-
-      /* La caja se mide al ENTRAR, no en cada movimiento.
-         `getBoundingClientRect()` obliga a vaciar estilo y layout antes de
-         contestar, y aquí se pedía justo después de que el frame anterior
-         hubiera escrito `--tilt-x`/`--tilt-y` sobre este mismo nodo: leer
-         después de escribir es el caso caro del layout thrashing. Medido en
-         esta página: 2,3 ms por lectura con el layout sucio. La caja de una
-         tile no cambia mientras el puntero está dentro de ella. */
-      const rect = rectRef.current ?? node.getBoundingClientRect();
-      rectRef.current = rect;
-      if (rect.width === 0 || rect.height === 0) return;
-      const offsetX = (event.clientX - rect.left) / rect.width - 0.5;
-      const offsetY = (event.clientY - rect.top) / rect.height - 0.5;
-
-      if (frameRef.current !== 0) cancelAnimationFrame(frameRef.current);
-      frameRef.current = requestAnimationFrame(() => {
-        frameRef.current = 0;
-        node.style.setProperty("--tilt-x", `${(-offsetY * MAX_TILT_DEG).toFixed(2)}deg`);
-        node.style.setProperty("--tilt-y", `${(offsetX * MAX_TILT_DEG).toFixed(2)}deg`);
-        node.style.setProperty("--tilt-s", "1.02");
-        node.style.setProperty("--glow-x", `${((offsetX + 0.5) * 100).toFixed(1)}%`);
-        node.style.setProperty("--glow-y", `${((offsetY + 0.5) * 100).toFixed(1)}%`);
-      });
-    },
-    [tiltEnabled],
-  );
-
-  useEffect(() => () => {
-    if (frameRef.current !== 0) cancelAnimationFrame(frameRef.current);
-  }, []);
-
   const stage = formatStageLabel(entry);
   const coordinates = entry.rally?.coordinates;
   const terrain = entry.rally?.terrain;
 
   return (
-    <article
-      className={`group relative ${TILE_CLASSES[shape]}`}
-      style={{ perspective: "1100px" }}
-    >
-      <div
-        ref={cardRef}
-        onPointerMove={handlePointerMove}
-        onPointerLeave={resetTilt}
-        onPointerCancel={resetTilt}
-        className="chamfer relative h-full w-full overflow-hidden bg-bg-surface transition-transform duration-300 ease-tactical will-change-transform"
-        style={CARD_STYLE}
-      >
-        {/* Imagen (o placeholder tactico) con parallax.
-            El zoom de hover se apaga por completo con prefers-reduced-motion:
-            no basta con matar la transicion, porque el salto instantaneo
-            seria aun peor que el movimiento. */}
+    <article className={`group relative ${TILE_CLASSES[shape]}`}>
+      <TiltCard className="h-full" maxTilt={8} lift={18} thickness={4}>
         <div
-          data-parallax={depth}
-          className="absolute inset-x-0 will-change-transform"
-          style={mediaLayerStyle(depth)}
+          className="chamfer relative h-full w-full overflow-hidden bg-bg-surface"
+          style={CARD_STYLE}
         >
-          <RallyImage
-            image={entry}
-            fillParent
-            overlay="none"
-            showCaption={false}
-            chamfer={false}
-            priority={priority}
-            sizes={TILE_SIZES[shape]}
-            imageClassName={
-              zoomOnHover
-                ? "transition-transform duration-700 ease-tactical group-hover:scale-[1.04]"
-                : ""
-            }
-          />
-        </div>
+          {/* Imagen (o placeholder tactico) con parallax.
+              El zoom de hover se apaga por completo con prefers-reduced-motion:
+              no basta con matar la transicion, porque el salto instantaneo
+              seria aun peor que el movimiento. */}
+          <div
+            data-parallax={depth}
+            className="absolute inset-x-0 will-change-transform"
+            style={mediaLayerStyle(depth)}
+          >
+            <RallyImage
+              image={entry}
+              fillParent
+              overlay="none"
+              showCaption={false}
+              chamfer={false}
+              priority={priority}
+              sizes={TILE_SIZES[shape]}
+              imageClassName={
+                zoomOnHover
+                  ? "transition-transform duration-700 ease-tactical group-hover:scale-[1.04]"
+                  : ""
+              }
+            />
+          </div>
 
-        {/* Brillo especular que sigue al puntero */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-300 ease-tactical group-hover:opacity-100"
-          style={SHEEN_STYLE}
-        />
+          {/* Badge de etapa: siempre visible, ancla el dato de ruta */}
+          {stage && (
+            <span className="pointer-events-none absolute left-3 top-3 z-20 bg-bg-base/75 px-2 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.18em] text-amber-text">
+              {stage}
+            </span>
+          )}
 
-        {/* Badge de etapa: siempre visible, ancla el dato de ruta */}
-        {stage && (
-          <span className="pointer-events-none absolute left-3 top-3 z-20 bg-bg-base/75 px-2 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.18em] text-amber-text">
-            {stage}
-          </span>
-        )}
+          {/* Overlay de datos de rally.
+              En dispositivos sin hover se muestra siempre (ver la regla
+              @media (hover: none) mas abajo). */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-end opacity-0 transition-opacity duration-300 ease-tactical group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"
+            style={{
+              backgroundImage:
+                "linear-gradient(to top, rgb(var(--base-rgb) / 0.94) 0%, rgb(var(--base-rgb) / 0.55) 42%, rgb(var(--base-rgb) / 0) 78%)",
+            }}
+          >
+            <div className="flex flex-col gap-1.5 p-3 sm:p-4">
+              <p className="line-clamp-2 font-heading text-sm uppercase leading-tight tracking-[0.04em] text-text-primary sm:text-base">
+                {entry.caption}
+              </p>
 
-        {/* Overlay de datos de rally.
-            En dispositivos sin hover se muestra siempre (ver la regla
-            @media (hover: none) mas abajo). */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-end opacity-0 transition-opacity duration-300 ease-tactical group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"
-          style={{
-            backgroundImage:
-              "linear-gradient(to top, rgb(var(--base-rgb) / 0.94) 0%, rgb(var(--base-rgb) / 0.55) 42%, rgb(var(--base-rgb) / 0) 78%)",
-          }}
-        >
-          <div className="flex flex-col gap-1.5 p-3 sm:p-4">
-            <p className="line-clamp-2 font-heading text-sm uppercase leading-tight tracking-[0.04em] text-text-primary sm:text-base">
-              {entry.caption}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-text-tertiary">
-              {entry.rally?.location && (
-                <span className="flex min-w-0 items-center gap-1 text-text-secondary">
-                  <MapPin size={10} strokeWidth={2} aria-hidden="true" />
-                  <span className="truncate">{entry.rally.location}</span>
-                </span>
-              )}
-              {coordinates && (
-                <span className="flex shrink-0 items-center gap-1">
-                  <Compass size={10} strokeWidth={2} aria-hidden="true" />
-                  {formatCoordinates(coordinates)}
-                </span>
-              )}
-              {terrain && (
-                <span className="flex shrink-0 items-center gap-1 text-sand">
-                  <Mountain size={10} strokeWidth={2} aria-hidden="true" />
-                  {TERRAIN_LABELS[terrain]}
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-text-tertiary">
+                {entry.rally?.location && (
+                  <span className="flex min-w-0 items-center gap-1 text-text-secondary">
+                    <MapPin size={10} strokeWidth={2} aria-hidden="true" />
+                    <span className="truncate">{entry.rally.location}</span>
+                  </span>
+                )}
+                {coordinates && (
+                  <span className="flex shrink-0 items-center gap-1">
+                    <Compass size={10} strokeWidth={2} aria-hidden="true" />
+                    {formatCoordinates(coordinates)}
+                  </span>
+                )}
+                {terrain && (
+                  <span className="flex shrink-0 items-center gap-1 text-sand">
+                    <Mountain size={10} strokeWidth={2} aria-hidden="true" />
+                    {TERRAIN_LABELS[terrain]}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Marcas de esquina, encima del overlay */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-20 opacity-0 transition-opacity duration-300 ease-tactical group-hover:opacity-100 group-focus-within:opacity-100"
-        >
-          <span className="absolute left-2 top-2 h-3 w-3 border-l border-t border-amber" />
-          <span className="absolute right-2 top-2 h-3 w-3 border-r border-t border-amber" />
-          <span className="absolute bottom-2 left-2 h-3 w-3 border-b border-l border-amber" />
-          <span className="absolute bottom-2 right-2 h-3 w-3 border-b border-r border-amber" />
-        </span>
-
-        {/* Disparador accesible: cubre la tarjeta entera */}
-        <button
-          type="button"
-          data-tile-trigger=""
-          onClick={(event) => onOpen(event.currentTarget)}
-          className="absolute inset-0 z-30 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-amber"
-        >
-          <span className="sr-only">{actionLabel}</span>
+          {/* Marcas de esquina, encima del overlay */}
           <span
             aria-hidden="true"
-            className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center bg-bg-base/75 text-amber opacity-0 transition-opacity duration-300 ease-tactical group-hover:opacity-100 group-focus-within:opacity-100"
+            className="pointer-events-none absolute inset-0 z-20 opacity-0 transition-opacity duration-300 ease-tactical group-hover:opacity-100 group-focus-within:opacity-100"
           >
-            <Maximize2 size={12} strokeWidth={2} />
+            <span className="absolute left-2 top-2 h-3 w-3 border-l border-t border-amber" />
+            <span className="absolute right-2 top-2 h-3 w-3 border-r border-t border-amber" />
+            <span className="absolute bottom-2 left-2 h-3 w-3 border-b border-l border-amber" />
+            <span className="absolute bottom-2 right-2 h-3 w-3 border-b border-r border-amber" />
           </span>
-        </button>
-      </div>
+
+          {/* Disparador accesible: cubre la tarjeta entera */}
+          <button
+            type="button"
+            data-tile-trigger=""
+            onClick={(event) => onOpen(event.currentTarget)}
+            className="absolute inset-0 z-30 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-amber"
+          >
+            <span className="sr-only">{actionLabel}</span>
+            <span
+              aria-hidden="true"
+              className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center bg-bg-base/75 text-amber opacity-0 transition-opacity duration-300 ease-tactical group-hover:opacity-100 group-focus-within:opacity-100"
+            >
+              <Maximize2 size={12} strokeWidth={2} />
+            </span>
+          </button>
+        </div>
+      </TiltCard>
     </article>
   );
 }

@@ -66,6 +66,7 @@ import type {
 } from "@/lib/types";
 import { fill, type Dict } from "@/i18n/translations";
 import { useT } from "@/i18n/LanguageProvider";
+import TiltCard, { TiltDepth } from "@/components/ui/TiltCard";
 
 import { EMPTY_ARTWORK, isArtworkEmpty, type ArtworkDesign } from "@/lib/sponsor/artwork";
 import { zoneBox } from "@/lib/sponsor/zoneBox";
@@ -794,257 +795,268 @@ export default function CarViewer({
 
   return (
     <div className="relative">
-      <div
-        ref={frameRef}
-        className="hud-frame hud-frame-slate panel dust-overlay relative h-[340px] w-full overflow-hidden select-none sm:h-[440px] lg:h-[540px]"
-      >
-        <div className="grid-blueprint grid-fade pointer-events-none absolute inset-0 opacity-70" />
-
-        <svg
-          /* `role="img"` NO vale aquí: la regla ARIA "children presentational"
-             convierte en decorativo TODO el subárbol de un `img`, así que los
-             <path role="button"> de las zonas desaparecerían del lector de
-             pantalla. `group` deja el dibujo etiquetado y a la vez expone las
-             zonas como los controles que son. */
-          role="group"
-          aria-label={`${t.common.a11y.carDiagram} — ${viewName}`}
-          viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
-          className="relative z-[1] block h-full w-full"
-          style={svgStyle}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={endPointer}
-          onPointerCancel={endPointer}
-          onPointerLeave={(event) => {
-            endPointer(event);
-            setHoveredId(null);
-          }}
-          onDoubleClick={(event) => {
-            const rect = frameRef.current?.getBoundingClientRect();
-            if (!rect) return;
-            const current = base.w / viewBoxRef.current.w;
-            zoomAt(
-              current > 1.2 ? MIN_ZOOM : 2.6,
-              event.clientX - rect.left,
-              event.clientY - rect.top,
-            );
-          }}
+      {/* Sombra en el suelo y rejilla a otra profundidad, pero el visor NO
+          gira: aquí se arrastra, se hace zoom y se apunta a zonas pequeñas,
+          y la posición del puntero se calcula con la caja del marco, que un
+          giro 3D deformaría. Con giro y elevación a 0, <TiltCard> no pone
+          ningún transform sobre el marco. */}
+      <TiltCard maxTilt={0} lift={0} thickness={0} rim={false}>
+        <div
+          ref={frameRef}
+          className="hud-frame hud-frame-slate panel dust-overlay relative h-[340px] w-full overflow-hidden select-none sm:h-[440px] lg:h-[540px]"
         >
-          <defs>
-            {/* Trama diagonal de las zonas ya vendidas. El gris arena sale
-                del token `--muted-rgb` (el mismo 140 130 117 en tactical) y
-                la dosis sube en el tema claro: una trama pensada para restar
-                luz sobre negro tiene que sumar grano sobre crema.
-                Los colores van en `style`: un atributo de presentación SVG no
-                resuelve var(). */}
-            <pattern
-              id={`occupied-${uid}`}
-              width="10"
-              height="10"
-              patternUnits="userSpaceOnUse"
-              patternTransform="rotate(45)"
-            >
-              <rect
+          {/* La rejilla se hunde: se desplaza al contrario que el puntero. Sobra
+              por los cuatro lados para que el desplazamiento no descubra el borde. */}
+          <TiltDepth depth={-40} className="pointer-events-none absolute -inset-4">
+            <div className="grid-blueprint grid-fade absolute inset-0 opacity-70" />
+          </TiltDepth>
+
+          <svg
+            /* `role="img"` NO vale aquí: la regla ARIA "children presentational"
+               convierte en decorativo TODO el subárbol de un `img`, así que los
+               <path role="button"> de las zonas desaparecerían del lector de
+               pantalla. `group` deja el dibujo etiquetado y a la vez expone las
+               zonas como los controles que son. */
+            role="group"
+            aria-label={`${t.common.a11y.carDiagram} — ${viewName}`}
+            viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`}
+            className="relative z-[1] block h-full w-full"
+            style={svgStyle}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={endPointer}
+            onPointerCancel={endPointer}
+            onPointerLeave={(event) => {
+              endPointer(event);
+              setHoveredId(null);
+            }}
+            onDoubleClick={(event) => {
+              const rect = frameRef.current?.getBoundingClientRect();
+              if (!rect) return;
+              const current = base.w / viewBoxRef.current.w;
+              zoomAt(
+                current > 1.2 ? MIN_ZOOM : 2.6,
+                event.clientX - rect.left,
+                event.clientY - rect.top,
+              );
+            }}
+          >
+            <defs>
+              {/* Trama diagonal de las zonas ya vendidas. El gris arena sale
+                  del token `--muted-rgb` (el mismo 140 130 117 en tactical) y
+                  la dosis sube en el tema claro: una trama pensada para restar
+                  luz sobre negro tiene que sumar grano sobre crema.
+                  Los colores van en `style`: un atributo de presentación SVG no
+                  resuelve var(). */}
+              <pattern
+                id={`occupied-${uid}`}
                 width="10"
                 height="10"
-                style={{ fill: `rgb(var(--muted-rgb) / ${zoneAlpha(0.16)})` }}
-              />
-              <line
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="10"
-                strokeWidth="3"
-                style={{ stroke: `rgb(var(--muted-rgb) / ${zoneAlpha(0.55)})` }}
-              />
-            </pattern>
-          </defs>
+                patternUnits="userSpaceOnUse"
+                patternTransform="rotate(45)"
+              >
+                <rect
+                  width="10"
+                  height="10"
+                  style={{ fill: `rgb(var(--muted-rgb) / ${zoneAlpha(0.16)})` }}
+                />
+                <line
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="10"
+                  strokeWidth="3"
+                  style={{ stroke: `rgb(var(--muted-rgb) / ${zoneAlpha(0.55)})` }}
+                />
+              </pattern>
+            </defs>
 
-          {lineArt ? (
-            <g
-              aria-hidden="true"
-              dangerouslySetInnerHTML={{ __html: LINE_STYLE + lineArt }}
+            {lineArt ? (
+              <g
+                aria-hidden="true"
+                dangerouslySetInnerHTML={{ __html: LINE_STYLE + lineArt }}
+              />
+            ) : null}
+
+            <g>
+              {zones.map((zone) => (
+                <SponsorZone
+                  key={zone.slot.id}
+                  zone={zone}
+                  muted={isMuted(zone)}
+                  selected={selected.has(zone.slot.id)}
+                  opensStudio={Boolean(onOpenStudio)}
+                  active={activeId === zone.slot.id}
+                  occupiedPatternId={`occupied-${uid}`}
+                  onActivate={handleActivate}
+                  onHoverChange={setHoveredId}
+                  onFocusChange={setFocusedId}
+                />
+              ))}
+            </g>
+
+            {/* Rotulado real: lo que el cliente ha compuesto en el estudio, sobre
+                la chapa y recortado por el contorno de su zona.
+
+                `pointerEvents: none` es imprescindible: este grupo va ENCIMA de
+                las zonas, y sin él un logo taparía el <path> que hay debajo y la
+                zona dejaría de poder pulsarse justo cuando ya está rotulada. */}
+            {artwork ? (
+              <g aria-hidden="true" style={{ pointerEvents: "none" }}>
+                {zones.map((zone) => {
+                  if (!selected.has(zone.slot.id) || isMuted(zone)) return null;
+                  const design = artwork[zone.slot.id];
+                  if (isArtworkEmpty(design)) return null;
+                  return (
+                    <ZoneArtworkLayer
+                      key={`art-${zone.slot.id}`}
+                      d={zone.geometry.d}
+                      box={zoneBox(zone.geometry.d)}
+                      artwork={design ?? EMPTY_ARTWORK}
+                      clipId={`art-${uid}-${zone.slot.id}`}
+                    />
+                  );
+                })}
+              </g>
+            ) : null}
+
+            {/* Previsualización de la rotulación: el nombre tecleado, estampado
+                sobre cada zona elegida y escalado a su vinilo real. Sólo donde NO
+                hay rotulado propio — si el cliente ya ha puesto su logo, seguir
+                estampando el nombre encima lo taparía. */}
+            {brandStamp.length > 0 ? (
+              <g aria-hidden="true" style={{ pointerEvents: "none" }}>
+                {zones.map((zone) => {
+                  if (!selected.has(zone.slot.id) || isMuted(zone)) return null;
+                  if (artwork && !isArtworkEmpty(artwork[zone.slot.id])) return null;
+                  // Ojo: `fontSize`, no `size`. `size` es la medida del MARCO en
+                  // píxeles, y sombrearla aquí dentro se lee fatal.
+                  const fontSize = brandFontSize(zone, brandStamp.length, cmPerUnit);
+                  if (fontSize <= 0) return null;
+                  return (
+                    <text
+                      key={`brand-${zone.slot.id}`}
+                      x={zone.geometry.anchor.x}
+                      y={zone.geometry.anchor.y}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      style={{
+                        /* Rotulación: el color de señal del tema (lima sobre
+                           negro, moss sobre crema) con un halo del FONDO del
+                           tema, que es lo que la despega de la zona debajo. */
+                        fill: "rgb(var(--lime-rgb) / 0.92)",
+                        stroke: `rgb(var(--base-rgb) / ${zoneAlpha(0.55)})`,
+                        fontFamily: "var(--font-heading), sans-serif",
+                        fontWeight: 700,
+                        fontSize: `${fontSize}px`,
+                        letterSpacing: `${fontSize * 0.06}px`,
+                        paintOrder: "stroke",
+                        strokeWidth: fontSize * 0.1,
+                        strokeLinejoin: "round",
+                      }}
+                    >
+                      {brandStamp}
+                    </text>
+                  );
+                })}
+              </g>
+            ) : null}
+          </svg>
+
+          {/* Estado de carga / fallo del line-art. El coche puede no estar, pero
+              las zonas y toda la información siguen siendo utilizables. */}
+          {!lineArt ? (
+            <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center">
+              <span className="telemetry-label">
+                {lineArtFailed ? t.common.errors.generic : t.common.labels.loading}
+              </span>
+            </div>
+          ) : null}
+
+          {/* HUD superior izquierdo: vista y escala. */}
+          <div className="pointer-events-none absolute top-3 left-3 z-[2] flex flex-wrap items-center gap-2">
+            <span className="tech-badge tech-badge-amber">{viewName}</span>
+            <span className="tech-badge font-mono">{scaleLabel}</span>
+          </div>
+
+          {/* HUD superior derecho: aviso de simulación en vivo. */}
+          <div className="pointer-events-none absolute top-3 right-3 z-[2] hidden items-center gap-2 sm:flex">
+            <span className="status-dot" />
+            <span className="telemetry-label">{t.sponsors.configurator.realtime}</span>
+          </div>
+
+          {/* Controles de cámara: el zoom tiene que ser usable sin gestos. */}
+          <div className="absolute right-3 bottom-3 z-[3] flex items-center gap-1.5">
+            <div className="panel-sunken chamfer-quad-sm flex items-center gap-1 p-1">
+              <button
+                type="button"
+                onClick={() => stepZoom(1 / 1.45)}
+                disabled={zoom <= MIN_ZOOM + 0.001}
+                aria-label={t.sponsors.configurator.zoomOut}
+                title={t.sponsors.configurator.zoomOut}
+                className="font-mono h-8 w-8 text-sm text-text-secondary transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                onClick={() => stepZoom(1.45)}
+                disabled={zoom >= MAX_ZOOM - 0.001}
+                aria-label={t.sponsors.configurator.zoomIn}
+                title={t.sponsors.configurator.zoomIn}
+                className="font-mono h-8 w-8 text-sm text-text-secondary transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
+              >
+                +
+              </button>
+              <button
+                type="button"
+                onClick={resetCamera}
+                disabled={zoom <= MIN_ZOOM + 0.001}
+                aria-label={t.sponsors.configurator.resetView}
+                title={t.sponsors.configurator.resetView}
+                className="font-mono h-8 px-2 text-[0.625rem] tracking-[0.18em] text-text-secondary uppercase transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
+              >
+                1:1
+              </button>
+            </div>
+          </div>
+
+          {/* Grosor de trazo del line-art. */}
+          <div className="absolute bottom-3 left-3 z-[3] hidden items-center gap-2 sm:flex">
+            <span className="telemetry-label">{t.sponsors.configurator.strokeLabel}</span>
+            <div className="panel-sunken chamfer-quad-sm flex items-center gap-0.5 p-1">
+              {STROKE_STEPS.map((step, index) => (
+                <button
+                  key={step}
+                  type="button"
+                  onClick={() => setStrokeIndex(index)}
+                  aria-pressed={strokeIndex === index}
+                  aria-label={`${t.sponsors.configurator.strokeLabel} ${index + 1}`}
+                  className={`font-mono h-6 w-6 text-[0.625rem] transition-colors ${
+                    strokeIndex === index
+                      ? "bg-amber-solid text-text-inverse"
+                      : "text-text-tertiary hover:text-text-primary"
+                  }`}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {activeZone && tooltipPosition && size ? (
+            <ZoneTooltip
+              zone={activeZone}
+              x={tooltipPosition.x}
+              y={tooltipPosition.y}
+              frameWidth={size.w}
+              frameHeight={size.h}
+              pinned={pinnedId === activeZone.slot.id}
+              onClose={() => setPinnedId(null)}
             />
           ) : null}
-
-          <g>
-            {zones.map((zone) => (
-              <SponsorZone
-                key={zone.slot.id}
-                zone={zone}
-                muted={isMuted(zone)}
-                selected={selected.has(zone.slot.id)}
-                opensStudio={Boolean(onOpenStudio)}
-                active={activeId === zone.slot.id}
-                occupiedPatternId={`occupied-${uid}`}
-                onActivate={handleActivate}
-                onHoverChange={setHoveredId}
-                onFocusChange={setFocusedId}
-              />
-            ))}
-          </g>
-
-          {/* Rotulado real: lo que el cliente ha compuesto en el estudio, sobre
-              la chapa y recortado por el contorno de su zona.
-
-              `pointerEvents: none` es imprescindible: este grupo va ENCIMA de
-              las zonas, y sin él un logo taparía el <path> que hay debajo y la
-              zona dejaría de poder pulsarse justo cuando ya está rotulada. */}
-          {artwork ? (
-            <g aria-hidden="true" style={{ pointerEvents: "none" }}>
-              {zones.map((zone) => {
-                if (!selected.has(zone.slot.id) || isMuted(zone)) return null;
-                const design = artwork[zone.slot.id];
-                if (isArtworkEmpty(design)) return null;
-                return (
-                  <ZoneArtworkLayer
-                    key={`art-${zone.slot.id}`}
-                    d={zone.geometry.d}
-                    box={zoneBox(zone.geometry.d)}
-                    artwork={design ?? EMPTY_ARTWORK}
-                    clipId={`art-${uid}-${zone.slot.id}`}
-                  />
-                );
-              })}
-            </g>
-          ) : null}
-
-          {/* Previsualización de la rotulación: el nombre tecleado, estampado
-              sobre cada zona elegida y escalado a su vinilo real. Sólo donde NO
-              hay rotulado propio — si el cliente ya ha puesto su logo, seguir
-              estampando el nombre encima lo taparía. */}
-          {brandStamp.length > 0 ? (
-            <g aria-hidden="true" style={{ pointerEvents: "none" }}>
-              {zones.map((zone) => {
-                if (!selected.has(zone.slot.id) || isMuted(zone)) return null;
-                if (artwork && !isArtworkEmpty(artwork[zone.slot.id])) return null;
-                // Ojo: `fontSize`, no `size`. `size` es la medida del MARCO en
-                // píxeles, y sombrearla aquí dentro se lee fatal.
-                const fontSize = brandFontSize(zone, brandStamp.length, cmPerUnit);
-                if (fontSize <= 0) return null;
-                return (
-                  <text
-                    key={`brand-${zone.slot.id}`}
-                    x={zone.geometry.anchor.x}
-                    y={zone.geometry.anchor.y}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    style={{
-                      /* Rotulación: el color de señal del tema (lima sobre
-                         negro, moss sobre crema) con un halo del FONDO del
-                         tema, que es lo que la despega de la zona debajo. */
-                      fill: "rgb(var(--lime-rgb) / 0.92)",
-                      stroke: `rgb(var(--base-rgb) / ${zoneAlpha(0.55)})`,
-                      fontFamily: "var(--font-heading), sans-serif",
-                      fontWeight: 700,
-                      fontSize: `${fontSize}px`,
-                      letterSpacing: `${fontSize * 0.06}px`,
-                      paintOrder: "stroke",
-                      strokeWidth: fontSize * 0.1,
-                      strokeLinejoin: "round",
-                    }}
-                  >
-                    {brandStamp}
-                  </text>
-                );
-              })}
-            </g>
-          ) : null}
-        </svg>
-
-        {/* Estado de carga / fallo del line-art. El coche puede no estar, pero
-            las zonas y toda la información siguen siendo utilizables. */}
-        {!lineArt ? (
-          <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center">
-            <span className="telemetry-label">
-              {lineArtFailed ? t.common.errors.generic : t.common.labels.loading}
-            </span>
-          </div>
-        ) : null}
-
-        {/* HUD superior izquierdo: vista y escala. */}
-        <div className="pointer-events-none absolute top-3 left-3 z-[2] flex flex-wrap items-center gap-2">
-          <span className="tech-badge tech-badge-amber">{viewName}</span>
-          <span className="tech-badge font-mono">{scaleLabel}</span>
         </div>
-
-        {/* HUD superior derecho: aviso de simulación en vivo. */}
-        <div className="pointer-events-none absolute top-3 right-3 z-[2] hidden items-center gap-2 sm:flex">
-          <span className="status-dot" />
-          <span className="telemetry-label">{t.sponsors.configurator.realtime}</span>
-        </div>
-
-        {/* Controles de cámara: el zoom tiene que ser usable sin gestos. */}
-        <div className="absolute right-3 bottom-3 z-[3] flex items-center gap-1.5">
-          <div className="panel-sunken chamfer-quad-sm flex items-center gap-1 p-1">
-            <button
-              type="button"
-              onClick={() => stepZoom(1 / 1.45)}
-              disabled={zoom <= MIN_ZOOM + 0.001}
-              aria-label={t.sponsors.configurator.zoomOut}
-              title={t.sponsors.configurator.zoomOut}
-              className="font-mono h-8 w-8 text-sm text-text-secondary transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              −
-            </button>
-            <button
-              type="button"
-              onClick={() => stepZoom(1.45)}
-              disabled={zoom >= MAX_ZOOM - 0.001}
-              aria-label={t.sponsors.configurator.zoomIn}
-              title={t.sponsors.configurator.zoomIn}
-              className="font-mono h-8 w-8 text-sm text-text-secondary transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              +
-            </button>
-            <button
-              type="button"
-              onClick={resetCamera}
-              disabled={zoom <= MIN_ZOOM + 0.001}
-              aria-label={t.sponsors.configurator.resetView}
-              title={t.sponsors.configurator.resetView}
-              className="font-mono h-8 px-2 text-[0.625rem] tracking-[0.18em] text-text-secondary uppercase transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              1:1
-            </button>
-          </div>
-        </div>
-
-        {/* Grosor de trazo del line-art. */}
-        <div className="absolute bottom-3 left-3 z-[3] hidden items-center gap-2 sm:flex">
-          <span className="telemetry-label">{t.sponsors.configurator.strokeLabel}</span>
-          <div className="panel-sunken chamfer-quad-sm flex items-center gap-0.5 p-1">
-            {STROKE_STEPS.map((step, index) => (
-              <button
-                key={step}
-                type="button"
-                onClick={() => setStrokeIndex(index)}
-                aria-pressed={strokeIndex === index}
-                aria-label={`${t.sponsors.configurator.strokeLabel} ${index + 1}`}
-                className={`font-mono h-6 w-6 text-[0.625rem] transition-colors ${
-                  strokeIndex === index
-                    ? "bg-amber-solid text-text-inverse"
-                    : "text-text-tertiary hover:text-text-primary"
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {activeZone && tooltipPosition && size ? (
-          <ZoneTooltip
-            zone={activeZone}
-            x={tooltipPosition.x}
-            y={tooltipPosition.y}
-            frameWidth={size.w}
-            frameHeight={size.h}
-            pinned={pinnedId === activeZone.slot.id}
-            onClose={() => setPinnedId(null)}
-          />
-        ) : null}
-      </div>
+      </TiltCard>
 
       <p className="telemetry-label mt-3 text-center sm:text-left">
         {t.sponsors.configurator.hint}

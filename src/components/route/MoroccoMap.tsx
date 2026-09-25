@@ -58,6 +58,7 @@
 import { useId, useMemo, useRef, type CSSProperties } from "react";
 import { useInView } from "framer-motion";
 
+import TiltCard from "@/components/ui/TiltCard";
 import { useT } from "@/i18n/LanguageProvider";
 import { formatDMS } from "@/lib/constants";
 import { ROUTE_STAGES, ROUTE_START, ROUTE_WAYPOINTS } from "@/lib/route";
@@ -543,349 +544,353 @@ export default function MoroccoMap({
           mapa pierde todo el dibujo técnico. Por eso aquí el color de las
           marcas HUD se fija con `[--hud-color:…]` en vez de `hud-frame-slate`:
           esa utilidad clava el slate y en desert desaparecería. */}
-      <div
-        ref={frameRef}
-        className="hud-frame [--hud-color:var(--outline-stroke)] dust-overlay dust-overlay-soft relative w-full overflow-hidden bg-bg-sunken"
-        style={{ aspectRatio: `${VIEW_W} / ${VIEW_H}` }}
-      >
-        <div className="grid-blueprint grid-fade absolute inset-0" aria-hidden="true" />
-
-        <svg
-          viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-          preserveAspectRatio="xMidYMid meet"
-          className="absolute inset-0 h-full w-full"
-          aria-hidden="true"
-          focusable="false"
+      {/* Tarjeta con volumen, con giro corto: los marcadores se pulsan y un
+          giro amplio los movería demasiado bajo el puntero. */}
+      <TiltCard shape="rect" maxTilt={4} lift={12} thickness={4} solid>
+        <div
+          ref={frameRef}
+          className="hud-frame [--hud-color:var(--outline-stroke)] dust-overlay dust-overlay-soft relative w-full overflow-hidden bg-bg-sunken"
+          style={{ aspectRatio: `${VIEW_W} / ${VIEW_H}` }}
         >
-          <defs>
-            {/* Rejilla topográfica interior del país */}
-            <pattern id={hatchId} width="26" height="26" patternUnits="userSpaceOnUse">
-              <path
-                d="M26,0 L0,0 L0,26"
-                fill="none"
-                stroke="var(--outline-stroke)"
-                strokeWidth="1"
-                opacity="0.55"
-              />
-            </pattern>
-            <linearGradient id={landId} x1="0" y1="0" x2="0.6" y2="1">
-              <stop offset="0%" stopColor="var(--color-bg-elevated)" />
-              <stop offset="100%" stopColor="var(--color-bg-surface)" />
-            </linearGradient>
-          </defs>
+          <div className="grid-blueprint grid-fade absolute inset-0" aria-hidden="true" />
 
-          {/* Franja de España: contexto del Estrecho */}
-          <path
-            d={toPath(SPAIN_OUTLINE, true)}
-            fill="var(--color-bg-surface)"
-            stroke="var(--outline-stroke)"
-            strokeWidth="1.25"
-            opacity="0.62"
-          />
-
-          {/* Marruecos */}
-          <path d={toPath(MOROCCO_OUTLINE, true)} fill={`url(#${landId})`} />
-          <path d={toPath(MOROCCO_OUTLINE, true)} fill={`url(#${hatchId})`} opacity="0.5" />
-          <path
-            d={toPath(MOROCCO_OUTLINE, true)}
-            fill="none"
-            stroke="var(--color-sand)"
-            strokeWidth="2"
-            strokeLinejoin="round"
-            opacity="0.72"
-          />
-
-          {/* Cordilleras: Rif, Medio Atlas, Alto Atlas y Anti-Atlas */}
-          <g opacity="0.5">
-            {MOUNTAIN_RANGES.map((range, rangeIndex) => (
-              <g key={`range-${rangeIndex}`}>
+          <svg
+            viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+            preserveAspectRatio="xMidYMid meet"
+            className="absolute inset-0 h-full w-full"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <defs>
+              {/* Rejilla topográfica interior del país */}
+              <pattern id={hatchId} width="26" height="26" patternUnits="userSpaceOnUse">
                 <path
-                  d={toPath(range.ridge, false)}
+                  d="M26,0 L0,0 L0,26"
                   fill="none"
-                  stroke="var(--color-sand)"
-                  strokeWidth="1.1"
-                  strokeLinecap="round"
+                  stroke="var(--outline-stroke)"
+                  strokeWidth="1"
                   opacity="0.55"
                 />
-                {range.ridge.map((vertex, vertexIndex) => {
-                  const p = project(vertex[0], vertex[1]);
-                  const half = range.peak * 0.72;
-                  return (
-                    <path
-                      key={`peak-${rangeIndex}-${vertexIndex}`}
-                      d={`M${n(p.x - half)},${n(p.y)}L${n(p.x)},${n(p.y - range.peak)}L${n(p.x + half)},${n(p.y)}`}
-                      fill="none"
-                      stroke="var(--color-sand)"
-                      strokeWidth="1.3"
-                    />
-                  );
-                })}
-              </g>
-            ))}
-          </g>
+              </pattern>
+              <linearGradient id={landId} x1="0" y1="0" x2="0.6" y2="1">
+                <stop offset="0%" stopColor="var(--color-bg-elevated)" />
+                <stop offset="100%" stopColor="var(--color-bg-surface)" />
+              </linearGradient>
+            </defs>
 
-          {/* Erg Chebbi — cordones de duna junto a la etapa reina */}
-          <g opacity="0.55">
-            {[0, 1, 2, 3].map((row) => {
-              const anchor = project(ERG_CHEBBI_ANCHOR[0], ERG_CHEBBI_ANCHOR[1]);
-              const y = anchor.y + row * 9;
-              const width = 34 - row * 4;
-              return (
-                <path
-                  key={`dune-${row}`}
-                  d={`M${n(anchor.x - width)},${n(y)}q${n(width * 0.5)},-7 ${n(width)},0q${n(width * 0.5)},7 ${n(width)},0`}
-                  fill="none"
-                  stroke="var(--color-amber)"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                />
-              );
-            })}
-          </g>
-
-          {/* Rótulo del país */}
-          <text
-            x={n(project(REGION_LABEL_ANCHOR[0], REGION_LABEL_ANCHOR[1]).x)}
-            y={n(project(REGION_LABEL_ANCHOR[0], REGION_LABEL_ANCHOR[1]).y)}
-            textAnchor="middle"
-            className="font-heading"
-            fontSize="30"
-            letterSpacing="7"
-            fill="var(--color-text-primary)"
-            opacity="0.12"
-          >
-            {copy.regionLabel.toUpperCase()}
-          </text>
-
-          {/* Capa TRAZO — se dibuja al entrar en viewport */}
-          <g opacity="0.5">
+            {/* Franja de España: contexto del Estrecho */}
             <path
-              d={ROUTE_TRACE_D}
+              d={toPath(SPAIN_OUTLINE, true)}
+              fill="var(--color-bg-surface)"
+              stroke="var(--outline-stroke)"
+              strokeWidth="1.25"
+              opacity="0.62"
+            />
+
+            {/* Marruecos */}
+            <path d={toPath(MOROCCO_OUTLINE, true)} fill={`url(#${landId})`} />
+            <path d={toPath(MOROCCO_OUTLINE, true)} fill={`url(#${hatchId})`} opacity="0.5" />
+            <path
+              d={toPath(MOROCCO_OUTLINE, true)}
               fill="none"
-              stroke="var(--color-amber)"
-              strokeWidth="7"
-              strokeLinecap="round"
+              stroke="var(--color-sand)"
+              strokeWidth="2"
               strokeLinejoin="round"
-              className={revealed ? "animate-draw-in" : "opacity-0"}
-              style={revealed ? traceStyle : undefined}
+              opacity="0.72"
             />
-          </g>
 
-          {/* Capa BASE — un trazo por etapa, con la grafía de su terreno */}
-          <g>
-            {ROUTE_SEGMENTS.map((segment, index) => {
-              const stage = ROUTE_STAGES[index];
-              if (stage === undefined) return null;
-              const kind = LINE_KIND_BY_TERRAIN[stage.terrain];
-              const isFocus = stage.id === activeStageId || stage.id === hoveredStageId;
-              return (
-                <g key={stage.id} opacity={isFocus ? 1 : 0.8}>
+            {/* Cordilleras: Rif, Medio Atlas, Alto Atlas y Anti-Atlas */}
+            <g opacity="0.5">
+              {MOUNTAIN_RANGES.map((range, rangeIndex) => (
+                <g key={`range-${rangeIndex}`}>
                   <path
-                    d={segment.d}
+                    d={toPath(range.ridge, false)}
                     fill="none"
-                    stroke={isFocus ? "var(--color-amber)" : "var(--color-sand)"}
-                    strokeWidth={isFocus ? 5 : 3}
-                    strokeDasharray={LINE_DASH[kind]}
-                    strokeLinecap={LINE_CAP[kind]}
-                    strokeLinejoin="round"
+                    stroke="var(--color-sand)"
+                    strokeWidth="1.1"
+                    strokeLinecap="round"
+                    opacity="0.55"
                   />
+                  {range.ridge.map((vertex, vertexIndex) => {
+                    const p = project(vertex[0], vertex[1]);
+                    const half = range.peak * 0.72;
+                    return (
+                      <path
+                        key={`peak-${rangeIndex}-${vertexIndex}`}
+                        d={`M${n(p.x - half)},${n(p.y)}L${n(p.x)},${n(p.y - range.peak)}L${n(p.x + half)},${n(p.y)}`}
+                        fill="none"
+                        stroke="var(--color-sand)"
+                        strokeWidth="1.3"
+                      />
+                    );
+                  })}
                 </g>
+              ))}
+            </g>
+
+            {/* Erg Chebbi — cordones de duna junto a la etapa reina */}
+            <g opacity="0.55">
+              {[0, 1, 2, 3].map((row) => {
+                const anchor = project(ERG_CHEBBI_ANCHOR[0], ERG_CHEBBI_ANCHOR[1]);
+                const y = anchor.y + row * 9;
+                const width = 34 - row * 4;
+                return (
+                  <path
+                    key={`dune-${row}`}
+                    d={`M${n(anchor.x - width)},${n(y)}q${n(width * 0.5)},-7 ${n(width)},0q${n(width * 0.5)},7 ${n(width)},0`}
+                    fill="none"
+                    stroke="var(--color-amber)"
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                  />
+                );
+              })}
+            </g>
+
+            {/* Rótulo del país */}
+            <text
+              x={n(project(REGION_LABEL_ANCHOR[0], REGION_LABEL_ANCHOR[1]).x)}
+              y={n(project(REGION_LABEL_ANCHOR[0], REGION_LABEL_ANCHOR[1]).y)}
+              textAnchor="middle"
+              className="font-heading"
+              fontSize="30"
+              letterSpacing="7"
+              fill="var(--color-text-primary)"
+              opacity="0.12"
+            >
+              {copy.regionLabel.toUpperCase()}
+            </text>
+
+            {/* Capa TRAZO — se dibuja al entrar en viewport */}
+            <g opacity="0.5">
+              <path
+                d={ROUTE_TRACE_D}
+                fill="none"
+                stroke="var(--color-amber)"
+                strokeWidth="7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={revealed ? "animate-draw-in" : "opacity-0"}
+                style={revealed ? traceStyle : undefined}
+              />
+            </g>
+
+            {/* Capa BASE — un trazo por etapa, con la grafía de su terreno */}
+            <g>
+              {ROUTE_SEGMENTS.map((segment, index) => {
+                const stage = ROUTE_STAGES[index];
+                if (stage === undefined) return null;
+                const kind = LINE_KIND_BY_TERRAIN[stage.terrain];
+                const isFocus = stage.id === activeStageId || stage.id === hoveredStageId;
+                return (
+                  <g key={stage.id} opacity={isFocus ? 1 : 0.8}>
+                    <path
+                      d={segment.d}
+                      fill="none"
+                      stroke={isFocus ? "var(--color-amber)" : "var(--color-sand)"}
+                      strokeWidth={isFocus ? 5 : 3}
+                      strokeDasharray={LINE_DASH[kind]}
+                      strokeLinecap={LINE_CAP[kind]}
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                );
+              })}
+            </g>
+
+            {/* Escala gráfica, medida sobre la propia proyección */}
+            <g className="hidden @sm:block" transform={`translate(40, ${n(VIEW_H - 110)})`}>
+              <path
+                d={`M0,0 L${n(SCALE_BAR_KM * UNITS_PER_KM)},0 M0,-6 L0,6 M${n(SCALE_BAR_KM * UNITS_PER_KM)},-6 L${n(SCALE_BAR_KM * UNITS_PER_KM)},6`}
+                fill="none"
+                stroke="var(--color-text-tertiary)"
+                strokeWidth="1.5"
+              />
+              <text
+                x={n((SCALE_BAR_KM * UNITS_PER_KM) / 2)}
+                y="-12"
+                textAnchor="middle"
+                className="font-mono"
+                fontSize="17"
+                letterSpacing="2"
+                fill="var(--color-text-tertiary)"
+              >
+                {`${SCALE_BAR_KM} ${t.common.labels.km}`}
+              </text>
+            </g>
+
+            {/* Rosa de los vientos */}
+            <g transform={`translate(${n(VIEW_W - 64)}, 76)`}>
+              <circle cx="0" cy="0" r="30" fill="none" stroke="var(--outline-stroke)" strokeWidth="1.2" />
+              <path d="M0,-30 L9,8 L0,1 L-9,8 Z" fill="var(--color-amber)" opacity="0.85" />
+              <text
+                x="0"
+                y="-36"
+                textAnchor="middle"
+                className="font-mono"
+                fontSize="16"
+                fill="var(--color-amber)"
+              >
+                N
+              </text>
+            </g>
+          </svg>
+
+          {/* ── Marcadores: controles HTML reales sobre el SVG ─────────────── */}
+          {ROUTE_WAYPOINTS.map((waypoint, index) => {
+            const point = ROUTE_POINTS[index];
+            const left = `${((point.x / VIEW_W) * 100).toFixed(3)}%`;
+            const top = `${((point.y / VIEW_H) * 100).toFixed(3)}%`;
+            const side = labelSideFor(index);
+            const stage = index === 0 ? undefined : ROUTE_STAGES[index - 1];
+
+            /* Índice 0 = línea de salida. No es una etapa: no es un botón. */
+            if (stage === undefined) {
+              return (
+                <div
+                  key="waypoint-start"
+                  className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
+                  style={{ left, top }}
+                >
+                  <span className="relative flex h-5 w-5 items-center justify-center @sm:h-6 @sm:w-6">
+                    <span className="chamfer-quad-sm absolute inset-0 bg-lime" aria-hidden="true" />
+                    <span className="relative h-1.5 w-1.5 rounded-full bg-bg-base" aria-hidden="true" />
+
+                    {/* La etiqueta visible se esconde con `hidden` por debajo de
+                        cierto ancho de contenedor, y `display:none` la saca
+                        también del árbol de accesibilidad. Por eso el nombre va
+                        SIEMPRE en un `sr-only` aparte: en móvil la salida se
+                        seguiría anunciando. */}
+                    <span className="sr-only">
+                      {`${copy.startLabel} · ${waypoint.label}`}
+                    </span>
+
+                    <span
+                      aria-hidden="true"
+                      className={`pointer-events-none absolute whitespace-nowrap ${LABEL_POSITION[side]}`}
+                    >
+                      <span className="telemetry-label telemetry-label-lime hidden text-[0.5rem] @sm:block">
+                        {copy.startLabel}
+                      </span>
+                      <span className="gps-label hidden text-text-secondary @md:block">
+                        {waypoint.label}
+                      </span>
+                    </span>
+                  </span>
+                </div>
               );
-            })}
-          </g>
+            }
 
-          {/* Escala gráfica, medida sobre la propia proyección */}
-          <g className="hidden @sm:block" transform={`translate(40, ${n(VIEW_H - 110)})`}>
-            <path
-              d={`M0,0 L${n(SCALE_BAR_KM * UNITS_PER_KM)},0 M0,-6 L0,6 M${n(SCALE_BAR_KM * UNITS_PER_KM)},-6 L${n(SCALE_BAR_KM * UNITS_PER_KM)},6`}
-              fill="none"
-              stroke="var(--color-text-tertiary)"
-              strokeWidth="1.5"
-            />
-            <text
-              x={n((SCALE_BAR_KM * UNITS_PER_KM) / 2)}
-              y="-12"
-              textAnchor="middle"
-              className="font-mono"
-              fontSize="17"
-              letterSpacing="2"
-              fill="var(--color-text-tertiary)"
-            >
-              {`${SCALE_BAR_KM} ${t.common.labels.km}`}
-            </text>
-          </g>
+            const isActive = stage.id === activeStageId;
+            const isHovered = stage.id === hoveredStageId;
+            const isFinish = stage.id === finishStageId;
+            const panelId = getPanelId === undefined ? undefined : getPanelId(stage.id);
 
-          {/* Rosa de los vientos */}
-          <g transform={`translate(${n(VIEW_W - 64)}, 76)`}>
-            <circle cx="0" cy="0" r="30" fill="none" stroke="var(--outline-stroke)" strokeWidth="1.2" />
-            <path d="M0,-30 L9,8 L0,1 L-9,8 Z" fill="var(--color-amber)" opacity="0.85" />
-            <text
-              x="0"
-              y="-36"
-              textAnchor="middle"
-              className="font-mono"
-              fontSize="16"
-              fill="var(--color-amber)"
-            >
-              N
-            </text>
-          </g>
-        </svg>
-
-        {/* ── Marcadores: controles HTML reales sobre el SVG ─────────────── */}
-        {ROUTE_WAYPOINTS.map((waypoint, index) => {
-          const point = ROUTE_POINTS[index];
-          const left = `${((point.x / VIEW_W) * 100).toFixed(3)}%`;
-          const top = `${((point.y / VIEW_H) * 100).toFixed(3)}%`;
-          const side = labelSideFor(index);
-          const stage = index === 0 ? undefined : ROUTE_STAGES[index - 1];
-
-          /* Índice 0 = línea de salida. No es una etapa: no es un botón. */
-          if (stage === undefined) {
             return (
               <div
-                key="waypoint-start"
-                className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
+                key={stage.id}
+                className={`absolute -translate-x-1/2 -translate-y-1/2 ${
+                  isActive || isHovered ? "z-30" : "z-10"
+                }`}
                 style={{ left, top }}
               >
-                <span className="relative flex h-5 w-5 items-center justify-center @sm:h-6 @sm:w-6">
-                  <span className="chamfer-quad-sm absolute inset-0 bg-lime" aria-hidden="true" />
-                  <span className="relative h-1.5 w-1.5 rounded-full bg-bg-base" aria-hidden="true" />
+                <button
+                  type="button"
+                  onClick={() => onSelectStage(stage.id)}
+                  onMouseEnter={() => onHoverStage(stage.id)}
+                  /* Si el marcador conserva el FOCO, sacar el ratón de encima no
+                     debe apagar el resaltado: el teclado sigue "dentro". */
+                  onMouseLeave={(event) => {
+                    if (event.currentTarget !== document.activeElement) onHoverStage(null);
+                  }}
+                  onFocus={() => onHoverStage(stage.id)}
+                  onBlur={() => onHoverStage(null)}
+                  aria-expanded={panelId === undefined ? undefined : isActive}
+                  /* `aria-controls` solo mientras el panel EXISTE en el DOM: el
+                     roadbook desmonta la ficha al cerrarla (AnimatePresence) y
+                     un IDREF colgando es una violación real de axe. */
+                  aria-controls={isActive ? panelId : undefined}
+                  className="relative flex h-7 w-7 cursor-pointer items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-lime @sm:h-8 @sm:w-8"
+                >
+                  {/* Fondo achaflanado. Va aparte porque `clip-path` recortaría
+                      la etiqueta si estuviera en el propio botón. */}
+                  <span
+                    aria-hidden="true"
+                    className={[
+                      "chamfer-quad-sm absolute inset-0 transition-colors duration-200 ease-snap",
+                      isActive
+                        ? "bg-amber shadow-amber-glow"
+                        : isHovered
+                          ? "bg-bg-elevated shadow-[inset_0_0_0_1px_var(--color-amber)]"
+                          : "bg-bg-surface shadow-[inset_0_0_0_1px_var(--outline-stroke)]",
+                    ].join(" ")}
+                  />
 
-                  {/* La etiqueta visible se esconde con `hidden` por debajo de
-                      cierto ancho de contenedor, y `display:none` la saca
-                      también del árbol de accesibilidad. Por eso el nombre va
-                      SIEMPRE en un `sr-only` aparte: en móvil la salida se
-                      seguiría anunciando. */}
+                  <span
+                    aria-hidden="true"
+                    className={`relative font-mono text-[0.5625rem] font-semibold leading-none tracking-wider transition-colors duration-200 ease-snap @sm:text-[0.625rem] ${
+                      isActive
+                        ? "text-text-inverse"
+                        : isHovered
+                          ? "text-amber-text"
+                          : "text-text-secondary"
+                    }`}
+                  >
+                    {String(stage.order).padStart(2, "0")}
+                  </span>
+
+                  {/* Nombre accesible del control. La marca de META también va
+                      aquí: su versión visible es `@sm:block`, o sea invisible
+                      —y fuera del árbol de accesibilidad— en móvil. */}
                   <span className="sr-only">
-                    {`${copy.startLabel} · ${waypoint.label}`}
+                    {`${t.common.telemetry.checkpoint} ${stage.code} · ${waypoint.label}${
+                      isFinish ? ` · ${copy.finishLabel}` : ""
+                    }`}
                   </span>
 
                   <span
                     aria-hidden="true"
                     className={`pointer-events-none absolute whitespace-nowrap ${LABEL_POSITION[side]}`}
                   >
-                    <span className="telemetry-label telemetry-label-lime hidden text-[0.5rem] @sm:block">
-                      {copy.startLabel}
-                    </span>
-                    <span className="gps-label hidden text-text-secondary @md:block">
+                    <span
+                      className={`gps-label hidden @md:block ${
+                        isActive || isHovered ? "text-amber-text" : "text-text-secondary"
+                      }`}
+                    >
                       {waypoint.label}
                     </span>
+                    {isFinish ? (
+                      <span className="telemetry-label telemetry-label-amber hidden text-[0.5rem] @sm:block">
+                        {copy.finishLabel}
+                      </span>
+                    ) : null}
                   </span>
-                </span>
+                </button>
               </div>
             );
-          }
+          })}
 
-          const isActive = stage.id === activeStageId;
-          const isHovered = stage.id === hoveredStageId;
-          const isFinish = stage.id === finishStageId;
-          const panelId = getPanelId === undefined ? undefined : getPanelId(stage.id);
-
-          return (
-            <div
-              key={stage.id}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 ${
-                isActive || isHovered ? "z-30" : "z-10"
-              }`}
-              style={{ left, top }}
-            >
-              <button
-                type="button"
-                onClick={() => onSelectStage(stage.id)}
-                onMouseEnter={() => onHoverStage(stage.id)}
-                /* Si el marcador conserva el FOCO, sacar el ratón de encima no
-                   debe apagar el resaltado: el teclado sigue "dentro". */
-                onMouseLeave={(event) => {
-                  if (event.currentTarget !== document.activeElement) onHoverStage(null);
-                }}
-                onFocus={() => onHoverStage(stage.id)}
-                onBlur={() => onHoverStage(null)}
-                aria-expanded={panelId === undefined ? undefined : isActive}
-                /* `aria-controls` solo mientras el panel EXISTE en el DOM: el
-                   roadbook desmonta la ficha al cerrarla (AnimatePresence) y
-                   un IDREF colgando es una violación real de axe. */
-                aria-controls={isActive ? panelId : undefined}
-                className="relative flex h-7 w-7 cursor-pointer items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-lime @sm:h-8 @sm:w-8"
-              >
-                {/* Fondo achaflanado. Va aparte porque `clip-path` recortaría
-                    la etiqueta si estuviera en el propio botón. */}
-                <span
-                  aria-hidden="true"
-                  className={[
-                    "chamfer-quad-sm absolute inset-0 transition-colors duration-200 ease-snap",
-                    isActive
-                      ? "bg-amber shadow-amber-glow"
-                      : isHovered
-                        ? "bg-bg-elevated shadow-[inset_0_0_0_1px_var(--color-amber)]"
-                        : "bg-bg-surface shadow-[inset_0_0_0_1px_var(--outline-stroke)]",
-                  ].join(" ")}
-                />
-
-                <span
-                  aria-hidden="true"
-                  className={`relative font-mono text-[0.5625rem] font-semibold leading-none tracking-wider transition-colors duration-200 ease-snap @sm:text-[0.625rem] ${
-                    isActive
-                      ? "text-text-inverse"
-                      : isHovered
-                        ? "text-amber-text"
-                        : "text-text-secondary"
-                  }`}
-                >
-                  {String(stage.order).padStart(2, "0")}
+          {/* ── HUD inferior: la etapa enfocada ────────────────────────────── */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-slate bg-bg-base/85 px-3 py-2 backdrop-blur-sm">
+            {focusStage === undefined ? (
+              <>
+                <span className="telemetry-label truncate">{copy.placeholder}</span>
+                <span className="gps-label ml-auto hidden @sm:block">{formatDMS(ROUTE_START)}</span>
+              </>
+            ) : (
+              <>
+                <span className="telemetry-label telemetry-label-amber">{focusStage.code}</span>
+                <span className="gps-label truncate text-text-secondary">
+                  {focusStage.waypoint.label}
                 </span>
-
-                {/* Nombre accesible del control. La marca de META también va
-                    aquí: su versión visible es `@sm:block`, o sea invisible
-                    —y fuera del árbol de accesibilidad— en móvil. */}
-                <span className="sr-only">
-                  {`${t.common.telemetry.checkpoint} ${stage.code} · ${waypoint.label}${
-                    isFinish ? ` · ${copy.finishLabel}` : ""
-                  }`}
+                <span className="gps-label ml-auto hidden @sm:block">
+                  {formatDMS(focusStage.waypoint)}
                 </span>
-
-                <span
-                  aria-hidden="true"
-                  className={`pointer-events-none absolute whitespace-nowrap ${LABEL_POSITION[side]}`}
-                >
-                  <span
-                    className={`gps-label hidden @md:block ${
-                      isActive || isHovered ? "text-amber-text" : "text-text-secondary"
-                    }`}
-                  >
-                    {waypoint.label}
-                  </span>
-                  {isFinish ? (
-                    <span className="telemetry-label telemetry-label-amber hidden text-[0.5rem] @sm:block">
-                      {copy.finishLabel}
-                    </span>
-                  ) : null}
-                </span>
-              </button>
-            </div>
-          );
-        })}
-
-        {/* ── HUD inferior: la etapa enfocada ────────────────────────────── */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-slate bg-bg-base/85 px-3 py-2 backdrop-blur-sm">
-          {focusStage === undefined ? (
-            <>
-              <span className="telemetry-label truncate">{copy.placeholder}</span>
-              <span className="gps-label ml-auto hidden @sm:block">{formatDMS(ROUTE_START)}</span>
-            </>
-          ) : (
-            <>
-              <span className="telemetry-label telemetry-label-amber">{focusStage.code}</span>
-              <span className="gps-label truncate text-text-secondary">
-                {focusStage.waypoint.label}
-              </span>
-              <span className="gps-label ml-auto hidden @sm:block">
-                {formatDMS(focusStage.waypoint)}
-              </span>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </TiltCard>
 
       {/* ── Leyenda ─────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-2">

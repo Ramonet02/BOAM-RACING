@@ -35,6 +35,8 @@
    · MOVIMIENTO: framer-motion se desactiva con `useReducedMotion()`. El
      CSS global ya neutraliza las animaciones declarativas, pero las de JS
      hay que apagarlas a mano.
+   · VOLUMEN: <TiltCard> pone giro, canto y sombra; el retrato con su sello
+     flota por delante del documento con <TiltDepth>.
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 import type { ReactNode } from "react";
@@ -42,6 +44,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { AtSign, Droplet, Fingerprint, Link2, MapPin, Music2 } from "lucide-react";
 
 import RallyImage, { type RallyImageTone } from "@/components/ui/RallyImage";
+import TiltCard, { TiltDepth } from "@/components/ui/TiltCard";
 import { useT } from "@/i18n/LanguageProvider";
 import { BRAND, formatDMS } from "@/lib/constants";
 import { getTeamPortrait, isAssetReady } from "@/lib/imagery";
@@ -196,7 +199,7 @@ export interface PilotPassportProps {
   crew: Crew;
   /** Retardo de entrada, en segundos, para escalonar la pareja. */
   delay?: number;
-  /** Clases extra sobre el artículo. */
+  /** Clases extra de colocación. Van en el envoltorio de la tarjeta. */
   className?: string;
 }
 
@@ -260,193 +263,200 @@ export default function PilotPassport({
   );
 
   return (
-    <motion.article
+    /* La entrada va FUERA de la tarjeta con volumen: si la llevara el
+       artículo, la sombra del suelo se vería antes que el propio pasaporte. */
+    <motion.div
       initial={reduce ? false : { opacity: 0, y: 26 }}
       whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.7, ease: EASE, delay: reduce ? 0 : delay }}
-      className={`panel group relative isolate flex min-w-0 flex-col ${className}`}
+      className={`min-w-0 ${className}`}
     >
-      {/* ── 1 · Cabecera del documento ───────────────────────────────── */}
-      <header className="flex items-center justify-between gap-3 border-b border-slate px-4 py-2.5 sm:px-5">
-        <span className="flex min-w-0 items-center gap-2">
-          <span
-            aria-hidden="true"
-            className={`h-3 w-[3px] shrink-0 ${tone.accentBar}`}
-          />
-          <span className="telemetry-label truncate text-[0.5625rem] sm:text-[0.625rem]">
-            {t.common.brand.name}
-          </span>
-        </span>
-        <span className="gps-label shrink-0 whitespace-nowrap">
-          {documentCode}
-        </span>
-      </header>
-
-      {/* ── 2 · Retrato + identidad ──────────────────────────────────── */}
-      <div className="grid grid-cols-[88px_1fr] gap-4 p-4 sm:grid-cols-[104px_1fr] sm:gap-5 sm:p-5 xl:grid-cols-[120px_1fr]">
-        <div className="min-w-0">
-          <div className="relative">
-            {portrait ? (
-              <RallyImage
-                image={portrait}
-                aspect="portrait"
-                tone={tone.image}
-                overlay="none"
-                showCaption={false}
-                chamfer={8}
-                sizes="(max-width: 639px) 88px, (max-width: 1279px) 104px, 120px"
-              />
-            ) : (
-              /* Defensivo: los 8 retratos existen hoy en el manifiesto. */
-              <div
-                className="chamfer-sm flex aspect-[3/4] w-full items-center justify-center bg-bg-sunken"
-                aria-hidden="true"
-              >
-                <span className="font-heading text-2xl tracking-[0.12em] text-text-tertiary">
-                  {member.initials}
-                </span>
-              </div>
-            )}
-
-            {/* Sello de entrada: la edición del rally, girado como en un
-                pasaporte de verdad. Puramente decorativo.
-
-                El desbordamiento hacia la derecha (`-right-3`) es lo que le
-                da el aire de sello pegado encima, pero por debajo de `sm` la
-                columna de identidad baja de ~200 px y el sello se comería los
-                valores del pasaporte. Ahí se queda dentro de su columna. */}
-            <span
-              aria-hidden="true"
-              className={`pointer-events-none absolute -bottom-2 right-0 z-20 flex -rotate-[9deg] flex-col items-center gap-0.5 border px-1.5 py-1 sm:-right-3 ${tone.stampBorder} bg-bg-base/85`}
-            >
+      <TiltCard className="h-full" solid>
+        <article className="panel group relative isolate flex h-full min-w-0 flex-col">
+          {/* ── 1 · Cabecera del documento ───────────────────────────────── */}
+          <header className="flex items-center justify-between gap-3 border-b border-slate px-4 py-2.5 sm:px-5">
+            <span className="flex min-w-0 items-center gap-2">
               <span
-                className={`font-mono text-[0.5rem] uppercase leading-none tracking-[0.18em] ${tone.accentText}`}
-              >
-                {t.common.brand.rally}
-              </span>
-              <span className="font-mono text-[0.5rem] uppercase leading-none tracking-[0.12em] text-text-secondary">
-                {t.common.edition.monthYearShort}
+                aria-hidden="true"
+                className={`h-3 w-[3px] shrink-0 ${tone.accentBar}`}
+              />
+              <span className="telemetry-label truncate text-[0.5625rem] sm:text-[0.625rem]">
+                {t.common.brand.name}
               </span>
             </span>
+            <span className="gps-label shrink-0 whitespace-nowrap">
+              {documentCode}
+            </span>
+          </header>
+
+          {/* ── 2 · Retrato + identidad ──────────────────────────────────── */}
+          <div className="grid grid-cols-[88px_1fr] gap-4 p-4 sm:grid-cols-[104px_1fr] sm:gap-5 sm:p-5 xl:grid-cols-[120px_1fr]">
+            <div className="min-w-0">
+              {/* Retrato y sello salen del documento al girar la tarjeta */}
+              <TiltDepth depth={30} className="relative">
+                {portrait ? (
+                  <RallyImage
+                    image={portrait}
+                    aspect="portrait"
+                    tone={tone.image}
+                    overlay="none"
+                    showCaption={false}
+                    chamfer={8}
+                    sizes="(max-width: 639px) 88px, (max-width: 1279px) 104px, 120px"
+                  />
+                ) : (
+                  /* Defensivo: los 8 retratos existen hoy en el manifiesto. */
+                  <div
+                    className="chamfer-sm flex aspect-[3/4] w-full items-center justify-center bg-bg-sunken"
+                    aria-hidden="true"
+                  >
+                    <span className="font-heading text-2xl tracking-[0.12em] text-text-tertiary">
+                      {member.initials}
+                    </span>
+                  </div>
+                )}
+
+                {/* Sello de entrada: la edición del rally, girado como en un
+                    pasaporte de verdad. Puramente decorativo.
+
+                    El desbordamiento hacia la derecha (`-right-3`) es lo que le
+                    da el aire de sello pegado encima, pero por debajo de `sm` la
+                    columna de identidad baja de ~200 px y el sello se comería los
+                    valores del pasaporte. Ahí se queda dentro de su columna. */}
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none absolute -bottom-2 right-0 z-20 flex -rotate-[9deg] flex-col items-center gap-0.5 border px-1.5 py-1 sm:-right-3 ${tone.stampBorder} bg-bg-base/85`}
+                >
+                  <span
+                    className={`font-mono text-[0.5rem] uppercase leading-none tracking-[0.18em] ${tone.accentText}`}
+                  >
+                    {t.common.brand.rally}
+                  </span>
+                  <span className="font-mono text-[0.5rem] uppercase leading-none tracking-[0.12em] text-text-secondary">
+                    {t.common.edition.monthYearShort}
+                  </span>
+                </span>
+              </TiltDepth>
+
+              {!portraitReady && (
+                <p className="telemetry-label mt-3 text-[0.5rem] leading-[1.5] tracking-[0.16em]">
+                  {t.team.photoPlaceholder.badge}
+                </p>
+              )}
+            </div>
+
+            <div className="flex min-w-0 flex-col">
+              <span
+                className={`telemetry-label text-[0.5625rem] sm:text-[0.625rem] ${tone.accentText}`}
+              >
+                {roleLabel}
+              </span>
+
+              <h4 className="mt-1.5 font-heading text-[clamp(1.15rem,2.4vw,1.5rem)] uppercase leading-[0.95] tracking-[0.06em] text-text-primary">
+                {member.name}
+              </h4>
+
+              <dl className="mt-4 flex flex-col">
+                <PassportField
+                  label={t.team.dossier.callsignLabel}
+                  icon={<Fingerprint size={11} strokeWidth={1.75} aria-hidden="true" />}
+                >
+                  <span className="tracking-[0.18em]">{member.initials}</span>
+                </PassportField>
+
+                <PassportField
+                  label={t.team.dossier.bloodLabel}
+                  icon={<Droplet size={11} strokeWidth={1.75} aria-hidden="true" />}
+                >
+                  {isPending(member.bloodType) ? (
+                    <UnfilledValue label={t.common.labels.tbd} />
+                  ) : (
+                    <span className="tech-badge tech-badge-lime">
+                      {member.bloodType}
+                    </span>
+                  )}
+                </PassportField>
+
+                <PassportField
+                  label={t.team.fromLabel}
+                  icon={<MapPin size={11} strokeWidth={1.75} aria-hidden="true" />}
+                >
+                  <span className="block truncate">{member.homeCity}</span>
+                  {/* Sin `nowrap`: en una tarjeta estrecha la coordenada parte
+                      por el espacio entre latitud y longitud en vez de
+                      desbordar el marco. */}
+                  <span className="gps-label mt-0.5 block text-[0.5625rem] leading-snug">
+                    {formatDMS(member.homeCoords)}
+                  </span>
+                </PassportField>
+              </dl>
+            </div>
           </div>
 
-          {!portraitReady && (
-            <p className="telemetry-label mt-3 text-[0.5rem] leading-[1.5] tracking-[0.16em]">
-              {t.team.photoPlaceholder.badge}
-            </p>
-          )}
-        </div>
+          {/* ── 3 · Biografía ────────────────────────────────────────────── */}
+          <div className="border-t border-slate px-4 py-4 sm:px-5">
+            <span className="telemetry-label telemetry-label-dash mb-2.5 block text-[0.5625rem]">
+              {t.team.dossier.specialtyLabel}
+            </span>
+            {isPending(member.bio) ? (
+              <UnfilledParagraph label={t.common.labels.tbd} />
+            ) : (
+              <p className="text-[0.8125rem] leading-relaxed text-text-secondary">
+                {member.bio}
+              </p>
+            )}
+          </div>
 
-        <div className="flex min-w-0 flex-col">
-          <span
-            className={`telemetry-label text-[0.5625rem] sm:text-[0.625rem] ${tone.accentText}`}
-          >
-            {roleLabel}
-          </span>
+          {/* ── 4 · Redes ────────────────────────────────────────────────── */}
+          {declaredSocials.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-t border-slate px-4 py-2.5 sm:px-5">
+              <span className="telemetry-label shrink-0 text-[0.5625rem]">
+                {t.footer.socialLabel}
+              </span>
 
-          <h4 className="mt-1.5 font-heading text-[clamp(1.15rem,2.4vw,1.5rem)] uppercase leading-[0.95] tracking-[0.06em] text-text-primary">
-            {member.name}
-          </h4>
-
-          <dl className="mt-4 flex flex-col">
-            <PassportField
-              label={t.team.dossier.callsignLabel}
-              icon={<Fingerprint size={11} strokeWidth={1.75} aria-hidden="true" />}
-            >
-              <span className="tracking-[0.18em]">{member.initials}</span>
-            </PassportField>
-
-            <PassportField
-              label={t.team.dossier.bloodLabel}
-              icon={<Droplet size={11} strokeWidth={1.75} aria-hidden="true" />}
-            >
-              {isPending(member.bloodType) ? (
-                <UnfilledValue label={t.common.labels.tbd} />
+              {confirmedSocials.length > 0 ? (
+                <ul className="flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-1">
+                  {confirmedSocials.map((row) => (
+                    <li key={row.key} className="min-w-0">
+                      <span
+                        className={`flex min-w-0 items-center gap-1.5 font-mono text-[0.6875rem] ${tone.accentText}`}
+                      >
+                        {row.icon}
+                        <span className="truncate">{row.handle}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               ) : (
-                <span className="tech-badge tech-badge-lime">
-                  {member.bloodType}
+                <span className="flex min-w-0 items-center gap-2 text-text-tertiary">
+                  <span aria-hidden="true" className="flex items-center gap-1.5">
+                    {declaredSocials.map((row) => (
+                      <span key={row.key} className="opacity-60">
+                        {row.icon}
+                      </span>
+                    ))}
+                  </span>
+                  <UnfilledValue label={t.common.labels.tbd} />
                 </span>
               )}
-            </PassportField>
-
-            <PassportField
-              label={t.team.fromLabel}
-              icon={<MapPin size={11} strokeWidth={1.75} aria-hidden="true" />}
-            >
-              <span className="block truncate">{member.homeCity}</span>
-              {/* Sin `nowrap`: en una tarjeta estrecha la coordenada parte
-                  por el espacio entre latitud y longitud en vez de
-                  desbordar el marco. */}
-              <span className="gps-label mt-0.5 block text-[0.5625rem] leading-snug">
-                {formatDMS(member.homeCoords)}
-              </span>
-            </PassportField>
-          </dl>
-        </div>
-      </div>
-
-      {/* ── 3 · Biografía ────────────────────────────────────────────── */}
-      <div className="border-t border-slate px-4 py-4 sm:px-5">
-        <span className="telemetry-label telemetry-label-dash mb-2.5 block text-[0.5625rem]">
-          {t.team.dossier.specialtyLabel}
-        </span>
-        {isPending(member.bio) ? (
-          <UnfilledParagraph label={t.common.labels.tbd} />
-        ) : (
-          <p className="text-[0.8125rem] leading-relaxed text-text-secondary">
-            {member.bio}
-          </p>
-        )}
-      </div>
-
-      {/* ── 4 · Redes ────────────────────────────────────────────────── */}
-      {declaredSocials.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-t border-slate px-4 py-2.5 sm:px-5">
-          <span className="telemetry-label shrink-0 text-[0.5625rem]">
-            {t.footer.socialLabel}
-          </span>
-
-          {confirmedSocials.length > 0 ? (
-            <ul className="flex min-w-0 flex-wrap items-center justify-end gap-x-3 gap-y-1">
-              {confirmedSocials.map((row) => (
-                <li key={row.key} className="min-w-0">
-                  <span
-                    className={`flex min-w-0 items-center gap-1.5 font-mono text-[0.6875rem] ${tone.accentText}`}
-                  >
-                    {row.icon}
-                    <span className="truncate">{row.handle}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <span className="flex min-w-0 items-center gap-2 text-text-tertiary">
-              <span aria-hidden="true" className="flex items-center gap-1.5">
-                {declaredSocials.map((row) => (
-                  <span key={row.key} className="opacity-60">
-                    {row.icon}
-                  </span>
-                ))}
-              </span>
-              <UnfilledValue label={t.common.labels.tbd} />
-            </span>
+            </div>
           )}
-        </div>
-      )}
 
-      {/* ── 5 · Banda MRZ ────────────────────────────────────────────── */}
-      <div
-        aria-hidden="true"
-        className="overflow-hidden border-t border-slate bg-bg-sunken px-4 py-2 sm:px-5"
-      >
-        <p className="whitespace-nowrap font-mono text-[0.5rem] leading-[1.7] tracking-[0.1em] text-text-tertiary/70 sm:text-[0.5625rem]">
-          {mrz[0]}
-          <br />
-          {mrz[1]}
-        </p>
-      </div>
-    </motion.article>
+          {/* ── 5 · Banda MRZ ────────────────────────────────────────────── */}
+          <div
+            aria-hidden="true"
+            className="overflow-hidden border-t border-slate bg-bg-sunken px-4 py-2 sm:px-5"
+          >
+            <p className="whitespace-nowrap font-mono text-[0.5rem] leading-[1.7] tracking-[0.1em] text-text-tertiary/70 sm:text-[0.5625rem]">
+              {mrz[0]}
+              <br />
+              {mrz[1]}
+            </p>
+          </div>
+        </article>
+      </TiltCard>
+    </motion.div>
   );
 }
 

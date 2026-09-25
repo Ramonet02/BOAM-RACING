@@ -126,6 +126,10 @@ const IDLE_EPS = 0.08;
 // el texto en flujo, y con z-index negativo el canvas caería por detrás del
 // fondo de <body> y desaparecería del todo.
 //
+// Donde las curvas no deben cruzar el contenido (fichas, tablas, el mapa), el
+// componente se registra como SÓLIDO (`topoSolidRef` / `<TiltCard solid>`,
+// ver topoState.ts) y el canvas recorta su caja en cada repintado.
+//
 // Los números de tactical son exactamente los de siempre: 0.10 + 0.12·c y
 // 0.26 + 0.26·c, la misma recta que el 0.52 · (0.5 + 0.5·c) anterior
 // (desvío máximo 5.6e-17, indistinguible al cuantizar el alpha a 8 bits).
@@ -368,6 +372,8 @@ export default function CursorTopoEffect() {
     let downgraded = false;
 
     let rafId = 0;
+    /** Bucle de vigilancia de sólidos del modo estático (ver `watchSolids`). */
+    let watchId = 0;
     let staticPending = false;
     let lastFrame = 0;
     /** Fuerza un repintado aunque nada se mueva: arranque, cambio de tema,
@@ -521,6 +527,104 @@ export default function CursorTopoEffect() {
       baseAlpha: number; baseLw: number;
       brightAlpha: number; brightLw: number;
     };
+    type ClipRegion = {
+      x: number; y: number; r: number; mult: number; rgb: string;
+    };
+    type Scene = { pal: TopoPalette; levels: LevelData[]; regions: ClipRegion[] };
+
+    /** Último dibujo completo. Si solo se mueven los sólidos se repinta este
+     *  mismo dibujo con los recortes nuevos, sin volver a trazar las curvas.
+     *  Lo sustituye el siguiente `paint` (y `needsPaint` fuerza uno tras un
+     *  cambio de tamaño o de tema, que es cuando dejaría de valer). */
+    let lastScene: Scene | null = null;
+
+    // ── Sólidos (ver topoState.ts) ────────────────────────────────
+    // Cajas de los sólidos visibles en el último repintado: x, y, w, h en
+    // bloques de 4. Dos búferes que se alternan para no crear arrays por
+    // fotograma: el bucle ocioso los lee 60 veces por segundo.
+    let solidBoxes: number[] = [];
+    let solidScratch: number[] = [];
+    let seenSolidsVersion = -1;
+
+    /** Mide los sólidos que tocan la ventana. true si algo cambió desde la
+     *  última medida: una caja movida, una que entra o sale, o un registro. */
+    const readSolids = (): boolean => {
+      const next = solidScratch;
+      next.length = 0;
+      for (const el of topoState.solids) {
+        // Un sólido invisible (display:none o aún en opacity 0 antes de su
+        // entrada) no tapa nada: recortarlo dejaría un hueco vacío en el dibujo.
+        if (
+          typeof el.checkVisibility === "function" &&
+          !el.checkVisibility({ opacityProperty: true, visibilityProperty: true })
+        ) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+        if (r.bottom <= 0 || r.top >= H || r.right <= 0 || r.left >= W) continue;
+        // Hacia fuera al píxel entero: sin hilos de curva en el canto.
+        const x = Math.floor(r.left), y = Math.floor(r.top);
+        next.push(x, y, Math.ceil(r.right) - x, Math.ceil(r.bottom) - y);
+      }
+      let changed =
+        topoState.solidsVersion !== seenSolidsVersion ||
+        next.length !== solidBoxes.length;
+      if (!changed) {
+        for (let i = 0; i < next.length; i++) {
+          if (next[i] !== solidBoxes[i]) { changed = true; break; }
+        }
+      }
+      seenSolidsVersion = topoState.solidsVersion;
+      solidScratch = solidBoxes;
+      solidBoxes = next;
+      return changed;
+    };
+
+    /** Borra el dibujo encima de cada sólido. */
+    const cutSolids = () => {
+      if (solidBoxes.length === 0) return;
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = "#000";
+      for (let i = 0; i < solidBoxes.length; i += 4) {
+        ctx.fillRect(solidBoxes[i], solidBoxes[i + 1], solidBoxes[i + 2], solidBoxes[i + 3]);
+      }
+      ctx.restore();
+    };
+
+    const draw = ({ pal, levels: levelsData, regions: clipRegions }: Scene) => {
+      ctx.clearRect(0, 0, W, H);
+
+      // Base unclipped pass
+      if (pal.line) {
+        for (const L of levelsData) {
+          ctx.strokeStyle = `rgba(${pal.line},${L.baseAlpha})`;
+          ctx.lineWidth   = L.baseLw;
+          ctx.stroke(L.path);
+        }
+      }
+
+      // Bright clipped pass — reuses the same Path2D objects.
+      for (const region of clipRegions) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(region.x, region.y, region.r, 0, Math.PI * 2);
+        ctx.clip();
+
+        for (const L of levelsData) {
+          ctx.strokeStyle = `rgba(${region.rgb},${L.brightAlpha * region.mult})`;
+          ctx.lineWidth   = L.brightLw;
+          ctx.stroke(L.path);
+        }
+        ctx.restore();
+      }
+
+      cutSolids();
+    };
+
+    /** Solo se han movido los sólidos: mismo dibujo, recortes nuevos. */
+    const redrawSolids = () => {
+      if (lastScene) draw(lastScene);
+    };
 
     const paint = (
       pal: TopoPalette,
@@ -529,8 +633,6 @@ export default function CursorTopoEffect() {
       peakMult: number,
       peakH: number,
     ) => {
-      ctx.clearRect(0, 0, W, H);
-
       const levels   = tier.levels;
       const rangeTop = 1.2 + BUMP_H + peakH;
       const a        = pal.alpha;
@@ -554,22 +656,10 @@ export default function CursorTopoEffect() {
         });
       }
 
-      // Base unclipped pass
-      if (pal.line) {
-        for (const L of levelsData) {
-          ctx.strokeStyle = `rgba(${pal.line},${L.baseAlpha})`;
-          ctx.lineWidth   = L.baseLw;
-          ctx.stroke(L.path);
-        }
-      }
-
-      // Bright clipped pass — reuses the same Path2D objects.
       // Cada región lleva su propio color: el cerro del cursor va en
       // --topo-bump y el pico del botón en --topo-peak. Se pintan en orden,
       // así que el acento queda por encima cuando ambos coinciden.
-      const clipRegions: {
-        x: number; y: number; r: number; mult: number; rgb: string;
-      }[] = [];
+      const clipRegions: ClipRegion[] = [];
       if (cursor && pal.bump) {
         clipRegions.push({ x: cursor.x, y: cursor.y, r: BUMP_S * 1.5, mult: 1, rgb: pal.bump });
       }
@@ -577,19 +667,9 @@ export default function CursorTopoEffect() {
         clipRegions.push({ x: peak.x, y: peak.y, r: PEAK_S * 1.8, mult: peakMult, rgb: pal.peak });
       }
 
-      for (const region of clipRegions) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(region.x, region.y, region.r, 0, Math.PI * 2);
-        ctx.clip();
-
-        for (const L of levelsData) {
-          ctx.strokeStyle = `rgba(${region.rgb},${L.brightAlpha * region.mult})`;
-          ctx.lineWidth   = L.brightLw;
-          ctx.stroke(L.path);
-        }
-        ctx.restore();
-      }
+      lastScene = { pal, levels: levelsData, regions: clipRegions };
+      readSolids();
+      draw(lastScene);
     };
 
     // ── Animated loop ─────────────────────────────────────────────
@@ -648,7 +728,12 @@ export default function CursorTopoEffect() {
       const peakChanging = Math.abs(targetIntensity - topoState.intensity) > 0.002;
 
       if (!cursorMoving && !peakChanging && !needsPaint) {
-        // Nada se mueve: el fotograma anterior sigue siendo válido.
+        // Nada se mueve: el fotograma anterior sigue siendo válido… salvo
+        // encima de los sólidos, que se mueven sin que se mueva el ratón (el
+        // scroll, la entrada de una tarjeta, una etapa que se despliega).
+        // Medir una docena de cajas con el layout limpio es casi gratis; el
+        // dibujo solo se repite si alguna cambió, y sin retrazar curvas.
+        if (readSolids()) redrawSolids();
         return;
       }
       needsPaint = false;
@@ -714,9 +799,19 @@ export default function CursorTopoEffect() {
       });
     };
 
+    /** Modo estático: el dibujo no se mueve, pero los sólidos sí (scroll).
+     *  Este bucle solo mide cajas; repinta el mismo dibujo si cambian. */
+    const watchSolids = () => {
+      watchId = requestAnimationFrame(watchSolids);
+      if (document.hidden || staticPending) return;
+      if (readSolids()) redrawSolids();
+    };
+
     const stop = () => {
       if (rafId) cancelAnimationFrame(rafId);
+      if (watchId) cancelAnimationFrame(watchId);
       rafId = 0;
+      watchId = 0;
       staticPending = false;
     };
 
@@ -726,6 +821,7 @@ export default function CursorTopoEffect() {
       stop();
       if (motionQuery.matches) {
         scheduleStatic();
+        watchId = requestAnimationFrame(watchSolids);
         return;
       }
       lastFrame   = 0;

@@ -253,6 +253,10 @@
      negro casi opaco sobre crema ensucia el papel.                         */
   --shadow-cast: rgb(74 58 38 / 0.22);
   --shadow-cast-lg: rgb(74 58 38 / 0.30);
+  /* Tarjeta con volumen (<TiltCard />): sombra en el suelo y canto. El canto
+     es mas oscuro que la cara para leerse como grosor en sombra.           */
+  --tilt-shadow: rgb(74 58 38 / 0.42);
+  --tilt-edge: #BFB098;
   --glow-amber-ring: rgb(191 90 30 / 0.32);
   --glow-amber-cast: rgb(191 90 30 / 0.40);
   --glow-lime-ring: rgb(95 107 51 / 0.32);
@@ -368,6 +372,10 @@
   /* ── Color de sombras y glows · negro casi opaco, como estaba ────────── */
   --shadow-cast: rgb(0 0 0 / 0.95);
   --shadow-cast-lg: rgb(0 0 0 / 1);
+  /* Tarjeta con volumen: en oscuro el canto es MAS CLARO que la cara, como
+     un filo que recibe luz.                                                */
+  --tilt-shadow: rgb(0 0 0 / 0.9);
+  --tilt-edge: #3A3F47;
   --glow-amber-ring: rgb(255 107 0 / 0.35);
   --glow-amber-cast: rgb(255 107 0 / 0.55);
   --glow-lime-ring: rgb(204 255 0 / 0.35);

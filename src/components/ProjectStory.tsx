@@ -62,12 +62,15 @@ export default function ProjectStory() {
                 <p>{t.project.p2}</p>
               </div>
 
-              {/* Technical Rules */}
+              {/* Technical Rules.
+                  `sand-solid` y no `sand`: es texto de 10 px y en desert el
+                  arena pleno da 3,29:1 sobre la crema. En tactical los dos
+                  tokens valen lo mismo, así que en oscuro no cambia nada. */}
               <div className="mt-10 space-y-1">
-                <p className="font-mono text-[0.625rem] tracking-[2px] text-sand">
+                <p className="font-mono text-[0.625rem] tracking-[2px] text-sand-solid">
                   {t.project.rules1}
                 </p>
-                <p className="font-mono text-[0.625rem] tracking-[2px] text-sand">
+                <p className="font-mono text-[0.625rem] tracking-[2px] text-sand-solid">
                   {t.project.rules2}
                 </p>
               </div>

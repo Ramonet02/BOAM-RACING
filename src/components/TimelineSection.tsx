@@ -26,6 +26,7 @@ import { MotionConfig, motion } from "framer-motion";
 
 import MoroccoMap from "@/components/route/MoroccoMap";
 import RoadbookTimeline from "@/components/route/RoadbookTimeline";
+import TiltCard, { TiltDepth } from "@/components/ui/TiltCard";
 import { useT } from "@/i18n/LanguageProvider";
 
 /**
@@ -226,49 +227,54 @@ export default function TimelineSection() {
               </header>
             </Reveal>
 
-            <ol className="mt-14 grid list-none grid-cols-1 gap-px bg-slate p-0 sm:grid-cols-2 xl:grid-cols-4">
+            {/* Cada fase es una tarjeta con volumen. Antes era una rejilla de
+                hairlines (`gap-px` sobre slate): con giro y sombra las celdas
+                se pisarían, así que ahora van separadas. */}
+            <ol className="mt-14 grid list-none grid-cols-1 gap-5 p-0 sm:grid-cols-2 xl:grid-cols-4">
               {t.route.chronology.phases.map((phase, index) => {
                 const accent =
                   PHASE_ACCENT[index] ?? PHASE_ACCENT[PHASE_ACCENT.length - 1];
                 return (
-                  <li key={phase.num} className="bg-bg-base">
+                  <li key={phase.num} className="min-w-0">
                     <Reveal className="h-full" delay={index * 0.08}>
-                      <article className="flex h-full flex-col gap-4 p-6 transition-colors duration-300 hover:bg-bg-surface">
-                        <div className="flex items-start gap-4">
-                          <span
-                            className={`mt-1 h-10 w-[3px] shrink-0 ${accent.bar}`}
-                            aria-hidden="true"
-                          />
-                          <div className="flex min-w-0 flex-col gap-1">
-                            <span className={`telemetry-label ${accent.text}`}>
-                              {`${t.route.chronology.phaseLabel} ${phase.num}`}
+                      <TiltCard className="h-full" solid>
+                        <article className="panel flex h-full flex-col gap-4 p-6">
+                          <TiltDepth depth={28} className="flex items-start gap-4">
+                            <span
+                              className={`mt-1 h-10 w-[3px] shrink-0 ${accent.bar}`}
+                              aria-hidden="true"
+                            />
+                            <div className="flex min-w-0 flex-col gap-1">
+                              <span className={`telemetry-label ${accent.text}`}>
+                                {`${t.route.chronology.phaseLabel} ${phase.num}`}
+                              </span>
+                              <h3 className="font-heading text-2xl leading-none tracking-[0.06em] text-text-primary uppercase">
+                                {phase.title}
+                              </h3>
+                            </div>
+                          </TiltDepth>
+
+                          <p className="font-body text-sm leading-relaxed text-text-secondary">
+                            {phase.desc}
+                          </p>
+
+                          <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-slate pt-4">
+                            <span className="flex items-center gap-2">
+                              {accent.live ? (
+                                <span className="status-dot" aria-hidden="true" />
+                              ) : null}
+                              <span className={`gps-label ${accent.text}`}>
+                                <span className="sr-only">{`${t.common.labels.status} `}</span>
+                                {phase.status}
+                              </span>
                             </span>
-                            <h3 className="font-heading text-2xl leading-none tracking-[0.06em] text-text-primary uppercase">
-                              {phase.title}
-                            </h3>
+                            <span className="gps-label ml-auto text-text-tertiary">
+                              <span className="sr-only">{`${t.common.labels.date} `}</span>
+                              {phase.window}
+                            </span>
                           </div>
-                        </div>
-
-                        <p className="font-body text-sm leading-relaxed text-text-secondary">
-                          {phase.desc}
-                        </p>
-
-                        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-slate pt-4">
-                          <span className="flex items-center gap-2">
-                            {accent.live ? (
-                              <span className="status-dot" aria-hidden="true" />
-                            ) : null}
-                            <span className={`gps-label ${accent.text}`}>
-                              <span className="sr-only">{`${t.common.labels.status} `}</span>
-                              {phase.status}
-                            </span>
-                          </span>
-                          <span className="gps-label ml-auto text-text-tertiary">
-                            <span className="sr-only">{`${t.common.labels.date} `}</span>
-                            {phase.window}
-                          </span>
-                        </div>
-                      </article>
+                        </article>
+                      </TiltCard>
                     </Reveal>
                   </li>
                 );

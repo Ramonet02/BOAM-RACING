@@ -42,6 +42,7 @@
 import { useCallback, useEffect, useId, useRef, type KeyboardEvent } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
+import { topoSolidRef } from "@/components/ui/topoState";
 import { useLocale, useT } from "@/i18n/LanguageProvider";
 import type { Locale, RouteStageId } from "@/i18n/translations";
 import { formatDMS } from "@/lib/constants";
@@ -306,7 +307,8 @@ export default function RoadbookTimeline({
   ];
 
   return (
-    <div className={`@container flex flex-col ${className}`.trim()}>
+    /* Sólido: las curvas de nivel del cursor no cruzan la lista de etapas. */
+    <div ref={topoSolidRef} className={`@container flex flex-col ${className}`.trim()}>
       {/* ── Cabecera de columnas (solo desktop; en móvil cada celda lleva
              su propia etiqueta sr-only) ──────────────────────────────────── */}
       <div
