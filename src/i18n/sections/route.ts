@@ -261,7 +261,7 @@ export const route: LocalizedSection<RouteSection> = {
       "El trayecto desde el campamento base hasta la línea de salida no puntúa como etapa: es el enlace previo.",
     map: {
       title: "Mapa de la ruta",
-      hint: "Pasa el cursor por cada etapa",
+      hint: "Toca o pasa el cursor por cada etapa",
       placeholder: "Trazado de la ruta · Marruecos",
       regionLabel: "Marruecos",
       startLabel: "Salida",
@@ -418,7 +418,7 @@ export const route: LocalizedSection<RouteSection> = {
       "The run from basecamp down to the start line doesn't count as a stage: it's the transfer.",
     map: {
       title: "Route map",
-      hint: "Hover over each stage",
+      hint: "Tap or hover over each stage",
       placeholder: "Route trace · Morocco",
       regionLabel: "Morocco",
       startLabel: "Start",
@@ -575,7 +575,7 @@ export const route: LocalizedSection<RouteSection> = {
       "El trajecte des del campament base fins a la línia de sortida no puntua com a etapa: és l'enllaç previ.",
     map: {
       title: "Mapa de la ruta",
-      hint: "Passa el cursor per cada etapa",
+      hint: "Toca o passa el cursor per cada etapa",
       placeholder: "Traçat de la ruta · Marroc",
       regionLabel: "Marroc",
       startLabel: "Sortida",

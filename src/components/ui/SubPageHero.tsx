@@ -186,7 +186,13 @@ export default function SubPageHero({
     <section
       ref={ref}
       onMouseMove={handleMouse}
-      className="boam-subhero relative w-full min-h-[68vh] md:min-h-[74vh] flex flex-col justify-end overflow-hidden bg-bg-base"
+      /* Sin foto, la cabecera baja de ~70 % a ~50 % de la pantalla: solo
+         lleva el título, y a 666 px dejaba la intro de la sección por debajo
+         de la primera pantalla (NN/g: el falso final). `pt-28` guarda sitio
+         para la barra fija pase lo que pase con la altura. */
+      className={`boam-subhero relative w-full ${
+        imageId ? "min-h-[68vh] md:min-h-[74vh]" : "min-h-[46vh] md:min-h-[54vh]"
+      } pt-28 flex flex-col justify-end overflow-hidden bg-bg-base`}
     >
       <style>{SUBHERO_STYLES}</style>
 
@@ -208,6 +214,9 @@ export default function SubPageHero({
             overlay="none"
             showCaption={false}
             chamfer={false}
+            // Mismo motivo que en el hero de la home: en vertical el recorte
+            // `cover` necesita la foto bastante más ancha que la pantalla.
+            sizes="(orientation: portrait) 250vw, 100vw"
             // La opacidad es tematica: sobre crema, el 55 % del oscuro deja
             // la foto casi en blanco. <RallyImage> no acepta `style`, asi
             // que va por clase (ver SUBHERO_STYLES).
@@ -230,10 +239,13 @@ export default function SubPageHero({
       <div aria-hidden className="absolute inset-0 z-10 pointer-events-none dust-overlay-soft dust-overlay" />
 
       {/* ── 30 · HUD de telemetria ──────────────────────────────────────── */}
+      {/* Lugar y coordenadas son los de la FOTO: sin foto no se pintan, o
+          describirían un paisaje que no está ("Paso de Tizi n'Tichka"). */}
+      {imageId && (
       <motion.div
         initial={{ opacity: 0, x: -14 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.9, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
         // Offsets recolocados para que el TEXTO no se mueva pese al relleno
         // nuevo: left-1 + pl-5 = left-6 (en md, left-7 + pl-5 = left-12) y
         // top-[6.5rem] + py-5 = top-28. La plancha se disuelve hacia la
@@ -246,6 +258,7 @@ export default function SubPageHero({
         </p>
         <p className="telemetry-label telemetry-label-sand mt-1">{location}</p>
       </motion.div>
+      )}
 
       <div className="absolute top-28 right-6 md:right-12 z-20 hidden md:block text-right">
         <span className="tech-badge tech-badge-amber">
@@ -277,7 +290,7 @@ export default function SubPageHero({
             <motion.span
               initial={{ y: "110%" }}
               animate={{ y: "0%" }}
-              transition={{ duration: 1.05, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.4, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
               className="block"
             >
               {title}
@@ -288,7 +301,7 @@ export default function SubPageHero({
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           style={{ transformOrigin: "left" }}
           className="mt-6 mb-5 h-px w-[min(340px,70%)] bg-amber"
         />
@@ -297,7 +310,7 @@ export default function SubPageHero({
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="font-body text-base md:text-lg text-text-secondary max-w-xl"
           >
             {subtitle}
@@ -305,7 +318,7 @@ export default function SubPageHero({
         )}
 
         {/* Coordenadas tambien en movil, donde el HUD lateral esta oculto. */}
-        <p className="gps-label mt-6 sm:hidden">{coords}</p>
+        {imageId && <p className="gps-label mt-6 sm:hidden">{coords}</p>}
       </motion.div>
 
       {/* ── 20 · Divisoria hacia la seccion siguiente ───────────────────── */}

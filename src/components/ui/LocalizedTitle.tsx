@@ -15,7 +15,8 @@
    pestaña como estaba y los buscadores —que leen el HTML servido— no ven
    ningun cambio.
 
-   Rutas que no estan en el mapa (404, /dev) no se tocan.
+   Rutas que no estan en el mapa (/dev) no se tocan. La 404 se titula sola
+   desde <NotFoundView> con el mismo `useDocumentTitle`.
    ══════════════════════════════════════════════════════════════════════════ */
 
 import { useEffect } from "react";
@@ -33,34 +34,42 @@ const PAGE_KEYS: Readonly<Record<string, "team" | "sponsorship" | "media" | null
   "/media": "media",
 };
 
-export default function LocalizedTitle() {
-  const pathname = usePathname();
-  const { locale, t } = useLocale();
-
+/**
+ * Pone `wanted` como <title> de la pestaña y lo mantiene. `null` = no tocar.
+ *
+ * Poner el titulo UNA vez no basta: Next resuelve los metadatos en streaming
+ * y vuelve a escribir su <title> (en castellano) despues de la hidratacion,
+ * pisando el nuestro — medido: "The Team" duraba un instante y volvia "El
+ * Equipo". Se vigila el <head> y se reaplica si cambia. `apply` solo escribe
+ * cuando difiere, asi que no hay bucle.
+ */
+export function useDocumentTitle(wanted: string | null) {
   useEffect(() => {
-    if (!(pathname in PAGE_KEYS)) return;
-    const key = PAGE_KEYS[pathname];
-
-    const wanted = key
-      ? `${t.nav[key]} · ${BRAND.name}`
-      : locale === "es"
-        ? SITE_META.title
-        : fill(t.common.meta.title, { edition: t.common.edition.monthYear });
-
+    if (!wanted) return;
     const apply = () => {
       if (document.title !== wanted) document.title = wanted;
     };
     apply();
-
-    /* Poner el titulo UNA vez no basta: Next resuelve los metadatos en
-       streaming y vuelve a escribir su <title> (en castellano) despues de la
-       hidratacion, pisando el nuestro — medido: "The Team" duraba un instante
-       y volvia "El Equipo". Se vigila el <head> y se reaplica si cambia.
-       `apply` solo escribe cuando difiere, asi que no hay bucle. */
     const observer = new MutationObserver(apply);
     observer.observe(document.head, { subtree: true, childList: true, characterData: true });
     return () => observer.disconnect();
-  }, [pathname, locale, t]);
+  }, [wanted]);
+}
+
+export default function LocalizedTitle() {
+  const pathname = usePathname();
+  const { locale, t } = useLocale();
+
+  let wanted: string | null = null;
+  if (pathname in PAGE_KEYS) {
+    const key = PAGE_KEYS[pathname];
+    wanted = key
+      ? `${t.nav[key]} · ${BRAND.name}`
+      : locale === "es"
+        ? SITE_META.title
+        : fill(t.common.meta.title, { edition: t.common.edition.monthYear });
+  }
+  useDocumentTitle(wanted);
 
   return null;
 }

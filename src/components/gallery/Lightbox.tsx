@@ -302,7 +302,7 @@ export default function Lightbox({
           de avance), asi que un lector de pantalla no se enteraria del cambio
           de imagen. Esta region lo anuncia: "03 / 28 · <pie de foto>". */}
       <p aria-live="polite" aria-atomic="true" className="sr-only">
-        {position} · {entry.caption}
+        {position} · <span lang="es">{entry.caption}</span>
       </p>
 
       {/* Capa de contenido: transparente al puntero salvo en sus piezas. */}
@@ -397,6 +397,7 @@ export default function Lightbox({
 
             <h2
               id={titleId}
+              lang="es"
               className="font-heading text-lg leading-tight tracking-[0.04em] text-text-primary sm:text-2xl"
             >
               {entry.caption}

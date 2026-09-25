@@ -38,7 +38,8 @@ export interface MediaVideoItem {
   label: string;
   title: string;
   desc: string;
-  duration: string;
+  /** Solo cuando el vídeo exista: una duración inventada es un dato falso. */
+  duration?: string;
 }
 
 export interface MediaSocialItem {
@@ -68,6 +69,8 @@ export interface MediaSection {
   gallery: {
     tag: string;
     title: string;
+    /** Aclara de dónde son las fotos mientras no hay archivo propio de la ruta. */
+    note: string;
     empty: string;
     countLabel: string;
     items: readonly [
@@ -119,7 +122,7 @@ export const media: LocalizedSection<MediaSection> = {
     waypoint: "[ 07 ]  MEDIA · FILM",
     title: ["DIARIO", "VISUAL"],
     intro:
-      "Un registro honesto de la expedición: del primer tornillo del taller al último grano de arena del Sahara. Todo lo que publicamos lo grabamos nosotros.",
+      "Un registro honesto de la expedición, del primer tornillo del taller al último grano de arena del Sahara. Hasta que salgamos, las fotos de la ruta son de referencia y llevan el nombre de su autor en los créditos.",
     sideLabel: "07 — MEDIA",
     pageHero: {
       title: "MEDIA HUB",
@@ -136,7 +139,8 @@ export const media: LocalizedSection<MediaSection> = {
     },
     gallery: {
       tag: "GALERÍA",
-      title: "Lo que llevamos visto",
+      title: "Así es la ruta",
+      note: "Fotos de referencia de Wikimedia Commons hasta que tengamos las nuestras. Los autores están en los créditos, al pie de la página.",
       empty: "Todavía no hay imágenes en esta categoría.",
       countLabel: "imágenes",
       items: [
@@ -189,13 +193,11 @@ export const media: LocalizedSection<MediaSection> = {
           label: "VÍDEO 01",
           title: "Tráiler oficial",
           desc: "Dos minutos para entender por qué cuatro coches viejos salen hacia Marruecos.",
-          duration: "02:45",
         },
         {
           label: "VÍDEO 02",
           title: "Preparación técnica",
           desc: "Del desguace al roadbook: cómo se convierte un Escort de calle en un coche de raid.",
-          duration: "08:20",
         },
       ],
     },
@@ -245,7 +247,7 @@ export const media: LocalizedSection<MediaSection> = {
     waypoint: "[ 07 ]  MEDIA · FILM",
     title: ["VISUAL", "DIARY"],
     intro:
-      "An honest record of the expedition: from the first bolt in the workshop to the last grain of Saharan sand. Everything we publish, we shot ourselves.",
+      "An honest record of the expedition, from the first bolt in the workshop to the last grain of Saharan sand. Until we set off, the route photos are reference shots, credited to their authors.",
     sideLabel: "07 — MEDIA",
     pageHero: {
       title: "MEDIA HUB",
@@ -262,7 +264,8 @@ export const media: LocalizedSection<MediaSection> = {
     },
     gallery: {
       tag: "GALLERY",
-      title: "What we've seen so far",
+      title: "What the route looks like",
+      note: "Reference photos from Wikimedia Commons until we have our own. The authors are listed in the credits at the bottom of the page.",
       empty: "No images in this category yet.",
       countLabel: "images",
       items: [
@@ -315,13 +318,11 @@ export const media: LocalizedSection<MediaSection> = {
           label: "VIDEO 01",
           title: "Official trailer",
           desc: "Two minutes on why four old cars are heading for Morocco.",
-          duration: "02:45",
         },
         {
           label: "VIDEO 02",
           title: "Technical build",
           desc: "From scrapyard to roadbook: turning a road Escort into a raid car.",
-          duration: "08:20",
         },
       ],
     },
@@ -371,7 +372,7 @@ export const media: LocalizedSection<MediaSection> = {
     waypoint: "[ 07 ]  MEDIA · FILM",
     title: ["DIARI", "VISUAL"],
     intro:
-      "Un registre honest de l'expedició: del primer cargol del taller fins a l'últim gra de sorra del Sàhara. Tot el que publiquem ho gravem nosaltres.",
+      "Un registre honest de l'expedició, del primer cargol del taller fins a l'últim gra de sorra del Sàhara. Fins que no sortim, les fotos de la ruta són de referència i porten el nom del seu autor als crèdits.",
     sideLabel: "07 — MEDIA",
     pageHero: {
       title: "MEDIA HUB",
@@ -388,7 +389,8 @@ export const media: LocalizedSection<MediaSection> = {
     },
     gallery: {
       tag: "GALERIA",
-      title: "El que portem vist",
+      title: "Així és la ruta",
+      note: "Fotos de referència de Wikimedia Commons fins que tinguem les nostres. Els autors són als crèdits, al peu de la pàgina.",
       empty: "Encara no hi ha imatges en aquesta categoria.",
       countLabel: "imatges",
       items: [
@@ -441,13 +443,11 @@ export const media: LocalizedSection<MediaSection> = {
           label: "VÍDEO 01",
           title: "Tràiler oficial",
           desc: "Dos minuts per entendre per què quatre cotxes vells surten cap al Marroc.",
-          duration: "02:45",
         },
         {
           label: "VÍDEO 02",
           title: "Preparació tècnica",
           desc: "Del desballestament al roadbook: com es converteix un Escort de carrer en un cotxe de raid.",
-          duration: "08:20",
         },
       ],
     },

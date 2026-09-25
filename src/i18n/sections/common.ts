@@ -102,7 +102,6 @@ export interface CommonSection {
     gps: string;
     altitude: string;
     heading: string;
-    bloodType: string;
     temperature: string;
     pressure: string;
     odometer: string;
@@ -232,7 +231,6 @@ export const common: LocalizedSection<CommonSection> = {
       gps: "GPS",
       altitude: "ALT",
       heading: "RUMBO",
-      bloodType: "GRUPO SANGUÍNEO",
       temperature: "TEMP",
       pressure: "PRESIÓN",
       odometer: "ODÓMETRO",
@@ -365,7 +363,6 @@ export const common: LocalizedSection<CommonSection> = {
       gps: "GPS",
       altitude: "ALT",
       heading: "HEADING",
-      bloodType: "BLOOD TYPE",
       temperature: "TEMP",
       pressure: "PRESSURE",
       odometer: "ODOMETER",
@@ -498,7 +495,6 @@ export const common: LocalizedSection<CommonSection> = {
       gps: "GPS",
       altitude: "ALT",
       heading: "RUMB",
-      bloodType: "GRUP SANGUINI",
       temperature: "TEMP",
       pressure: "PRESSIÓ",
       odometer: "ODÒMETRE",

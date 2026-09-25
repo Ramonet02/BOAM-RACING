@@ -69,7 +69,7 @@ export default function LanguageSwitcher({
 
   return (
     <div
-      className={`flex items-center gap-1 font-mono text-[0.625rem] tracking-[2px] font-semibold ${className}`}
+      className={`flex items-center gap-1 font-mono text-[0.6875rem] tracking-[2px] font-semibold ${className}`}
       role="group"
       aria-label={t.nav.languageLabel}
     >

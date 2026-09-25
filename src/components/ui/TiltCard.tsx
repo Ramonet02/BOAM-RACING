@@ -61,6 +61,7 @@ import {
   useReducedMotion,
   useSpring,
   useTransform,
+  type MotionStyle,
   type MotionValue,
 } from "framer-motion";
 
@@ -174,10 +175,13 @@ export default function TiltCard({
   const shadowScale = useTransform(a, (v) => 0.95 + v * 0.05);
   const shadowOpacity = useTransform(a, (v) => 0.6 + v * 0.4);
 
-  /* La luz del filo mide el doble que la tarjeta: 50 % de su propio ancho
-     la lleva de un canto al otro. */
-  const rimX = useTransform(x, (v) => `${v * 50}%`);
-  const rimY = useTransform(y, (v) => `${v * 50}%`);
+  /* Centro de la luz del filo, en % de la propia tarjeta (0 % = canto
+     izquierdo/superior). Va a variables CSS del degradado y NO a una capa
+     más grande desplazada: esa capa, del doble de la tarjeta, sobresalía de
+     la ventana en las tarjetas pegadas al borde (el mapa de la ruta) y, en
+     una sección que no recorta, daba scroll horizontal a toda la página. */
+  const rimX = useTransform(x, (v) => `${(v + 0.5) * 100}%`);
+  const rimY = useTransform(y, (v) => `${(v + 0.5) * 100}%`);
 
   const measure = useCallback(() => {
     const node = rootRef.current;
@@ -257,22 +261,20 @@ export default function TiltCard({
       {children}
 
       {rim && moves ? (
-        <span
+        <motion.span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-[45] overflow-hidden p-[2px]"
-          style={{ ...shapeStyle(shape), ...RIM_MASK, transform: "translateZ(1px)" }}
-        >
-          <motion.span
-            className="absolute -inset-1/2"
-            style={{
-              x: rimX,
-              y: rimY,
-              opacity: a,
-              backgroundImage:
-                "radial-gradient(circle at center, rgb(var(--amber-rgb) / 0.85), transparent 32%)",
-            }}
-          />
-        </span>
+          className="pointer-events-none absolute inset-0 z-[45] p-[2px]"
+          style={{
+            ...shapeStyle(shape),
+            ...RIM_MASK,
+            transform: "translateZ(1px)",
+            opacity: a,
+            "--rim-x": rimX,
+            "--rim-y": rimY,
+            backgroundImage:
+              "radial-gradient(ellipse 34% 34% at var(--rim-x) var(--rim-y), rgb(var(--amber-rgb) / 0.85), transparent)",
+          } as MotionStyle}
+        />
       ) : null}
     </>
   );

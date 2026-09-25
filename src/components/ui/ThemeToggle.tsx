@@ -52,17 +52,18 @@ type ThemeCopy = {
 const COPY: Record<Locale, ThemeCopy> = {
   es: {
     label: "Tema",
-    names: { desert: "desierto", tactical: "táctico" },
+    names: { desert: "claro", tactical: "oscuro" },
     action: (current, next) => `Tema ${current} activo. Cambiar al tema ${next}.`,
   },
   en: {
     label: "Theme",
-    names: { desert: "desert", tactical: "tactical" },
-    action: (current, next) => `${current} theme active. Switch to the ${next} theme.`,
+    names: { desert: "light", tactical: "dark" },
+    action: (current, next) =>
+      `${current.charAt(0).toUpperCase()}${current.slice(1)} theme active. Switch to the ${next} theme.`,
   },
   ca: {
     label: "Tema",
-    names: { desert: "desert", tactical: "tàctic" },
+    names: { desert: "clar", tactical: "fosc" },
     action: (current, next) => `Tema ${current} actiu. Canvia al tema ${next}.`,
   },
 };
@@ -179,7 +180,7 @@ export default function ThemeToggle({ showLabel = false, className = "" }: Theme
       {showLabel && (
         <span
           aria-hidden
-          className="font-mono text-[0.625rem] tracking-[2px] uppercase font-semibold whitespace-nowrap"
+          className="font-mono text-[0.6875rem] tracking-[2px] uppercase font-semibold whitespace-nowrap"
         >
           {copy.names[theme]}
         </span>

@@ -22,8 +22,16 @@
    · Escape cierra; al cerrar, el foco vuelve al boton que lo abrio.
    · Se bloquea el scroll del documento mientras esta abierto.
    · No hace falta neutralizar el resto de la pagina: la fila de enlaces de
-     escritorio es `hidden xl:flex`, o sea `display:none` a ese ancho, y eso
-     ya la saca del arbol de accesibilidad y del orden de tabulacion.
+     escritorio es `hidden lg:flex`, o sea `display:none` a ese ancho, y eso
+     ya la saca del arbol de accesibilidad y del orden de tabulacion. El
+     boton y el panel usan el MISMO corte (`lg:hidden`): si se mueve uno, se
+     mueven los tres.
+
+   PAGINA ACTUAL. El enlace de la ruta en la que se esta lleva
+   `aria-current="page"` y el subrayado ambar fijo (`.link-tactical` en
+   globals.css), en la fila de escritorio y en el panel movil. Los enlaces
+   a anclas de la home (`/#proyecto`, `/#ruta`) no se marcan: son secciones,
+   no paginas.
      Todo lo demas queda detras del panel, que es opaco y a pantalla
      completa, y el ciclo de foco no deja salir de el.
 
@@ -33,6 +41,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 
 import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
@@ -46,6 +55,7 @@ const FOCUSABLE =
 
 export default function Navbar() {
   const t = useT();
+  const pathname = usePathname();
   /* Copy del selector de tema — vive en <ThemeToggle /> para que el control
      sea autocontenido; aqui solo se reutiliza para rotular la fila del
      menu movil con exactamente las mismas palabras. */
@@ -132,6 +142,16 @@ export default function Navbar() {
     { label: t.nav.sponsorship, href: "/patrocinio" },
     { label: t.nav.media, href: "/media" },
   ];
+  /* En la fila de escritorio "Inicio" sobra: el logo ya lleva a la home, y
+     quitarlo es lo que deja caber la fila entera desde 1024 px. En el panel
+     movil y en el footer se queda. */
+  const desktopLinks = navLinks.filter((link) => link.href !== "/");
+
+  /** Solo las rutas cuentan como página actual; las anclas (`/#…`) no. */
+  const isCurrent = (href: string) => !href.includes("#") && href === pathname;
+
+  /** Destino del CTA de patrocinio: directamente al configurador. */
+  const sponsorHref = "/patrocinio#configurador";
 
   return (
     <>
@@ -166,12 +186,15 @@ export default function Navbar() {
         className={`fixed top-0 left-0 w-full z-50 transition-[background-color,border-color,padding-top,padding-bottom] duration-300 ease-tactical ${
           isScrolled
             ? "bg-bg-base/92 backdrop-blur-md border-b border-slate py-3"
-            : "bg-transparent border-b border-transparent py-5"
+            : /* En móvil la barra fija se queda en ~60 px también arriba del
+                 todo: 77 px eran casi un 10 % de la pantalla (NN/g, cabeceras
+                 fijas: cuanto más pequeñas, mejor). */
+              "bg-transparent border-b border-transparent py-3 md:py-5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between gap-4">
           {/* ── Marca ────────────────────────────────────────────────── */}
-          <Link href="/" className="group relative z-50 flex items-center gap-3 min-w-0">
+          <Link href="/" className="hit-area group relative z-50 flex items-center gap-3 min-w-0">
             <span
               aria-hidden
               className="hidden sm:block w-2.5 h-2.5 shrink-0 bg-amber"
@@ -185,35 +208,40 @@ export default function Navbar() {
               >
                 {BRAND.name}
               </motion.span>
-              <span className="hidden md:block font-mono text-[0.5rem] tracking-[3px] text-text-tertiary uppercase mt-1 truncate">
+              {/* Entre `lg` y `xl` la línea de estado se esconde: es la que
+                  deja sitio a la fila de enlaces a 1024 px. */}
+              <span className="hidden md:block lg:hidden xl:block font-mono text-[0.6875rem] tracking-[3px] text-text-tertiary uppercase mt-1 truncate">
                 {t.nav.statusLine}
               </span>
             </span>
           </Link>
 
           {/* ── Navegacion de escritorio ───────────────────────────────
-              Aparece en `xl` (1280 px), no en `lg` (1024 px). Medido con los
-              rotulos en INGLES, que son los mas largos ("THE PROJECT",
-              "SPONSORSHIP"): la fila completa —marca + seis enlaces + idioma
-              + tema + boton— pide ~1080 px ya apretada, y con el espaciado
-              ancho se iba por encima de 1200. En `lg` no cabia y los rotulos
-              se partian en dos lineas ("THE / PROJECT").
-
-              Entre 1024 y 1280 manda el menu hamburguesa, que ya existe y
-              esta bien resuelto. Del espaciado: apretado por defecto y
-              holgado a partir de `2xl`, donde sobra sitio.
+              Aparece en `lg` (1024 px). Con la fila completa —marca + seis
+              enlaces + idioma + tema + boton— pedia ~1080 px y solo cabia en
+              `xl`; entre 1024 y 1280 todo quedaba tras la hamburguesa, que
+              esconde la navegacion justo en portatiles pequeños (NN/g). Lo
+              que la hace caber en `lg`: sin "Inicio" (lo hace el logo), sin
+              la linea de estado bajo la marca hasta `xl` y con huecos de
+              12 px y el interletrado de 1 px hasta `xl`. Medido a 1024 px en
+              es, en y ca: ni desborda ni se parte ningún rótulo.
 
               `whitespace-nowrap` es el cinturon de seguridad: pase lo que
               pase con la traduccion o la fuente, un rotulo NUNCA se parte
               por la mitad. Como mucho se sale, que se ve y se arregla;
-              partirse en dos lineas se coló hasta produccion. */}
-          <div className="hidden xl:flex items-center gap-4 2xl:gap-7">
-            <ul className="flex gap-4 2xl:gap-7">
-              {navLinks.map((link) => (
+              partirse en dos lineas se coló hasta produccion.
+
+              AREA DE PULSACION. El rotulo mide 14 px de alto; el `::before`
+              la estira a ~34 px sin mover nada (el `::after` es el
+              subrayado de `.link-tactical`). */}
+          <div className="hidden lg:flex items-center gap-3 xl:gap-4 2xl:gap-7">
+            <ul className="flex gap-3 xl:gap-4 2xl:gap-7">
+              {desktopLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="link-tactical font-mono whitespace-nowrap text-[0.6875rem] uppercase tracking-[1.5px] 2xl:tracking-[2.5px]"
+                    aria-current={isCurrent(link.href) ? "page" : undefined}
+                    className="link-tactical font-mono whitespace-nowrap text-[0.6875rem] uppercase tracking-[1px] xl:tracking-[1.5px] 2xl:tracking-[2.5px] before:absolute before:inset-x-0 before:-inset-y-2.5 before:content-['']"
                   >
                     {link.label}
                   </Link>
@@ -231,7 +259,9 @@ export default function Navbar() {
               <ThemeToggle />
             </div>
 
-            <Link href="/patrocinio" className="btn-tactical btn-amber text-[0.6875rem]">
+            {/* `nowrap` + `shrink-0`: a 1024 px en inglés la fila apretaba el
+                botón hasta partir "Sponsor us" en dos líneas. */}
+            <Link href={sponsorHref} className="btn-tactical btn-amber shrink-0 whitespace-nowrap text-[0.6875rem]">
               {t.nav.sponsorCta}
             </Link>
           </div>
@@ -240,7 +270,7 @@ export default function Navbar() {
           <button
             ref={toggleRef}
             type="button"
-            className="xl:hidden relative z-50 p-2 -mr-2"
+            className="lg:hidden hit-area relative z-50 p-2 -mr-2"
             onClick={() => (isMenuOpen ? closeMenu() : setIsMenuOpen(true))}
             aria-expanded={isMenuOpen}
             aria-controls="menu-movil"
@@ -292,7 +322,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28 }}
-            className="fixed inset-0 z-[45] bg-bg-base xl:hidden flex flex-col"
+            className="fixed inset-0 z-[45] bg-bg-base lg:hidden flex flex-col"
           >
             <div aria-hidden className="absolute inset-0 grid-blueprint opacity-50 pointer-events-none" />
             <div aria-hidden className="absolute inset-0 dust-overlay pointer-events-none" />
@@ -314,12 +344,20 @@ export default function Navbar() {
                     <Link
                       href={link.href}
                       onClick={closeMenu}
-                      className="font-heading text-3xl sm:text-4xl uppercase tracking-[2px] text-text-primary hover:text-amber transition-colors inline-flex items-baseline gap-3"
+                      aria-current={isCurrent(link.href) ? "page" : undefined}
+                      className={`font-heading text-3xl sm:text-4xl uppercase tracking-[2px] hover:text-amber transition-colors inline-flex items-baseline gap-3 ${
+                        isCurrent(link.href) ? "text-amber-text" : "text-text-primary"
+                      }`}
                     >
                       {/* Sin numerar: la serie "[ 01 ]…[ 08 ]" es la de las
                           SECCIONES, y numerar tambien el menu creaba dos
-                          series distintas compitiendo en la misma pantalla. */}
-                      <span aria-hidden className="w-4 h-px bg-slate shrink-0" />
+                          series distintas compitiendo en la misma pantalla.
+                          La raya se alarga y se pinta de ámbar en la página
+                          actual. */}
+                      <span
+                        aria-hidden
+                        className={`h-px shrink-0 ${isCurrent(link.href) ? "w-6 bg-amber" : "w-4 bg-slate"}`}
+                      />
                       {link.label}
                     </Link>
                   </motion.li>
@@ -328,12 +366,12 @@ export default function Navbar() {
 
               <div className="divider-tech my-8" />
 
-              <Link href="/patrocinio" onClick={closeMenu} className="btn-tactical btn-amber w-full justify-center">
+              <Link href={sponsorHref} onClick={closeMenu} className="btn-tactical btn-amber w-full justify-center">
                 {t.nav.sponsorCta}
               </Link>
 
               <div className="mt-8 flex items-center justify-between gap-4">
-                <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase">
+                <span className="font-mono text-[0.6875rem] tracking-[3px] text-text-tertiary uppercase">
                   {t.nav.languageLabel}
                 </span>
                 <LanguageSwitcher />
@@ -343,7 +381,7 @@ export default function Navbar() {
                   entra solo en el ciclo de foco atrapado del panel (FOCUSABLE
                   ya cubre button) y no cierra el menu al pulsarlo. */}
               <div className="mt-4 flex items-center justify-between gap-4">
-                <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase">
+                <span className="font-mono text-[0.6875rem] tracking-[3px] text-text-tertiary uppercase">
                   {themeCopy.label}
                 </span>
                 <ThemeToggle showLabel />

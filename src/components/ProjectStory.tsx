@@ -43,10 +43,10 @@ export default function ProjectStory() {
           {/* Content Column — spans 5 cols */}
           <motion.div className="lg:col-span-5" style={{ y: textY }}>
             <motion.div
-              initial={{ opacity: 0, x: -40 }}
+              initial={{ opacity: 0, x: -16 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-10%" }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
               <h2 className="font-heading text-[clamp(3rem,6vw,68px)] text-text-primary leading-[0.92] tracking-[2px] mb-10">
                 {t.project.title.map((line, i) => (
@@ -67,10 +67,10 @@ export default function ProjectStory() {
                   arena pleno da 3,29:1 sobre la crema. En tactical los dos
                   tokens valen lo mismo, así que en oscuro no cambia nada. */}
               <div className="mt-10 space-y-1">
-                <p className="font-mono text-[0.625rem] tracking-[2px] text-sand-solid">
+                <p className="font-mono text-[0.6875rem] tracking-[2px] text-sand-solid">
                   {t.project.rules1}
                 </p>
-                <p className="font-mono text-[0.625rem] tracking-[2px] text-sand-solid">
+                <p className="font-mono text-[0.6875rem] tracking-[2px] text-sand-solid">
                   {t.project.rules2}
                 </p>
               </div>
@@ -80,7 +80,7 @@ export default function ProjectStory() {
                 initial={{ scaleX: 0 }}
                 whileInView={{ scaleX: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 style={{ transformOrigin: "left" }}
                 className="w-[120px] h-px bg-amber mt-8"
               />
@@ -96,10 +96,10 @@ export default function ProjectStory() {
               className="relative md:absolute md:top-0 md:right-0 w-full md:w-[65%] aspect-[4/3] overflow-hidden shadow-tactical-lg"
             >
               <motion.div
-                initial={{ opacity: 0, scale: 1.08 }}
+                initial={{ opacity: 0, scale: 1.04 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, margin: "-10%" }}
-                transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0"
               >
                 <RallyImage
@@ -119,7 +119,7 @@ export default function ProjectStory() {
                   pagina (--color-bg-base) y tinta de texto del tema—, asi que
                   la banda es negra en tactical y crema en desert sola. */}
               <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-bg-base/85 to-transparent">
-                <p className="font-mono text-[0.5625rem] tracking-[2px] text-text-secondary">
+                <p className="font-mono text-[0.6875rem] tracking-[2px] text-text-secondary">
                   {t.project.imageCaption}
                 </p>
               </div>
@@ -131,10 +131,10 @@ export default function ProjectStory() {
               className="relative md:absolute md:top-[35%] md:left-0 w-[70%] md:w-[45%] aspect-[3/4] overflow-hidden shadow-tactical-lg mt-4 md:mt-0"
             >
               <motion.div
-                initial={{ opacity: 0, scale: 1.08 }}
+                initial={{ opacity: 0, scale: 1.04 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, margin: "-10%" }}
-                transition={{ duration: 1.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0"
               >
                 <RallyImage
@@ -154,10 +154,10 @@ export default function ProjectStory() {
               className="relative md:absolute md:bottom-[-40px] md:right-[5%] w-[45%] md:w-[35%] aspect-square overflow-hidden shadow-tactical mt-4 md:mt-0 ml-auto md:ml-0"
             >
               <motion.div
-                initial={{ opacity: 0, scale: 0.92 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, margin: "-10%" }}
-                transition={{ duration: 1.1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.6, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0"
               >
                 <RallyImage
@@ -182,7 +182,9 @@ export default function ProjectStory() {
       </div>
 
       {/* Side Label */}
-      <div className="absolute -left-12 top-1/4 hidden xl:block">
+      {/* Decorativo (marca de agua a 1,1:1): fuera del árbol de accesibilidad,
+          como los rótulos laterales del resto de secciones. */}
+      <div aria-hidden="true" className="absolute -left-12 top-1/4 hidden xl:block">
         <span className="side-label">{t.project.sideLabel}</span>
       </div>
     </section>

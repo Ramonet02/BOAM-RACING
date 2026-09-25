@@ -950,7 +950,7 @@ export default function ZoneEditor() {
                           return n;
                         })
                       }
-                      className="font-mono text-[0.625rem] text-text-tertiary"
+                      className="font-mono text-[0.6875rem] text-text-tertiary"
                       aria-label={hidden.has(z.id) ? `Mostrar ${z.label}` : `Ocultar ${z.label}`}
                     >
                       {hidden.has(z.id) ? "○" : "●"}
@@ -1004,14 +1004,14 @@ export default function ZoneEditor() {
                 <button
                   type="button"
                   onClick={resetZone}
-                  className="chamfer-sm font-mono flex-1 bg-bg-surface px-2 py-1.5 text-[0.625rem] uppercase"
+                  className="chamfer-sm font-mono flex-1 bg-bg-surface px-2 py-1.5 text-[0.6875rem] uppercase"
                 >
                   Resetear zona
                 </button>
                 <button
                   type="button"
                   onClick={() => mutate(selected.id, (z) => (z.anchor = null))}
-                  className="chamfer-sm font-mono flex-1 bg-bg-surface px-2 py-1.5 text-[0.625rem] uppercase"
+                  className="chamfer-sm font-mono flex-1 bg-bg-surface px-2 py-1.5 text-[0.6875rem] uppercase"
                 >
                   Ancla auto
                 </button>
@@ -1036,7 +1036,7 @@ export default function ZoneEditor() {
           <button
             type="button"
             onClick={restoreLocal}
-            className="chamfer-sm font-mono mt-3 w-full bg-bg-surface px-3 py-2 text-[0.625rem] uppercase"
+            className="chamfer-sm font-mono mt-3 w-full bg-bg-surface px-3 py-2 text-[0.6875rem] uppercase"
           >
             Restaurar copia local
           </button>

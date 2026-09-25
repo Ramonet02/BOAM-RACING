@@ -4,17 +4,20 @@
    BOAM RACING — <TeamSection />   ·   Módulo 4 de la spec: EL EQUIPO
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   Cuatro bloques de tripulación, uno por coche. Cada bloque monta la
-   ficha técnica del vehículo (<VehicleSpecCard />) junto a los dos
+   Primero la ficha común de la flota (<FleetSpecCard />, una sola vez: los
+   cuatro coches llevan la misma preparación) y después cuatro bloques de
+   tripulación. Cada bloque monta la ficha propia del coche
+   (<VehicleSpecCard />: dorsal, apodo, año, carga) junto a los dos
    pasaportes de sus ocupantes (<PilotPassport />), alternando el lado en
    escritorio para que la lectura no se vuelva una lista plana.
 
      ┌ 05 · EL EQUIPO ─────────────────────────────────────────────┐
      │  OCHO AMIGOS. CUATRO TRIPULACIONES.                         │
      │  ledger HUD: tripulación · flota · base · coordenadas       │
+     │  LA FLOTA — dibujo + preparación común de los cuatro coches │
      ├─────────────────────────────────────────────────────────────┤
      │  EQUIPO 01 — LORAS & HUSE                                   │
-     │  [ ficha del coche ][ pasaporte piloto ][ pasaporte copil. ]│
+     │  [ coche: dorsal·año ][ pasaporte piloto ][ pasap. copil.  ]│
      │  … ×4                                                       │
      ├─────────────────────────────────────────────────────────────┤
      │  reglas del rally · llamada a la acción                     │
@@ -28,7 +31,8 @@
    · COPY: todo vía `useT()`. Ni una cadena de interfaz escrita aquí.
    · TEMA: "Rally Desert Tactical" sobre fondo oscuro, con los tokens de
      `globals.css`. No queda ni un color del tema arena claro anterior.
-   · MOVIMIENTO: `useReducedMotion()` apaga la entrada de cada bloque.
+   · MOVIMIENTO: `useReducedMotion()` apaga la entrada de cada bloque, que
+     dura 0,4 s (NN/g: 100–500 ms).
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 import type { ReactNode } from "react";
@@ -37,7 +41,7 @@ import { ArrowUpRight } from "lucide-react";
 
 import PilotPassport from "@/components/team/PilotPassport";
 import DossierLink from "@/components/ui/DossierLink";
-import VehicleSpecCard from "@/components/team/VehicleSpecCard";
+import VehicleSpecCard, { FleetSpecCard } from "@/components/team/VehicleSpecCard";
 import { useT } from "@/i18n/LanguageProvider";
 import { CONTACT, formatDMS } from "@/lib/constants";
 import {
@@ -76,7 +80,7 @@ function LedgerCell({
 }) {
   return (
     <div className={`min-w-0 px-4 py-3.5 sm:px-5 ${className}`}>
-      <dt className="telemetry-label text-[0.5625rem]">{label}</dt>
+      <dt className="telemetry-label text-[0.6875rem]">{label}</dt>
       <dd
         className={`mt-1.5 min-w-0 font-heading text-[0.9375rem] uppercase tracking-[0.06em] text-text-primary ${
           wrap ? "break-words" : "truncate"
@@ -98,10 +102,10 @@ export default function TeamSection() {
 
   /** Props de entrada compartidos por los bloques de cabecera. */
   const rise = (delay: number) => ({
-    initial: reduce ? false : ({ opacity: 0, y: 24 } as const),
+    initial: reduce ? false : ({ opacity: 0, y: 16 } as const),
     whileInView: reduce ? undefined : ({ opacity: 1, y: 0 } as const),
     viewport: { once: true, amount: 0.3 } as const,
-    transition: { duration: 0.7, ease: EASE, delay: reduce ? 0 : delay },
+    transition: { duration: 0.4, ease: EASE, delay: reduce ? 0 : delay },
   });
 
   return (
@@ -189,6 +193,9 @@ export default function TeamSection() {
           </div>
         </motion.div>
 
+        {/* ── La flota: lo que comparten los cuatro coches, una vez ──── */}
+        <FleetSpecCard crews={CREWS} className="mt-10 sm:mt-12" />
+
         {/* ── Las cuatro tripulaciones ───────────────────────────────── */}
         <div className="mt-16 flex flex-col gap-16 sm:mt-20 sm:gap-24">
           {CREWS.map((crew, index) => {
@@ -216,19 +223,21 @@ export default function TeamSection() {
                   </span>
                 </motion.header>
 
-                {/* El reparto 5/7 sólo entra en xl: entre lg y xl las tres
+                {/* El reparto 4/8 sólo entra en xl: entre lg y xl las tres
                     tarjetas quedarían por debajo de 260 px y los campos del
-                    pasaporte no respiran. Hasta ahí, coche a todo lo ancho y
-                    los dos pasaportes en pareja a partir de md. */}
+                    pasaporte no respiran. Hasta ahí, la ficha del coche (que
+                    ya es compacta) a todo lo ancho y los dos pasaportes en
+                    pareja a partir de md. */}
                 <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-12 xl:gap-6">
                   <VehicleSpecCard
                     crew={crew}
+                    reference={CREWS[0].vehicle.raidMods}
                     delay={0.05}
-                    className={`xl:col-span-5 ${flip ? "xl:order-2" : "xl:order-1"}`}
+                    className={`xl:col-span-4 ${flip ? "xl:order-2" : "xl:order-1"}`}
                   />
 
                   <div
-                    className={`grid grid-cols-1 gap-5 md:grid-cols-2 xl:col-span-7 xl:gap-6 ${
+                    className={`grid grid-cols-1 gap-5 md:grid-cols-2 xl:col-span-8 xl:gap-6 ${
                       flip ? "xl:order-1" : "xl:order-2"
                     }`}
                   >
@@ -254,10 +263,10 @@ export default function TeamSection() {
           {...rise(0)}
           className="mt-16 flex flex-col gap-2 border-y border-slate py-4 sm:mt-20 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
         >
-          <p className="telemetry-label telemetry-label-amber min-w-0 text-[0.5625rem] leading-relaxed sm:text-[0.625rem]">
+          <p className="telemetry-label telemetry-label-amber min-w-0 text-[0.6875rem] leading-relaxed sm:text-[0.6875rem]">
             {t.project.rules1}
           </p>
-          <p className="telemetry-label min-w-0 text-[0.5625rem] leading-relaxed sm:text-[0.625rem]">
+          <p className="telemetry-label min-w-0 text-[0.6875rem] leading-relaxed sm:text-[0.6875rem]">
             {t.project.rules2}
           </p>
         </motion.div>

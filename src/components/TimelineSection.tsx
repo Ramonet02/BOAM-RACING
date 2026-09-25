@@ -54,10 +54,10 @@ function Reveal({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.4, delay, ease: [0.16, 1, 0.3, 1] }}
     >
       {children}
     </motion.div>
@@ -236,7 +236,7 @@ export default function TimelineSection() {
                   PHASE_ACCENT[index] ?? PHASE_ACCENT[PHASE_ACCENT.length - 1];
                 return (
                   <li key={phase.num} className="min-w-0">
-                    <Reveal className="h-full" delay={index * 0.08}>
+                    <Reveal className="h-full" delay={index * 0.05}>
                       <TiltCard className="h-full" solid>
                         <article className="panel flex h-full flex-col gap-4 p-6">
                           <TiltDepth depth={28} className="flex items-start gap-4">

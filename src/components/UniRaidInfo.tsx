@@ -59,10 +59,10 @@ export default function UniRaidInfo() {
               className="relative w-full aspect-[4/3] overflow-hidden shadow-tactical-lg"
             >
               <motion.div
-                initial={{ opacity: 0, scale: 1.08 }}
+                initial={{ opacity: 0, scale: 1.04 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true, margin: "-10%" }}
-                transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0"
               >
                 <RallyImage
@@ -82,10 +82,10 @@ export default function UniRaidInfo() {
               className="absolute -bottom-8 right-4 w-[220px] h-[240px] overflow-hidden shadow-tactical hidden md:block"
             >
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-10%" }}
-                transition={{ duration: 1.2, delay: 0.3 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
                 className="absolute inset-0"
               >
                 <RallyImage
@@ -100,7 +100,7 @@ export default function UniRaidInfo() {
             </motion.div>
 
             {/* Spec line */}
-            <p className="font-mono text-[0.5625rem] tracking-[2px] text-text-secondary mt-16">
+            <p className="font-mono text-[0.6875rem] tracking-[2px] text-text-secondary mt-16">
               {t.car.specLineShort}
             </p>
           </div>
@@ -109,10 +109,10 @@ export default function UniRaidInfo() {
           <div className="w-full lg:w-1/2">
             <motion.div style={{ y: titleY }}>
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-10%" }}
-                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               >
                 <h2 className="font-heading text-[clamp(3.5rem,8vw,110px)] text-text-primary leading-[0.88] tracking-[3px] mb-6">
                   {t.car.title.map((line, i) => (
@@ -129,7 +129,7 @@ export default function UniRaidInfo() {
 
                 {/* Machine Spec Line */}
                 <div className="h-px bg-slate mb-8"></div>
-                <p className="font-mono text-[0.625rem] tracking-[2px] text-text-secondary mb-12">
+                <p className="font-mono text-[0.6875rem] tracking-[2px] text-text-secondary mb-12">
                   {t.car.specLine}
                 </p>
 
@@ -138,12 +138,12 @@ export default function UniRaidInfo() {
                   {specBadges.map((badge, i) => (
                     <motion.div
                       key={i}
-                      initial={{ opacity: 0, y: 24, scale: 0.96 }}
+                      initial={{ opacity: 0, y: 12, scale: 0.98 }}
                       whileInView={{ opacity: 1, y: 0, scale: 1 }}
                       viewport={{ once: true, margin: "-10%" }}
                       transition={{
-                        delay: 0.2 + i * 0.1,
-                        duration: 0.8,
+                        delay: 0.05 + i * 0.05,
+                        duration: 0.4,
                         ease: [0.22, 1, 0.36, 1],
                       }}
                       whileHover={{ y: -4, transition: { duration: 0.25 } }}
@@ -164,7 +164,7 @@ export default function UniRaidInfo() {
                         (5.30-5.34:1); diluirlos habria vuelto a romper el
                         mismo caso que arregla el token.
                       */}
-                      <span className={`font-mono text-[0.5rem] tracking-[4px] ${
+                      <span className={`font-mono text-[0.6875rem] tracking-[4px] ${
                         badge.variant === "light" ? "text-text-secondary" : "text-text-inverse"
                       }`}>
                         {badge.label}
@@ -189,7 +189,9 @@ export default function UniRaidInfo() {
       </div>
 
       {/* Side Label */}
-      <div className="absolute right-0 top-1/4 hidden xl:block">
+      {/* Decorativo (marca de agua a 1,1:1): fuera del árbol de accesibilidad,
+          como los rótulos laterales del resto de secciones. */}
+      <div aria-hidden="true" className="absolute right-0 top-1/4 hidden xl:block">
         <span className="side-label">{t.car.sideLabel}</span>
       </div>
     </section>

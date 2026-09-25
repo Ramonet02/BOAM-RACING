@@ -34,7 +34,6 @@ export interface TeamSection {
   dossier: {
     callsignLabel: string;
     roleLabel: string;
-    bloodLabel: string;
     licenseLabel: string;
     specialtyLabel: string;
     sinceLabel: string;
@@ -70,7 +69,6 @@ export const team: LocalizedSection<TeamSection> = {
     dossier: {
       callsignLabel: "Indicativo",
       roleLabel: "Puesto",
-      bloodLabel: "Grupo sanguíneo",
       licenseLabel: "Licencia",
       specialtyLabel: "Especialidad",
       sinceLabel: "Desde",
@@ -110,7 +108,6 @@ export const team: LocalizedSection<TeamSection> = {
     dossier: {
       callsignLabel: "Callsign",
       roleLabel: "Role",
-      bloodLabel: "Blood type",
       licenseLabel: "Licence",
       specialtyLabel: "Speciality",
       sinceLabel: "Since",
@@ -150,7 +147,6 @@ export const team: LocalizedSection<TeamSection> = {
     dossier: {
       callsignLabel: "Indicatiu",
       roleLabel: "Lloc",
-      bloodLabel: "Grup sanguini",
       licenseLabel: "Llicència",
       specialtyLabel: "Especialitat",
       sinceLabel: "Des de",

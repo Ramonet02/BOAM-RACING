@@ -769,7 +769,7 @@ export default function MoroccoMap({
                       aria-hidden="true"
                       className={`pointer-events-none absolute whitespace-nowrap ${LABEL_POSITION[side]}`}
                     >
-                      <span className="telemetry-label telemetry-label-lime hidden text-[0.5rem] @sm:block">
+                      <span className="telemetry-label telemetry-label-lime hidden text-[0.6875rem] @sm:block">
                         {copy.startLabel}
                       </span>
                       <span className="gps-label hidden text-text-secondary @md:block">
@@ -828,7 +828,7 @@ export default function MoroccoMap({
 
                   <span
                     aria-hidden="true"
-                    className={`relative font-mono text-[0.5625rem] font-semibold leading-none tracking-wider transition-colors duration-200 ease-snap @sm:text-[0.625rem] ${
+                    className={`relative font-mono text-[0.6875rem] font-semibold leading-none tracking-wider transition-colors duration-200 ease-snap @sm:text-[0.6875rem] ${
                       isActive
                         ? "text-text-inverse"
                         : isHovered
@@ -860,7 +860,7 @@ export default function MoroccoMap({
                       {waypoint.label}
                     </span>
                     {isFinish ? (
-                      <span className="telemetry-label telemetry-label-amber hidden text-[0.5rem] @sm:block">
+                      <span className="telemetry-label telemetry-label-amber hidden text-[0.6875rem] @sm:block">
                         {copy.finishLabel}
                       </span>
                     ) : null}
@@ -929,7 +929,8 @@ export default function MoroccoMap({
         </ul>
       </div>
 
-      <figcaption className="gps-label leading-relaxed text-text-tertiary">{copy.note}</figcaption>
+      {/* Frase, no etiqueta: 12 px de cuerpo y sin el interletrado mono. */}
+      <figcaption className="font-body text-xs leading-relaxed text-text-tertiary">{copy.note}</figcaption>
     </figure>
   );
 }

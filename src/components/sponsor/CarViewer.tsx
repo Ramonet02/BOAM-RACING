@@ -1014,7 +1014,7 @@ export default function CarViewer({
                 disabled={zoom <= MIN_ZOOM + 0.001}
                 aria-label={t.sponsors.configurator.resetView}
                 title={t.sponsors.configurator.resetView}
-                className="font-mono h-8 px-2 text-[0.625rem] tracking-[0.18em] text-text-secondary uppercase transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
+                className="font-mono h-8 px-2 text-[0.6875rem] tracking-[0.18em] text-text-secondary uppercase transition-colors hover:text-amber-text disabled:cursor-not-allowed disabled:opacity-35"
               >
                 1:1
               </button>
@@ -1032,7 +1032,7 @@ export default function CarViewer({
                   onClick={() => setStrokeIndex(index)}
                   aria-pressed={strokeIndex === index}
                   aria-label={`${t.sponsors.configurator.strokeLabel} ${index + 1}`}
-                  className={`font-mono h-6 w-6 text-[0.625rem] transition-colors ${
+                  className={`font-mono h-6 w-6 text-[0.6875rem] transition-colors ${
                     strokeIndex === index
                       ? "bg-amber-solid text-text-inverse"
                       : "text-text-tertiary hover:text-text-primary"
@@ -1058,9 +1058,6 @@ export default function CarViewer({
         </div>
       </TiltCard>
 
-      <p className="telemetry-label mt-3 text-center sm:text-left">
-        {t.sponsors.configurator.hint}
-      </p>
     </div>
   );
 }

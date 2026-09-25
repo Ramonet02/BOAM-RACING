@@ -36,7 +36,7 @@ export function isPending<T>(value: MaybePending<T>): value is Pending {
 
 /**
  * Devuelve el valor si está confirmado, o `fallback` si sigue pendiente.
- * Pensado para la UI: `resolvePending(member.bloodType, "—")`.
+ * Pensado para la UI: `resolvePending(member.bio, "")`.
  */
 export function resolvePending<T>(value: MaybePending<T>, fallback: T): T {
   return isPending(value) ? fallback : value;
@@ -152,9 +152,6 @@ export interface RouteSummary {
 /** Rol dentro de la tripulación. */
 export type CrewRole = "piloto" | "copiloto";
 
-/** Grupo sanguíneo según sistema ABO/Rh. Dato obligatorio en raid. */
-export type BloodType = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
-
 /** Handles de redes de un miembro. Todos opcionales y por defecto pendientes. */
 export interface SocialHandles {
   readonly instagram?: MaybePending<string>;
@@ -176,8 +173,9 @@ export interface TeamMember extends Verifiable {
   readonly role: CrewRole;
   /** Id de la tripulación a la que pertenece. */
   readonly crewId: string;
-  /** Grupo sanguíneo. PENDING hasta que cada uno lo confirme. */
-  readonly bloodType: MaybePending<BloodType>;
+  /* Sin grupo sanguíneo a propósito: es un dato de salud (categoría
+     especial del RGPD, art. 9) y no se publica en la web. Si la organización
+     del rally lo pide, va en la ficha de inscripción, no aquí. */
   /** Ciudad de origen. */
   readonly homeCity: string;
   /** Coordenadas de la ciudad de origen, para el micro-badging GPS. */

@@ -169,6 +169,9 @@
   --color-amber: #BF5A1E;
   --color-amber-deep: #8F3E12;
   --color-amber-text: #A34B17;
+  /* Texto de .tech-badge-amber: su propio fondo lleva un tinte ámbar y con
+     amber-text se quedaba en 4,47:1. Un paso más oscuro da ~5,8:1.       */
+  --badge-amber-ink: #8F3E12;
   /* Los hover del tema claro van hacia ABAJO, no hacia arriba: en oscuro
      "destacar" es aclarar (#FF6B00 → #FF8524) y en claro es oscurecer. Si
      se aclaran, el texto crema del boton cae a 3.25:1. Progresion:
@@ -305,6 +308,7 @@
   --color-amber: #FF6B00;          /* Dakar Amber · accion primaria         */
   --color-amber-deep: #C24F00;     /* pressed / sombra del ambar            */
   --color-amber-text: #FF6B00;     /* en oscuro el ambar ya llega para texto */
+  --badge-amber-ink: #FF6B00;      /* igual que amber-text: aquí ya cumplía   */
   --color-amber-hover: #FF8524;    /* era un hex fijo en .btn-amber:hover   */
   /* Identicos a --color-amber/-hover: aqui el ambar YA cumplia 4.5:1 con
      texto inverso (6.67:1). Existen solo para que .btn-amber pueda usar el
@@ -971,7 +975,10 @@
   }
   .telemetry-label-amber { color: var(--color-amber-text); }
   .telemetry-label-lime  { color: var(--color-lime); }
-  .telemetry-label-sand  { color: var(--color-sand); }
+  /* sand-solid y no sand: es texto de 11 px, y en desert el arena pleno se
+     queda en 3,29:1 sobre la crema (sand-solid da 4,89:1). En tactical los
+     dos tokens valen lo mismo. */
+  .telemetry-label-sand  { color: var(--color-sand-solid); }
   .telemetry-label-lg    { font-size: 0.8125rem; letter-spacing: 0.28em; }
 
   /* Variante con guion delante:  ──── ETAPA 04 */
@@ -994,7 +1001,8 @@
     gap: 0.4rem;
     padding: 0.28rem 0.55rem;
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    /* 11 px: suelo tipográfico de toda la web (antes 10 px). */
+    font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1004,7 +1012,7 @@
     clip-path: var(--chamfer-path-quad);
   }
   .tech-badge-amber {
-    color: var(--color-amber-text);
+    color: var(--badge-amber-ink);
     background: rgb(var(--amber-rgb) / 0.1);
     box-shadow: inset 0 0 0 1px rgb(var(--amber-rgb) / 0.42);
   }
@@ -1017,7 +1025,8 @@
   /* Coordenadas GPS y micro-metadatos */
   .gps-label {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    /* 11 px: suelo tipográfico de toda la web (antes 10 px). */
+    font-size: 0.6875rem;
     letter-spacing: 0.18em;
     color: var(--color-text-tertiary);
   }
@@ -1121,6 +1130,34 @@
     transform: translateY(1px);
   }
 
+  /* ── Objetivos táctiles ─────────────────────────────────────────────────
+     Solo con puntero grueso (dedo): con ratón no cambia nada. 44 px es el
+     mínimo de Apple (44 pt) y está cerca del de Material (48 dp); WCAG 2.5.8
+     se queda en 24.
+     · .touch-target  alarga la caja de verdad. Para enlaces apilados en
+       lista, donde las zonas pulsables no pueden solaparse.
+     · .hit-area      alarga solo la zona pulsable con un ::before, sin mover
+       nada. Para controles sueltos (logo, botón de menú, enlace del
+       dossier); NO para listas, donde el área de uno pisaría al vecino.
+       El ::after queda libre para el subrayado de .link-tactical. */
+  @media (pointer: coarse) {
+    .btn-tactical { min-height: 2.75rem; }
+    .touch-target {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.75rem;
+    }
+    .hit-area { position: relative; }
+    .hit-area::before {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      top: 50%;
+      height: 2.75rem;
+      transform: translateY(-50%);
+    }
+  }
+
   .btn-amber {
     background: var(--color-amber-solid);
     color: var(--color-text-inverse);
@@ -1170,6 +1207,11 @@
     transform: scaleX(1);
     transform-origin: left;
   }
+  /* Página actual del menú: el subrayado se queda puesto y más grueso. */
+  .link-tactical[aria-current="page"]::after {
+    height: 2px;
+    transform: scaleX(1);
+  }
 }
 
 
@@ -1178,13 +1220,15 @@
 
 @layer components {
 
+  /* 0,45 s y 16 px: una entrada de 0,8 s con 30 px de recorrido retrasaba
+     la lectura (NN/g, duración de animaciones: 100–500 ms). */
   .animate-on-scroll {
     opacity: 0;
-    transform: translate3d(0, 30px, 0);
+    transform: translate3d(0, 16px, 0);
     transition:
-      opacity 0.8s var(--ease-tactical),
-      transform 0.8s var(--ease-tactical),
-      filter 0.8s var(--ease-tactical);
+      opacity 0.45s var(--ease-tactical),
+      transform 0.45s var(--ease-tactical),
+      filter 0.45s var(--ease-tactical);
     will-change: opacity, transform;
   }
   .animate-on-scroll.is-visible {

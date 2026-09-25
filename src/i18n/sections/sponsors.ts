@@ -152,6 +152,19 @@ type LogoUploadErrorKey = "too-large" | "not-an-image" | "decode-failed";
 
 export interface SponsorsSection {
   waypoint: string;
+  /**
+   * Índice de la página: anclas a cada bloque. /patrocinio mide casi 14
+   * pantallas en móvil y sin índice solo se recorre a golpe de scroll.
+   */
+  index: {
+    label: string;
+    configurator: string;
+    tiers: string;
+    matrix: string;
+    process: string;
+    faq: string;
+    contact: string;
+  };
   title: Lines;
   /** Uses the `{km}` token — the figure comes from `ROUTE_SUMMARY`. */
   intro: string;
@@ -330,6 +343,17 @@ export interface SponsorsSection {
     messageLabel: string;
     messagePlaceholder: string;
     consent: string;
+    /**
+     * Errores por campo. Concretos a propósito (NN/g, formularios): "Obligatorio"
+     * no dice qué falta, y en el email tampoco distingue "vacío" de "mal escrito".
+     */
+    errors: {
+      name: string;
+      company: string;
+      email: string;
+      emailInvalid: string;
+      consent: string;
+    };
     submit: string;
     sending: string;
     success: string;
@@ -404,6 +428,15 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
   /* ═════════════════════════════ ES ═════════════════════════════ */
   es: {
     waypoint: "[ 06 ]  PATROCINIO",
+    index: {
+      label: "En esta página",
+      configurator: "Configurador",
+      tiers: "Niveles",
+      matrix: "Qué incluye",
+      process: "Cómo funciona",
+      faq: "Preguntas",
+      contact: "Contacto",
+    },
     title: ["TU MARCA", "EN EL", "DESIERTO"],
     intro:
       "Cuatro Ford Escort son cuatro lienzos de chapa que van a cruzar {km} de Marruecos y a salir en cada foto del viaje. Elige dónde quieres estar y te preparamos la propuesta.",
@@ -495,7 +528,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
 
     configurator: {
       title: ["CONFIGURA TU", "PATROCINIO"],
-      hint: "Haz clic en las zonas del coche para reservarlas.",
+      hint: "Toca o haz clic en las zonas del coche para añadirlas a tu propuesta.",
       viewLabel: "Vista",
       filterLabel: "Filtrar",
       filterAll: "Todas las zonas",
@@ -516,8 +549,8 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       summaryTitle: "Resumen",
       summaryTierLabel: "Nivel",
       summaryTotalLabel: "Total estimado",
-      submit: "Solicitar dossier",
-      submitHint: "Elige al menos una zona para pedir el dossier.",
+      submit: "Pedir propuesta",
+      submitHint: "Elige al menos una zona para pedir la propuesta.",
       resetView: "Volver a la vista inicial",
       zoomIn: "Acercar",
       zoomOut: "Alejar",
@@ -686,7 +719,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
         },
         {
           num: "02",
-          title: "Recibe el dossier",
+          title: "Recibe la propuesta",
           desc: "Te enviamos la propuesta con medidas de vinilo, aportación y plazos.",
         },
         {
@@ -717,7 +750,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
     ],
 
     contactModal: {
-      title: "Solicitar el dossier",
+      title: "Pedir propuesta",
       desc: "Cuéntanos quién eres y qué zonas te interesan. Te contestamos con la propuesta cerrada.",
       nameLabel: "Nombre y apellidos",
       namePlaceholder: "Quién nos escribe",
@@ -726,7 +759,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       emailLabel: "Email",
       emailPlaceholder: "tu@empresa.com",
       phoneLabel: "Teléfono",
-      phonePlaceholder: "Opcional, por si es más rápido",
+      phonePlaceholder: "Por si es más rápido",
       tierLabel: "Nivel de interés",
       tierPlaceholder: "Aún no lo tengo claro",
       zonesLabel: "Zonas seleccionadas",
@@ -734,6 +767,13 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       messagePlaceholder: "Qué te gustaría conseguir con este patrocinio",
       consent:
         "Acepto que BOAM RACING use estos datos para responderme. Nada más, y nada de terceros.",
+      errors: {
+        name: "Escribe tu nombre para saber a quién respondemos.",
+        company: "Escribe el nombre de la empresa.",
+        email: "Escribe un email para poder contestarte.",
+        emailInvalid: "Revisa el email: parece que falta la @ o el dominio.",
+        consent: "Marca la casilla para que podamos usar estos datos y responderte.",
+      },
       submit: "Enviar solicitud",
       sending: "Enviando…",
       success: "Recibido. Te escribimos en menos de 48 horas.",
@@ -748,7 +788,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       tag: "[ PATROCINIO ]",
       title: ["PONLE TU", "NOMBRE A", "ESTE VIAJE"],
       desc: "Cuéntanos quién eres y qué te gustaría conseguir. Te preparamos una propuesta a medida en 48 horas.",
-      primary: "Solicitar el dossier",
+      primary: "Pedir propuesta",
       secondary: "Escríbenos",
     },
     contact: {
@@ -780,6 +820,15 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
   /* ═════════════════════════════ EN ═════════════════════════════ */
   en: {
     waypoint: "[ 06 ]  SPONSORSHIP",
+    index: {
+      label: "On this page",
+      configurator: "Configurator",
+      tiers: "Levels",
+      matrix: "What's included",
+      process: "How it works",
+      faq: "FAQ",
+      contact: "Contact",
+    },
     title: ["YOUR BRAND", "IN THE", "DESERT"],
     intro:
       "Four Ford Escorts are four sheet-metal canvases about to cross {km} of Morocco and land in every photo of the trip. Pick where you want to be and we'll put the proposal together.",
@@ -869,7 +918,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
 
     configurator: {
       title: ["BUILD YOUR", "SPONSORSHIP"],
-      hint: "Click the zones on the car to reserve them.",
+      hint: "Tap or click the zones on the car to add them to your proposal.",
       viewLabel: "View",
       filterLabel: "Filter",
       filterAll: "All zones",
@@ -890,8 +939,8 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       summaryTitle: "Summary",
       summaryTierLabel: "Level",
       summaryTotalLabel: "Estimated total",
-      submit: "Request the dossier",
-      submitHint: "Pick at least one zone to request the dossier.",
+      submit: "Request a proposal",
+      submitHint: "Pick at least one zone to request a proposal.",
       resetView: "Back to the default view",
       zoomIn: "Zoom in",
       zoomOut: "Zoom out",
@@ -1060,7 +1109,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
         },
         {
           num: "02",
-          title: "Get the dossier",
+          title: "Get your proposal",
           desc: "We send the proposal with vinyl sizes, contribution and deadlines.",
         },
         {
@@ -1091,7 +1140,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
     ],
 
     contactModal: {
-      title: "Request the dossier",
+      title: "Request a proposal",
       desc: "Tell us who you are and which zones interest you. We'll come back with a firm proposal.",
       nameLabel: "Full name",
       namePlaceholder: "Who's writing",
@@ -1100,7 +1149,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       emailLabel: "Email",
       emailPlaceholder: "you@company.com",
       phoneLabel: "Phone",
-      phonePlaceholder: "Optional, if it's quicker",
+      phonePlaceholder: "In case it's quicker",
       tierLabel: "Level of interest",
       tierPlaceholder: "Not sure yet",
       zonesLabel: "Selected zones",
@@ -1108,6 +1157,13 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       messagePlaceholder: "What you'd like to get out of this sponsorship",
       consent:
         "I agree that BOAM RACING may use these details to reply to me. Nothing else, and nothing shared with third parties.",
+      errors: {
+        name: "Enter your name so we know who to reply to.",
+        company: "Enter the company name.",
+        email: "Enter an email so we can get back to you.",
+        emailInvalid: "Check the email: the @ or the domain seems to be missing.",
+        consent: "Tick the box so we can use these details to reply to you.",
+      },
       submit: "Send request",
       sending: "Sending…",
       success: "Got it. We'll write back within 48 hours.",
@@ -1122,7 +1178,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       tag: "[ SPONSORSHIP ]",
       title: ["PUT YOUR", "NAME ON", "THIS TRIP"],
       desc: "Tell us who you are and what you'd like to get out of it. We'll build a tailored proposal within 48 hours.",
-      primary: "Request the dossier",
+      primary: "Request a proposal",
       secondary: "Email us",
     },
     contact: {
@@ -1154,6 +1210,15 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
   /* ═════════════════════════════ CA ═════════════════════════════ */
   ca: {
     waypoint: "[ 06 ]  PATROCINI",
+    index: {
+      label: "En aquesta pàgina",
+      configurator: "Configurador",
+      tiers: "Nivells",
+      matrix: "Què inclou",
+      process: "Com funciona",
+      faq: "Preguntes",
+      contact: "Contacte",
+    },
     title: ["LA TEVA MARCA", "AL", "DESERT"],
     intro:
       "Quatre Ford Escort són quatre llenços de xapa que travessaran {km} de Marroc i sortiran a totes les fotos del viatge. Tria on vols ser i et preparem la proposta.",
@@ -1249,7 +1314,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
 
     configurator: {
       title: ["CONFIGURA EL TEU", "PATROCINI"],
-      hint: "Fes clic a les zones del cotxe per reservar-les.",
+      hint: "Toca o fes clic a les zones del cotxe per afegir-les a la teva proposta.",
       viewLabel: "Vista",
       filterLabel: "Filtrar",
       filterAll: "Totes les zones",
@@ -1270,8 +1335,8 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       summaryTitle: "Resum",
       summaryTierLabel: "Nivell",
       summaryTotalLabel: "Total estimat",
-      submit: "Sol·licitar el dossier",
-      submitHint: "Tria com a mínim una zona per demanar el dossier.",
+      submit: "Demanar proposta",
+      submitHint: "Tria com a mínim una zona per demanar la proposta.",
       resetView: "Tornar a la vista inicial",
       zoomIn: "Apropa",
       zoomOut: "Allunya",
@@ -1440,7 +1505,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
         },
         {
           num: "02",
-          title: "Rep el dossier",
+          title: "Rep la proposta",
           desc: "T'enviem la proposta amb mides de vinil, aportació i terminis.",
         },
         {
@@ -1471,7 +1536,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
     ],
 
     contactModal: {
-      title: "Sol·licitar el dossier",
+      title: "Demanar proposta",
       desc: "Explica'ns qui ets i quines zones t'interessen. Et responem amb la proposta tancada.",
       nameLabel: "Nom i cognoms",
       namePlaceholder: "Qui ens escriu",
@@ -1480,7 +1545,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       emailLabel: "Correu",
       emailPlaceholder: "tu@empresa.com",
       phoneLabel: "Telèfon",
-      phonePlaceholder: "Opcional, per si va més ràpid",
+      phonePlaceholder: "Per si va més ràpid",
       tierLabel: "Nivell d'interès",
       tierPlaceholder: "Encara no ho tinc clar",
       zonesLabel: "Zones seleccionades",
@@ -1488,6 +1553,13 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       messagePlaceholder: "Què t'agradaria aconseguir amb aquest patrocini",
       consent:
         "Accepto que BOAM RACING faci servir aquestes dades per respondre'm. Res més, i res de tercers.",
+      errors: {
+        name: "Escriu el teu nom perquè sapiguem a qui responem.",
+        company: "Escriu el nom de l'empresa.",
+        email: "Escriu un correu perquè et puguem contestar.",
+        emailInvalid: "Revisa el correu: sembla que hi falta l'@ o el domini.",
+        consent: "Marca la casella perquè puguem fer servir aquestes dades i respondre't.",
+      },
       submit: "Enviar la sol·licitud",
       sending: "Enviant…",
       success: "Rebut. T'escrivim en menys de 48 hores.",
@@ -1502,7 +1574,7 @@ export const sponsors: LocalizedSection<SponsorsSection> = {
       tag: "[ PATROCINI ]",
       title: ["POSA-LI EL TEU", "NOM A", "AQUEST VIATGE"],
       desc: "Explica'ns qui ets i què t'agradaria aconseguir. Et preparem una proposta a mida en 48 hores.",
-      primary: "Sol·licitar el dossier",
+      primary: "Demanar proposta",
       secondary: "Escriu-nos",
     },
     contact: {

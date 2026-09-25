@@ -5,29 +5,28 @@
      · Los 8 nombres y cómo se emparejan en tripulaciones.
      · Los nombres de equipo por apellidos: "LORAS & HUSE", "SANS & SANS"...
      · Ciudad de origen: Barcelona (los ocho).
-     · Modelo y años de los coches: Ford Escort, 1997 / 1998 / 1997 / 1999.
+     · Modelo y años de los coches: Ford Escort MK5/MK6, 1997 / 1998 / 1997 /
+       1999 (modelo confirmado por el equipo en septiembre de 2026).
      · Specs mecánicas: 1.6 Zetec, 2WD delantera, cubrecárter de acero,
        suspensión elevada.
 
    ⚠  DATOS PERSONALES PENDIENTES — rellenar y poner `verified: true`:
-     · `bloodType`  → cada miembro tiene que decir el suyo. Es obligatorio en
-                      la ficha de raid y va impreso en el casco y en la puerta.
      · `bio`        → 2-3 frases por persona.
      · `socials`    → handles personales de Instagram / TikTok.
    Todo eso está puesto como el centinela PENDING de `types.ts`, así que se
    localiza buscando "PENDIENTE" en el repo y no se cuela como dato inventado.
+   La web NO pinta lo pendiente: el pasaporte solo muestra lo confirmado.
 
-   ⚠  DISCREPANCIA DE MODELO PENDIENTE DE CERRAR:
-     La web actual (TeamSection) dice "Ford Escort MK7".
-     El line-art de /public/car está dibujado sobre un Escort sedán MK5/MK6.
-     Se conserva "Ford Escort MK7" porque es el dato más reciente que dio el
-     equipo, pero el vehículo va con `verified: false` hasta que se confirme
-     cuál es la generación real de los cuatro coches.
+   El grupo sanguíneo ya no existe aquí: es un dato de salud y no se publica.
+
+   ⚠  MODELO: el equipo confirmó "Ford Escort MK5/MK6", que es además lo que
+     dibuja el line-art de /public/car. Ojo: los años 1997–1999 suelen
+     corresponder al Escort de 1995–2000, que en Reino Unido se llama MK7.
+     Si los años son correctos, conviene revisarlo con el equipo.
    ══════════════════════════════════════════════════════════════════════════ */
 
 import {
   PENDING,
-  type BloodType,
   type Crew,
   type CrewRole,
   type CrewVehicle,
@@ -52,9 +51,6 @@ export const HOME_COORDS: GeoPoint = { lat: 41.3874, lon: 2.1686 };
  * Está en una constante para que sea un solo sitio el que hay que buscar.
  */
 const BIO_PENDING: MaybePending<string> = PENDING;
-
-/** Grupo sanguíneo aún sin confirmar. Ver aviso de la cabecera. */
-const BLOOD_PENDING: MaybePending<BloodType> = PENDING;
 
 /** Redes personales sin confirmar. */
 const SOCIALS_PENDING = {
@@ -90,14 +86,14 @@ function buildVehicle(
   nickname: string,
 ): CrewVehicle {
   return {
-    model: "Ford Escort MK7",
+    model: "Ford Escort MK5/MK6",
     year,
     carNumber,
     nickname,
     raidMods: COMMON_RAID_MODS,
     verified: false,
     verificationNote:
-      "Confirmar generación real del Escort (la web dice MK7, el line-art es MK5/MK6) y la capacidad de carga homologada.",
+      "Modelo confirmado (MK5/MK6). Falta confirmar los años frente a la generación y la capacidad de carga homologada.",
   };
 }
 
@@ -119,14 +115,13 @@ function buildMember(
     initials,
     role,
     crewId,
-    bloodType: BLOOD_PENDING,
     homeCity: HOME_CITY,
     homeCoords: HOME_COORDS,
     bio: BIO_PENDING,
     socials: SOCIALS_PENDING,
     verified: false,
     verificationNote:
-      "Faltan grupo sanguíneo, bio y redes personales. El nombre y la ciudad sí son datos reales.",
+      "Faltan bio y redes personales. El nombre y la ciudad sí son datos reales.",
   };
 }
 
@@ -240,7 +235,6 @@ export const TEAM_HAS_PENDING_DATA: boolean = TEAM_MEMBERS.some(
 );
 
 export type {
-  BloodType,
   Crew,
   CrewRole,
   CrewVehicle,

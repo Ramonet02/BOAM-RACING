@@ -63,6 +63,13 @@ export interface CarSection {
     nicknameLabel: string;
     yearLabel: string;
     crewLabel: string;
+    /** Rótulo de la ficha común de /equipo: lo que comparten los cuatro coches. */
+    commonLabel: string;
+    /** Carga solidaria: "por coche" y total de la flota. */
+    perCar: string;
+    fleetTotal: string;
+    /** Encabezado de lo que un coche tiene distinto de la ficha común. */
+    differs: string;
   };
   sideLabel: string;
   imageAlt: string;
@@ -139,6 +146,10 @@ export const car: LocalizedSection<CarSection> = {
       nicknameLabel: "Nombre",
       yearLabel: "Año",
       crewLabel: "Tripulación",
+      commonLabel: "Preparación común a los cuatro coches",
+      perCar: "Por coche",
+      fleetTotal: "Total de la flota",
+      differs: "Distinto del resto de la flota",
     },
     sideLabel: "02 — LOS COCHES",
     imageAlt:
@@ -215,6 +226,10 @@ export const car: LocalizedSection<CarSection> = {
       nicknameLabel: "Name",
       yearLabel: "Year",
       crewLabel: "Crew",
+      commonLabel: "Build shared by all four cars",
+      perCar: "Per car",
+      fleetTotal: "Fleet total",
+      differs: "Different from the rest of the fleet",
     },
     sideLabel: "02 — THE CARS",
     imageAlt:
@@ -291,6 +306,10 @@ export const car: LocalizedSection<CarSection> = {
       nicknameLabel: "Nom",
       yearLabel: "Any",
       crewLabel: "Tripulació",
+      commonLabel: "Preparació comuna als quatre cotxes",
+      perCar: "Per cotxe",
+      fleetTotal: "Total de la flota",
+      differs: "Diferent de la resta de la flota",
     },
     sideLabel: "02 — ELS COTXES",
     imageAlt:

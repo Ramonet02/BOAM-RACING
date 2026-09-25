@@ -29,7 +29,6 @@ import DossierLink from "@/components/ui/DossierLink";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useT } from "@/i18n/LanguageProvider";
 import { CONTACT, PAGE_COORDS, SOCIALS } from "@/lib/constants";
-import { getArchiveProgress } from "@/lib/imagery";
 
 /**
  * URL real del canal, si el equipo ya lo tiene abierto.
@@ -44,7 +43,6 @@ function socialUrl(name: string): string | undefined {
 
 export default function MediaSection() {
   const t = useT();
-  const archive = getArchiveProgress();
 
   return (
     <section
@@ -74,21 +72,12 @@ export default function MediaSection() {
             ))}
           </h2>
 
-          <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <p className="max-w-xl font-body text-base leading-[1.7] text-text-secondary">
-              {t.media.intro}
-            </p>
-
-            {archive.pending > 0 && (
-              <span className="tech-badge tech-badge-amber shrink-0 self-start lg:self-auto">
-                <span className="status-dot" aria-hidden="true" />
-                {t.common.placeholder.badge}
-                <span className="tabular-nums text-text-secondary">
-                  {archive.ready}/{archive.total}
-                </span>
-              </span>
-            )}
-          </div>
+          {/* Sin la insignia "Archivo pendiente 19/38" de antes: era el
+              recuento interno del manifiesto, no un dato para el visitante, y
+              además chocaba con el contador de la galería. */}
+          <p className="mt-8 max-w-xl font-body text-base leading-[1.7] text-text-secondary">
+            {t.media.intro}
+          </p>
         </ScrollReveal>
 
         {/* ── Galeria bento ────────────────────────────────────── */}
@@ -145,14 +134,17 @@ export default function MediaSection() {
                         {video.desc}
                       </p>
                     </div>
-                    <span className="shrink-0 text-right">
-                      <span className="telemetry-label block">
-                        {t.media.videos.durationLabel}
+                    {/* La duración solo existe cuando existe el vídeo. */}
+                    {video.duration ? (
+                      <span className="shrink-0 text-right">
+                        <span className="telemetry-label block">
+                          {t.media.videos.durationLabel}
+                        </span>
+                        <span className="mt-1 block font-mono text-sm tabular-nums text-sand-solid">
+                          {video.duration}
+                        </span>
                       </span>
-                      <span className="mt-1 block font-mono text-sm tabular-nums text-sand">
-                        {video.duration}
-                      </span>
-                    </span>
+                    ) : null}
                   </div>
                 </figcaption>
               </figure>
@@ -205,7 +197,7 @@ export default function MediaSection() {
                       <span className="telemetry-label block">
                         {t.media.socials.signalLabel}
                       </span>
-                      <span className="mt-1 block font-mono text-xs text-sand">
+                      <span className="mt-1 block font-mono text-xs text-sand-solid">
                         {social.signal}
                       </span>
                     </span>
@@ -241,7 +233,10 @@ export default function MediaSection() {
                       </span>
                     </a>
                   ) : (
-                    <div className="group relative flex items-center justify-between gap-4 overflow-hidden py-6 opacity-70">
+                    /* Sin `opacity`: velar la fila entera bajaba el contraste de
+                       su texto por debajo de 4,5:1. Que aún no hay canal ya lo
+                       dice su insignia "Próximamente". */
+                    <div className="group relative flex items-center justify-between gap-4 overflow-hidden py-6">
                       {body}
                     </div>
                   )}
@@ -282,7 +277,7 @@ export default function MediaSection() {
               </a>
               <span className="font-mono text-xs text-text-tertiary">
                 {t.media.press.contactLabel}:{" "}
-                <a href={CONTACT.mailto} className="link-tactical text-sand">
+                <a href={CONTACT.mailto} className="link-tactical text-sand-solid">
                   {CONTACT.email}
                 </a>
               </span>
@@ -317,7 +312,11 @@ export default function MediaSection() {
         />
 
         <div className="relative z-10 mx-auto max-w-7xl px-6 py-24 md:px-12 md:py-32">
-          <span className="waypoint-tag block opacity-70">{t.media.cta.tag}</span>
+          {/* Sobre el fondo hundido de este bloque, el ámbar de texto se
+              quedaba en 4,44:1 en desert: va con la tinta de las insignias. */}
+          <span className="waypoint-tag block" style={{ color: "var(--badge-amber-ink)" }}>
+            {t.media.cta.tag}
+          </span>
 
           <h3 className="mt-6 font-heading text-[clamp(2.5rem,9vw,7.5rem)] font-bold leading-[0.88] tracking-[0.02em] text-text-primary">
             {t.media.cta.title.map((line) => (

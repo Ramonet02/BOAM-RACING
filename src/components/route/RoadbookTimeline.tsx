@@ -146,10 +146,11 @@ function TerrainGlyph({ terrain }: { terrain: TerrainType }) {
  *
  *   asfalto    #8C8275 → --color-text-tertiary  (#A0988C en tactical desde que
  *                                               #8C8275 no llegaba a AA)
- *   pista      #D4A359 → --color-sand           idéntico
+ *   pista      #D4A359 → --color-sand-solid     idéntico en tactical; en desert
+ *                                               el sand pleno daba 3,3:1 a 11 px
  *   dunas      #FF6B00 → --color-amber-text     idéntico (5,08:1 en desert)
  *   gargantas  #CCFF00 → --color-lime           idéntico (moss en desert)
- *   montana    #D4A359 → --color-sand           idéntico
+ *   montana    #D4A359 → --color-sand-solid     ídem
  *   ferry      #2A2E35 → --color-text-tertiary  ya se corregía antes
  *
  * Es un rótulo de 11 px, así que el ámbar va en su variante de TEXTO: en
@@ -157,10 +158,10 @@ function TerrainGlyph({ terrain }: { terrain: TerrainType }) {
  */
 const TERRAIN_INK: Readonly<Record<TerrainType, string>> = {
   asfalto: "var(--color-text-tertiary)",
-  pista: "var(--color-sand)",
+  pista: "var(--color-sand-solid)",
   dunas: "var(--color-amber-text)",
   gargantas: "var(--color-lime)",
-  montana: "var(--color-sand)",
+  montana: "var(--color-sand-solid)",
   ferry: "var(--color-text-tertiary)",
 };
 
@@ -315,13 +316,13 @@ export default function RoadbookTimeline({
         className={`${ROW_GRID} hidden border-b border-slate px-3 pb-2 @2xl:grid`}
         aria-hidden="true"
       >
-        <span className="telemetry-label text-[0.5625rem]">{table.index}</span>
-        <span className="telemetry-label text-[0.5625rem]">{table.code}</span>
-        <span className="telemetry-label text-[0.5625rem]">{table.stage}</span>
-        <span className="telemetry-label text-[0.5625rem]">
+        <span className="telemetry-label text-[0.6875rem]">{table.index}</span>
+        <span className="telemetry-label text-[0.6875rem]">{table.code}</span>
+        <span className="telemetry-label text-[0.6875rem]">{table.stage}</span>
+        <span className="telemetry-label text-[0.6875rem]">
           {`${table.terrain} · ${table.difficulty}`}
         </span>
-        <span className="telemetry-label text-right text-[0.5625rem]">{table.km}</span>
+        <span className="telemetry-label text-right text-[0.6875rem]">{table.km}</span>
         <span />
       </div>
 
@@ -378,7 +379,9 @@ export default function RoadbookTimeline({
                       aria-hidden="true"
                       className={`chamfer-quad-sm absolute inset-0 transition-colors duration-200 ${
                         isHighlighted
-                          ? "bg-amber"
+                          ? /* amber-solid: el número va en texto inverso encima, y
+                               con el ámbar pleno se quedaba en 4,18:1 en desert. */
+                            "bg-amber-solid"
                           : "bg-bg-elevated shadow-[inset_0_0_0_1px_var(--color-slate)]"
                       }`}
                     />
@@ -503,7 +506,10 @@ export default function RoadbookTimeline({
                           <p className="font-body text-sm leading-relaxed text-text-secondary">
                             {copy.description}
                           </p>
-                          <p className="border-l-2 border-sand pl-3 font-body text-sm leading-snug text-sand">
+                          {/* El filo arena marca la nota; el texto va en secundario:
+                              sobre el fondo hundido del panel ni el arena oscuro
+                              llegaba a 4,5:1 (4,28). */}
+                          <p className="border-l-2 border-sand pl-3 font-body text-sm leading-snug text-text-secondary">
                             {copy.note}
                           </p>
                         </div>
@@ -549,7 +555,9 @@ export default function RoadbookTimeline({
 
                       {/* Objetivo solidario — el porqué del viaje */}
                       <div className="flex flex-col gap-2 border-t border-slate pt-4">
-                        <span className="telemetry-label telemetry-label-lime telemetry-label-dash">
+                        {/* lime-hover: sobre el fondo hundido del panel, el lima
+                            pleno daba 4,36:1 en desert (lime-hover, 5,77:1). */}
+                        <span className="telemetry-label text-lime-hover telemetry-label-dash">
                           {table.charity}
                         </span>
                         <p className="font-body text-sm leading-relaxed text-text-secondary">
@@ -602,14 +610,15 @@ export default function RoadbookTimeline({
                poder partir en vez de desbordar la rejilla. `leading-tight` en
                vez de `leading-none` para que la segunda línea no se solape. */
             <div key={item.key} className="flex min-w-0 flex-col gap-1 bg-bg-base px-3 py-3">
-              <dt className="telemetry-label text-[0.5625rem]">{item.label}</dt>
+              <dt className="telemetry-label text-[0.6875rem]">{item.label}</dt>
               <dd className="m-0 font-heading text-lg leading-tight tracking-wide break-words text-text-primary">
                 {item.value}
               </dd>
             </div>
           ))}
         </dl>
-        <p className="gps-label leading-relaxed text-text-tertiary">{t.route.approachNote}</p>
+        {/* Frase, no etiqueta: 12 px de cuerpo y sin el interletrado mono. */}
+        <p className="font-body text-xs leading-relaxed text-text-tertiary">{t.route.approachNote}</p>
       </div>
 
       {/* ── Aviso: el roadbook oficial todavía no existe ─────────────────── */}

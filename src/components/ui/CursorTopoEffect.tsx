@@ -383,7 +383,12 @@ export default function CursorTopoEffect() {
     const cursorPt: Point = { x: 0, y: 0 };
 
     const resize = () => {
-      canvas.width  = W = window.innerWidth;
+      /* El ancho ÚTIL, sin la barra de scroll. Con `innerWidth` el lienzo
+         medía la barra de más y, como un canvas con `left/right` y ancho
+         automático toma su ancho intrínseco, empujaba la página: en Windows,
+         con barras clásicas, salía scroll horizontal (medido: 1440 frente a
+         1430 px útiles). Las coordenadas del ratón ya son del área útil. */
+      canvas.width  = W = document.documentElement.clientWidth;
       canvas.height = H = window.innerHeight;
       cW = W / tier.cols;
       cH = H / tier.rows;
@@ -897,7 +902,7 @@ export default function CursorTopoEffect() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none"
+      className="fixed inset-0 h-full w-full pointer-events-none"
       style={{ zIndex: 5, mixBlendMode: "normal" }}
       aria-hidden="true"
     />

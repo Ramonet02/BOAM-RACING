@@ -125,6 +125,16 @@ type ConfigAction =
   | { readonly type: "setArtwork"; readonly slotId: string; readonly artwork: ZoneArtwork }
   | { readonly type: "restoreArtwork"; readonly artwork: ArtworkDesign };
 
+/** Índice de la página: ancla → etiqueta de `t.sponsors.index`. */
+const PAGE_INDEX = [
+  { id: "configurador", key: "configurator" },
+  { id: "niveles", key: "tiers" },
+  { id: "que-incluye", key: "matrix" },
+  { id: "como-funciona", key: "process" },
+  { id: "preguntas", key: "faq" },
+  { id: "contacto", key: "contact" },
+] as const;
+
 const INITIAL_STATE: ConfigState = {
   view: "lateral-izq",
   tierFilter: "all",
@@ -414,19 +424,43 @@ export default function SponsorshipSection() {
               {CAR_VIEWS.length} · {t.sponsors.configurator.viewLabel}
             </span>
           </div>
+
+          {/* Índice de la página. No es fijo a propósito: una segunda barra
+              pegada bajo el menú le quitaría pantalla al configurador (NN/g,
+              cabeceras fijas). Cada destino lleva `scroll-mt-28` para no
+              quedar debajo de la barra de navegación. */}
+          <nav aria-label={t.sponsors.index.label} className="mt-8">
+            <ul className="flex flex-wrap gap-2">
+              {PAGE_INDEX.map((item) => (
+                <li key={item.id}>
+                  <a
+                    href={`#${item.id}`}
+                    className="tech-badge touch-target hover:text-amber-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber"
+                  >
+                    {t.sponsors.index[item.key]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </header>
 
         {/* ══════════════════ Configurador ══════════════════ */}
         <div className="divider-tech mb-10" />
 
-        <h3 className="font-heading text-text-primary mb-2 text-[clamp(1.75rem,3.6vw,2.75rem)] leading-[0.95] font-bold tracking-wide uppercase">
+        <h3
+          id="configurador"
+          className="font-heading text-text-primary mb-2 scroll-mt-28 text-[clamp(1.75rem,3.6vw,2.75rem)] leading-[0.95] font-bold tracking-wide uppercase"
+        >
           {t.sponsors.configurator.title.map((line) => (
             <span key={line} className="block">
               {line}
             </span>
           ))}
         </h3>
-        <p className="telemetry-label mb-8">{t.sponsors.configurator.hint}</p>
+        <p className="font-body text-text-tertiary mb-8 text-xs leading-relaxed">
+          {t.sponsors.configurator.hint}
+        </p>
 
         <ViewTabs
           value={state.view}
@@ -504,7 +538,7 @@ export default function SponsorshipSection() {
         {/* ══════════════════ Tarjetas de nivel ══════════════════ */}
         <div className="divider-tech mt-20 mb-10 lg:mt-28" />
 
-        <header className="mb-10">
+        <header id="niveles" className="mb-10 scroll-mt-28">
           <p className="waypoint-tag mb-4">{t.sponsors.tiersTag}</p>
           <h3 className="font-heading text-text-primary text-[clamp(1.9rem,4.4vw,3.5rem)] leading-[0.92] font-bold tracking-wide uppercase">
             {t.sponsors.tiersTitle.map((line) => (
@@ -560,7 +594,7 @@ export default function SponsorshipSection() {
 
         {/* ══════════════════ Proceso + FAQ ══════════════════ */}
         <div className="mt-16 grid gap-12 lg:grid-cols-2 lg:gap-16">
-          <div>
+          <div id="como-funciona" className="scroll-mt-28">
             <p className="waypoint-tag mb-4">{t.sponsors.process.tag}</p>
             <h4 className="font-heading text-text-primary mb-7 text-2xl leading-tight font-bold tracking-wide uppercase">
               {t.sponsors.process.title}
@@ -587,7 +621,7 @@ export default function SponsorshipSection() {
             </ol>
           </div>
 
-          <div>
+          <div id="preguntas" className="scroll-mt-28">
             <p className="waypoint-tag mb-4">{t.sponsors.faqTag}</p>
             <dl className="border-slate border-t">
               {t.sponsors.faq.map((entry) => (
@@ -607,7 +641,10 @@ export default function SponsorshipSection() {
         {/* ══════════════════ CTA final ══════════════════ */}
         {/* Bloque grande: giro muy corto, que a este tamaño 3° ya se notan. */}
         <TiltCard className="mt-20 lg:mt-28" maxTilt={3} lift={10}>
-          <div className="border-slate chamfer-lg bg-bg-surface relative overflow-hidden border">
+          <div
+            id="contacto"
+            className="border-slate chamfer-lg bg-bg-surface relative scroll-mt-28 overflow-hidden border"
+          >
             <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
               <div className="relative z-10 p-7 sm:p-10 lg:p-12">
                 <p className="waypoint-tag mb-5">{t.sponsors.cta.tag}</p>
@@ -642,7 +679,7 @@ export default function SponsorshipSection() {
                     <dd className="mt-1">
                       <a
                         href={CONTACT.mailto}
-                        className="link-tactical font-mono text-text-primary text-xs tracking-[0.1em]"
+                        className="hit-area link-tactical font-mono text-text-primary text-xs tracking-[0.1em]"
                       >
                         {CONTACT.email}
                       </a>
@@ -880,14 +917,14 @@ function ZoneListing({
                     <span className="font-body text-text-primary block truncate text-sm">
                       {zone.label}
                     </span>
-                    <span className="font-mono text-text-tertiary block text-[0.625rem] tracking-[0.12em] uppercase">
+                    <span className="font-mono text-text-tertiary block text-[0.6875rem] tracking-[0.12em] uppercase">
                       {t.sponsors.tierLabels[zone.slot.tier]} · {zone.vinylLabel} ·{" "}
                       {t.sponsors.slotStatus[zone.slot.status]}
                     </span>
                   </span>
                   <span
                     aria-hidden="true"
-                    className={`font-mono shrink-0 text-[0.625rem] tracking-[0.16em] uppercase ${
+                    className={`font-mono shrink-0 text-[0.6875rem] tracking-[0.16em] uppercase ${
                       isSelected ? "text-lime" : "text-text-tertiary"
                     }`}
                   >
@@ -976,7 +1013,7 @@ function SelectionPanel({
                 <button
                   type="button"
                   onClick={onClear}
-                  className="font-mono text-text-tertiary hover:text-amber-text text-[0.625rem] tracking-[0.16em] uppercase transition-colors"
+                  className="font-mono text-text-tertiary hover:text-amber-text text-[0.6875rem] tracking-[0.16em] uppercase transition-colors"
                 >
                   {copy.clearAll}
                 </button>
@@ -1003,7 +1040,7 @@ function SelectionPanel({
                       <span className="font-mono text-text-primary block truncate text-[0.6875rem] tracking-[0.1em] uppercase">
                         {zone.label}
                       </span>
-                      <span className="font-mono text-text-tertiary block text-[0.625rem] tracking-[0.1em]">
+                      <span className="font-mono text-text-tertiary block text-[0.6875rem] tracking-[0.1em]">
                         {zone.vinylLabel}
                         {isArtworkEmpty(artwork[zone.slot.id])
                           ? ""
@@ -1014,7 +1051,7 @@ function SelectionPanel({
                       type="button"
                       onClick={() => onEditArtwork(zone)}
                       aria-label={`${t.sponsors.studio.edit}: ${zone.label}`}
-                      className="font-mono text-text-tertiary hover:text-amber-text shrink-0 px-2 text-[0.625rem] tracking-[0.14em] uppercase transition-colors"
+                      className="font-mono text-text-tertiary hover:text-amber-text shrink-0 px-2 text-[0.6875rem] tracking-[0.14em] uppercase transition-colors"
                     >
                       {t.sponsors.studio.edit}
                     </button>
@@ -1068,7 +1105,7 @@ function SelectionPanel({
                 {totalLabel}
               </span>
             </TiltDepth>
-            <p className="font-mono text-text-tertiary mt-2 text-[0.625rem] leading-relaxed tracking-[0.08em]">
+            <p className="font-mono text-text-tertiary mt-2 text-[0.6875rem] leading-relaxed tracking-[0.08em]">
               {t.sponsors.price.vatNote}
             </p>
           </div>
@@ -1084,9 +1121,13 @@ function SelectionPanel({
               {copy.submit}
             </button>
             {empty ? (
-              <p className="telemetry-label mt-2.5">{copy.submitHint}</p>
+              <p className="font-body text-text-tertiary mt-2.5 text-xs leading-relaxed">
+                {copy.submitHint}
+              </p>
             ) : (
-              <p className="telemetry-label mt-2.5">{t.sponsors.contact.responseTime}</p>
+              <p className="font-body text-text-tertiary mt-2.5 text-xs leading-relaxed">
+                {t.sponsors.contact.responseTime}
+              </p>
             )}
           </div>
         </div>
@@ -1153,7 +1194,7 @@ function TierCard({ tier, matrix, onRequest, t }: TierCardProps) {
           <p className="font-heading text-text-primary mb-1 text-4xl leading-none font-bold tracking-wide">
             {formatTierPrice(tier)}
           </p>
-          <p className="font-mono text-text-tertiary mb-4 text-[0.625rem] tracking-[0.14em] uppercase">
+          <p className="font-mono text-text-tertiary mb-4 text-[0.6875rem] tracking-[0.14em] uppercase">
             {t.sponsors.price.oneOff}
           </p>
         </TiltDepth>
@@ -1186,12 +1227,13 @@ function TierCard({ tier, matrix, onRequest, t }: TierCardProps) {
 
         <ul className="mb-6 flex-1 space-y-2">
           {bullets.map((bullet) => (
-            <li key={bullet} className="flex gap-2.5">
+            <li key={bullet.concept} className="flex gap-2.5">
               <span aria-hidden="true" className="shrink-0" style={{ color: ink }}>
                 ▸
               </span>
               <span className="font-body text-text-secondary text-xs leading-relaxed">
-                {bullet}
+                <span className="text-text-primary font-medium">{bullet.concept}:</span>{" "}
+                {bullet.value}
               </span>
             </li>
           ))}
@@ -1263,10 +1305,17 @@ function buildMatrix(t: Dict): MatrixEntry[] {
 }
 
 /** Columna de un nivel: sus celdas con contenido, saltando los guiones. */
-function matrixColumn(matrix: readonly MatrixEntry[], tierId: SponsorTierId): string[] {
+/**
+ * Viñetas de un nivel: cada valor lleva el concepto de su fila. Sin él, "Top
+ * post" o "Presencial en la empresa" no se entienden fuera de la tabla.
+ */
+function matrixColumn(
+  matrix: readonly MatrixEntry[],
+  tierId: SponsorTierId,
+): { concept: string; value: string }[] {
   return matrix.flatMap((entry) => {
     const value = entry.values[tierId];
-    return value === null ? [] : [value];
+    return value === null ? [] : [{ concept: entry.concept, value }];
   });
 }
 
@@ -1279,7 +1328,7 @@ function InvestmentMatrix({ entries, t }: InvestmentMatrixProps) {
   const copy = t.sponsors.matrix;
 
   return (
-    <div>
+    <div id="que-incluye" className="scroll-mt-28">
       <header className="mb-10">
         <p className="waypoint-tag mb-4">{copy.tag}</p>
         <h3 className="font-heading text-text-primary mb-5 text-[clamp(1.9rem,4.4vw,3.5rem)] leading-[0.92] font-bold tracking-wide uppercase">
@@ -1330,7 +1379,7 @@ function InvestmentMatrix({ entries, t }: InvestmentMatrixProps) {
                   <span className="font-heading text-text-primary mt-1.5 block text-xl leading-none font-bold">
                     {formatTierPrice(tier)}
                   </span>
-                  <span className="font-mono text-text-tertiary mt-1.5 block text-[0.625rem] tracking-[0.12em] uppercase">
+                  <span className="font-mono text-text-tertiary mt-1.5 block text-[0.6875rem] tracking-[0.12em] uppercase">
                     {formatTierAvailabilityShort(tier, t)}
                   </span>
                 </th>
@@ -1401,7 +1450,7 @@ function InvestmentMatrix({ entries, t }: InvestmentMatrixProps) {
                 {formatTierPrice(tier)}
               </span>
             </div>
-            <p className="font-mono text-text-tertiary mb-4 text-[0.625rem] tracking-[0.12em] uppercase">
+            <p className="font-mono text-text-tertiary mb-4 text-[0.6875rem] tracking-[0.12em] uppercase">
               {formatTierAvailabilityShort(tier, t)}
             </p>
 

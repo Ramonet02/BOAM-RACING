@@ -104,7 +104,7 @@ export default function FooterSection() {
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Link href="/patrocinio" className="btn-tactical btn-amber">
+              <Link href="/patrocinio#configurador" className="btn-tactical btn-amber">
                 {t.footer.ctaPrimary}
                 <span aria-hidden>{t.footer.ctaArrow}</span>
               </Link>
@@ -129,7 +129,7 @@ export default function FooterSection() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="font-body text-sm text-text-secondary hover:text-amber-text transition-colors"
+                      className="touch-target font-body text-sm text-text-secondary hover:text-amber-text transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -147,9 +147,9 @@ export default function FooterSection() {
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-body text-sm text-text-secondary hover:text-amber-text transition-colors inline-flex items-center gap-2"
+                      className="touch-target font-body text-sm text-text-secondary hover:text-amber-text transition-colors inline-flex items-center gap-2"
                     >
-                      <span className="font-mono text-[0.625rem] text-text-tertiary tracking-[2px]">
+                      <span className="font-mono text-[0.6875rem] text-text-tertiary tracking-[2px]">
                         {SOCIAL_SHORT[social.platform] ?? social.platform.slice(0, 2).toUpperCase()}
                       </span>
                       {social.handle}
@@ -164,11 +164,11 @@ export default function FooterSection() {
               <span className="telemetry-label telemetry-label-sand">{t.footer.columns.contact}</span>
               <a
                 href={CONTACT.mailto}
-                className="font-body text-sm text-text-secondary hover:text-amber-text transition-colors break-all"
+                className="touch-target font-body text-sm text-text-secondary hover:text-amber-text transition-colors break-all"
               >
                 {CONTACT.email}
               </a>
-              <span className="font-mono text-[0.5625rem] tracking-[2px] text-text-tertiary uppercase mt-2">
+              <span className="font-mono text-[0.6875rem] tracking-[2px] text-text-tertiary uppercase mt-2">
                 {t.footer.locationLabel}
               </span>
               <p className="gps-label leading-[1.7]">
@@ -186,13 +186,13 @@ export default function FooterSection() {
             plegado para que no le robe el cierre a la CTA. */}
         {credited.length > 0 && (
           <details className="mt-16 group">
-            <summary className="telemetry-label telemetry-label-sand cursor-pointer list-none inline-flex items-center gap-2 hover:text-amber-text transition-colors">
+            <summary className="touch-target telemetry-label telemetry-label-sand cursor-pointer list-none inline-flex items-center gap-2 hover:text-amber-text transition-colors">
               <span aria-hidden className="font-mono transition-transform group-open:rotate-90">›</span>
               {t.footer.legal.credits} · {credited.length}
             </summary>
             <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-1.5">
               {credited.map((entry) => (
-                <li key={entry.id} className="font-mono text-[0.625rem] leading-relaxed text-text-tertiary">
+                <li key={entry.id} className="font-mono text-[0.6875rem] leading-relaxed text-text-tertiary">
                   <span className="text-text-secondary">{entry.rally?.location ?? entry.alt}</span>
                   {" — "}
                   {entry.creditUrl ? (
@@ -200,7 +200,7 @@ export default function FooterSection() {
                       href={entry.creditUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline decoration-dotted underline-offset-2 hover:text-amber-text transition-colors"
+                      className="touch-target underline decoration-dotted underline-offset-2 hover:text-amber-text transition-colors"
                     >
                       {entry.credit}
                       <span className="sr-only"> ({t.common.a11y.externalLink})</span>
@@ -216,13 +216,13 @@ export default function FooterSection() {
 
         {/* ── Barra inferior ───────────────────────────────────────────── */}
         <div className={`${credited.length > 0 ? "mt-8" : "mt-16"} pt-6 border-t border-slate flex flex-col md:flex-row md:items-center justify-between gap-4`}>
-          <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase">
+          <span className="font-mono text-[0.6875rem] tracking-[3px] text-text-tertiary uppercase">
             &copy; {year} {BRAND.name} · {t.footer.rights}
           </span>
-          <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase text-center md:text-right">
+          <span className="font-mono text-[0.6875rem] tracking-[3px] text-text-tertiary uppercase text-center md:text-right">
             {t.footer.editionLine}
           </span>
-          <span className="font-mono text-[0.5625rem] tracking-[3px] text-text-tertiary uppercase md:text-right">
+          <span className="font-mono text-[0.6875rem] tracking-[3px] text-text-tertiary uppercase md:text-right">
             {t.footer.madeBy}
           </span>
         </div>

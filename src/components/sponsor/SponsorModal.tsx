@@ -37,8 +37,10 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { AlertCircle } from "lucide-react";
 
 import { BRAND, CONTACT } from "@/lib/constants";
 import { isArtworkEmpty, type ArtworkDesign } from "@/lib/sponsor/artwork";
@@ -286,10 +288,13 @@ export default function SponsorModal({
 
   const validate = useCallback((): boolean => {
     const next: Partial<Record<keyof FormValues, string>> = {};
-    if (values.name.trim().length === 0) next.name = t.common.labels.required;
-    if (values.company.trim().length === 0) next.company = t.common.labels.required;
-    if (!EMAIL_RE.test(values.email.trim())) next.email = t.common.labels.required;
-    if (!values.consent) next.consent = t.common.labels.required;
+    const errorCopy = t.sponsors.contactModal.errors;
+    const email = values.email.trim();
+    if (values.name.trim().length === 0) next.name = errorCopy.name;
+    if (values.company.trim().length === 0) next.company = errorCopy.company;
+    if (email.length === 0) next.email = errorCopy.email;
+    else if (!EMAIL_RE.test(email)) next.email = errorCopy.emailInvalid;
+    if (!values.consent) next.consent = errorCopy.consent;
     setErrors(next);
     return Object.keys(next).length === 0;
   }, [values, t]);
@@ -511,9 +516,7 @@ export default function SponsorModal({
                     {...field("name")}
                   />
                   {errors.name ? (
-                    <span id={errorId("name")} className="telemetry-label telemetry-label-amber mt-1.5 block">
-                      {errors.name}
-                    </span>
+                    <FieldError id={errorId("name")}>{errors.name}</FieldError>
                   ) : null}
                 </label>
 
@@ -537,9 +540,7 @@ export default function SponsorModal({
                     {...field("company")}
                   />
                   {errors.company ? (
-                    <span id={errorId("company")} className="telemetry-label telemetry-label-amber mt-1.5 block">
-                      {errors.company}
-                    </span>
+                    <FieldError id={errorId("company")}>{errors.company}</FieldError>
                   ) : null}
                 </label>
 
@@ -564,9 +565,7 @@ export default function SponsorModal({
                     {...field("email")}
                   />
                   {errors.email ? (
-                    <span id={errorId("email")} className="telemetry-label telemetry-label-amber mt-1.5 block">
-                      {errors.email}
-                    </span>
+                    <FieldError id={errorId("email")}>{errors.email}</FieldError>
                   ) : null}
                 </label>
 
@@ -638,7 +637,7 @@ export default function SponsorModal({
                               {zone.label}
                             </span>
                           </span>
-                          <span className="font-mono text-text-tertiary shrink-0 text-[0.625rem] tracking-[0.1em]">
+                          <span className="font-mono text-text-tertiary shrink-0 text-[0.6875rem] tracking-[0.1em]">
                             {zone.vinylLabel}
                           </span>
                         </li>
@@ -676,9 +675,7 @@ export default function SponsorModal({
                   </span>
                 </label>
                 {errors.consent ? (
-                  <span id={errorId("consent")} className="telemetry-label telemetry-label-amber mt-1.5 block">
-                    {errors.consent}
-                  </span>
+                  <FieldError id={errorId("consent")}>{errors.consent}</FieldError>
                 ) : null}
               </div>
 
@@ -704,7 +701,7 @@ export default function SponsorModal({
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.14em] uppercase">
+                <p className="font-mono text-text-tertiary text-[0.6875rem] tracking-[0.14em] uppercase">
                   {copy.responseTime} · {CONTACT.email}
                 </p>
                 <button
@@ -725,5 +722,22 @@ export default function SponsorModal({
       </div>
     </div>,
     document.body,
+  );
+}
+
+/**
+ * Error de un campo. Frase normal de 13 px con icono, no la etiqueta mono en
+ * mayúsculas de antes: un error tiene que leerse a la primera (NN/g). Sigue
+ * enlazado al campo por `aria-describedby` con el mismo `id`.
+ */
+function FieldError({ id, children }: { id: string; children: ReactNode }) {
+  return (
+    <span
+      id={id}
+      className="font-body text-amber-text mt-1.5 flex items-start gap-1.5 text-[0.8125rem] leading-snug"
+    >
+      <AlertCircle size={14} strokeWidth={2} aria-hidden="true" className="mt-0.5 shrink-0" />
+      <span>{children}</span>
+    </span>
   );
 }

@@ -105,8 +105,8 @@ const HERO_IMAGE_ID = "portada-home-duna-amanecer";
 const HERO_STYLES = `
 @keyframes boam-hero-line { from { transform: translate3d(0, 112%, 0); } to { transform: none; } }
 @keyframes boam-hero-rule { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-.boam-hero-line { animation: boam-hero-line 1.05s var(--ease-tactical) both; }
-.boam-hero-rule { transform-origin: left; animation: boam-hero-rule 0.85s var(--ease-tactical) both; }
+.boam-hero-line { animation: boam-hero-line 0.6s var(--ease-tactical) both; }
+.boam-hero-rule { transform-origin: left; animation: boam-hero-rule 0.5s var(--ease-tactical) both; }
 
 /* DESERT · la foto se lava hacia crema, pero se tiene que VER: con foto real
    el velo anterior (0.46-0.94 + lavado de texto a todo el ancho) la dejaba
@@ -189,9 +189,19 @@ const PLATE_VERTICAL =
   " rgb(var(--base-rgb) / calc(var(--hero-plate) * 0.75)) 55%," +
   " rgb(var(--base-rgb) / 0) 100%)";
 
-/** Retardo de entrada en linea; lo anula el bloque de reduced-motion. */
-function delay(seconds: number): CSSProperties {
-  return { animationDelay: `${seconds}s` };
+/**
+ * Retardo (y, si se pide, duración) de entrada en linea; los anula el bloque
+ * de reduced-motion, que va con `!important`.
+ *
+ * La coreografía entera cabe en ~0,8 s. Antes la descripción y los botones
+ * esperaban 0,95 s y tardaban 0,8 s más en entrar: casi dos segundos para
+ * poder leer la propuesta de valor, que es justo lo que la home tiene que
+ * dejar clara primero (NN/g: 100–500 ms por animación).
+ */
+function delay(seconds: number, duration?: number): CSSProperties {
+  return duration === undefined
+    ? { animationDelay: `${seconds}s` }
+    : { animationDelay: `${seconds}s`, animationDuration: `${duration}s` };
 }
 
 /**
@@ -335,7 +345,11 @@ export default function HeroSection() {
             overlay="none"
             showCaption={false}
             chamfer={false}
-            sizes="100vw"
+            /* En vertical el recorte `cover` pide la foto mucho más ancha que
+               la pantalla: a 375 px el hueco mide ~413×1153 y la foto 4:3 se
+               pinta a ~1537 px de ancho. Con "100vw" el navegador bajaba la
+               variante de 750 px y la ampliaba unas 4 veces en retina. */
+            sizes="(orientation: portrait) 250vw, 100vw"
             objectPosition="center 45%"
           />
         </motion.div>
@@ -379,7 +393,7 @@ export default function HeroSection() {
       >
         <div
           className="animate-slide-right flex flex-col items-end gap-2 border-r border-amber/45 pr-4"
-          style={delay(0.85)}
+          style={delay(0.4, 0.5)}
         >
           <p className="telemetry-label telemetry-label-amber">
             {t.hero.hud.coordsLabel}
@@ -389,7 +403,7 @@ export default function HeroSection() {
 
         <div
           className="animate-slide-right flex flex-col items-end gap-2 border-r border-slate pr-4"
-          style={delay(1)}
+          style={delay(0.5, 0.5)}
         >
           <p className="telemetry-label">{t.hero.hud.headingLabel}</p>
           <p className="gps-label text-text-secondary">
@@ -408,7 +422,7 @@ export default function HeroSection() {
           writingMode: "vertical-rl",
           letterSpacing: "0.48em",
           backgroundImage: PLATE_VERTICAL,
-          ...delay(1.15),
+          ...delay(0.6, 0.5),
         }}
       >
         {t.hero.expedition}
@@ -440,7 +454,7 @@ export default function HeroSection() {
           {/* Tag + badge de edicion */}
           <div
             className="animate-fade-up mb-6 flex flex-wrap items-center gap-x-4 gap-y-3"
-            style={delay(0.1)}
+            style={delay(0.05, 0.5)}
           >
             <span className="telemetry-label telemetry-label-amber telemetry-label-dash">
               {t.hero.tag}
@@ -474,7 +488,7 @@ export default function HeroSection() {
           >
             {t.hero.title.map((line, i) => (
               <span key={`${i}-${line}`} className="block overflow-hidden pb-[0.06em]">
-                <span className="boam-hero-line block" style={delay(0.26 + i * 0.13)}>
+                <span className="boam-hero-line block" style={delay(0.08 + i * 0.07)}>
                   {i === lastTitleLine ? (
                     <span className="text-gradient-amber">{line}</span>
                   ) : (
@@ -488,22 +502,25 @@ export default function HeroSection() {
           {/* Regla editorial */}
           <div
             className="boam-hero-rule mt-6 h-px w-full max-w-xs bg-gradient-to-r from-amber via-amber/40 to-transparent"
-            style={delay(0.85)}
+            style={delay(0.3)}
           />
 
           {/* Copy + CTAs · contadores */}
           <div className="mt-7 flex flex-col gap-9 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
-            <div className="animate-fade-up max-w-xl" style={delay(0.95)}>
+            <div className="animate-fade-up max-w-xl" style={delay(0.3, 0.5)}>
               <p className="font-body text-[0.9375rem] leading-[1.75] text-text-secondary sm:text-base">
                 {t.hero.description}
               </p>
 
+              {/* El principal es patrocinar, que es el objetivo de la web; bajar
+                  a conocer el proyecto ya lo invita la pista de scroll de abajo,
+                  así que va de secundario (jerarquía por objetivo). */}
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <Link
-                  href="/#proyecto"
+                  href="/patrocinio#configurador"
                   className="btn-tactical btn-amber group w-full sm:w-auto"
                 >
-                  {t.hero.cta}
+                  {t.hero.secondaryCta}
                   <span
                     aria-hidden="true"
                     className="transition-transform duration-300 ease-tactical group-hover:translate-x-1"
@@ -512,10 +529,10 @@ export default function HeroSection() {
                   </span>
                 </Link>
                 <Link
-                  href="/patrocinio"
+                  href="/#proyecto"
                   className="btn-tactical btn-outline w-full sm:w-auto"
                 >
-                  {t.hero.secondaryCta}
+                  {t.hero.cta}
                 </Link>
               </div>
 
@@ -563,7 +580,7 @@ export default function HeroSection() {
                 <div
                   key={stat.label}
                   className="animate-fade-up flex flex-col-reverse border-t border-slate pt-3"
-                  style={delay(1.05 + i * 0.09)}
+                  style={delay(0.4 + i * 0.05, 0.5)}
                 >
                   <dt className="telemetry-label mt-2 block">{stat.label}</dt>
                   <dd className="font-heading text-3xl font-semibold leading-none text-text-primary md:text-4xl">

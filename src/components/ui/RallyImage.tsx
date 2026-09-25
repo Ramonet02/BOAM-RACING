@@ -377,6 +377,7 @@ export default function RallyImage({
         onClick={onClick}
         className={frameClass}
         style={{ ...frameStyle, outlineColor: accent.line }}
+        lang="es"
         aria-label={entry.alt}
       >
         {body}
@@ -391,6 +392,7 @@ export default function RallyImage({
       data-measured={`${Math.round(size.width)}x${Math.round(size.height)}`}
       className={frameClass}
       style={frameStyle}
+      lang="es"
       role={ready ? undefined : "img"}
       aria-label={ready ? undefined : entry.alt}
     >
@@ -483,13 +485,13 @@ function PendingPlaceholder({
         ) : (
           <div className="flex shrink-0 items-start justify-between gap-2 p-3">
             <span
-              className="min-w-0 truncate text-[0.625rem] uppercase tracking-[0.18em]"
+              className="min-w-0 truncate text-[0.6875rem] uppercase tracking-[0.18em]"
               style={{ ...MONO, color: META_INK }}
             >
               {formatAssetCode(entry)}
             </span>
             <span
-              className="flex shrink-0 items-center gap-1.5 px-2 py-1 text-[0.5625rem] uppercase tracking-[0.16em]"
+              className="flex shrink-0 items-center gap-1.5 px-2 py-1 text-[0.6875rem] uppercase tracking-[0.16em]"
               style={{
                 ...MONO,
                 color: accent.ink,
@@ -530,7 +532,7 @@ function PendingPlaceholder({
 
           {!isMicro && (
             <span
-              className="shrink-0 truncate text-[0.5625rem] uppercase tracking-[0.28em]"
+              className="shrink-0 truncate text-[0.6875rem] uppercase tracking-[0.28em]"
               style={{ ...MONO, color: accent.ink }}
             >
               {CATEGORY_LABELS[entry.category]}
@@ -540,7 +542,7 @@ function PendingPlaceholder({
 
           {isFull && (
             <p
-              className="line-clamp-3 max-w-[34ch] text-balance text-[0.8125rem] uppercase leading-snug tracking-[0.04em]"
+              className="line-clamp-3 max-w-[34ch] text-balance text-[0.8125rem] leading-snug tracking-[0.02em]"
               style={{ ...DISPLAY, color: "rgb(var(--text-rgb) / 0.88)" }}
             >
               {entry.alt}
@@ -558,7 +560,7 @@ function PendingPlaceholder({
 
           {density === "compact" && (
             <p
-              className="line-clamp-2 max-w-[30ch] text-[0.6875rem] uppercase leading-snug tracking-[0.03em]"
+              className="line-clamp-2 max-w-[30ch] text-[0.75rem] leading-snug tracking-[0.02em]"
               style={{ ...DISPLAY, color: "rgb(var(--text-rgb) / 0.78)" }}
             >
               {entry.caption}
@@ -569,7 +571,7 @@ function PendingPlaceholder({
         {/* Barra inferior: telemetria */}
         {showBottomBar && (
           <div
-            className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-t px-3 py-2 text-[0.5625rem] uppercase tracking-[0.14em]"
+            className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-t px-3 py-2 text-[0.6875rem] uppercase tracking-[0.14em]"
             style={{
               ...MONO,
               color: META_INK,
@@ -649,7 +651,7 @@ function PhotoOverlay({
 
       {stage && (
         <span
-          className="absolute left-3 top-3 px-2 py-1 text-[0.5625rem] uppercase tracking-[0.18em]"
+          className="absolute left-3 top-3 px-2 py-1 text-[0.6875rem] uppercase tracking-[0.18em]"
           // Aqui SI se usa el acento pleno y no `ink`: el chip se apoya en
           // su propio fondo casi negro, no en el fondo de la pagina. Sube
           // de 0.6 a 0.72 porque el chip cae en la zona alta del overlay,
@@ -669,14 +671,14 @@ function PhotoOverlay({
       <div className="flex flex-col gap-1 p-3">
         {showCaption && (
           <p
-            className="line-clamp-2 text-[0.8125rem] uppercase leading-tight tracking-[0.04em] text-white"
+            className="line-clamp-2 text-[0.8125rem] leading-tight tracking-[0.02em] text-white"
             style={DISPLAY}
           >
             {entry.caption}
           </p>
         )}
         <div
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.5625rem] uppercase tracking-[0.14em]"
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.6875rem] uppercase tracking-[0.14em]"
           style={{ ...MONO, color: PHOTO_META }}
         >
           {isFull && entry.rally?.location && (

@@ -585,7 +585,7 @@ export default function ZoneStudio({
               {marker}
             </svg>
 
-            <p className="font-mono text-text-tertiary pointer-events-none absolute bottom-2 left-3 z-[2] text-[0.625rem] tracking-[0.12em] uppercase">
+            <p className="font-mono text-text-tertiary pointer-events-none absolute bottom-2 left-3 z-[2] text-[0.6875rem] tracking-[0.12em] uppercase">
               {copy.canvasHint}
             </p>
           </div>
@@ -633,7 +633,7 @@ export default function ZoneStudio({
 
             {/* ── Elementos ── */}
             <section className="min-h-0">
-              <h3 className="font-mono text-text-tertiary mb-2 text-[0.625rem] tracking-[0.18em] uppercase">
+              <h3 className="font-mono text-text-tertiary mb-2 text-[0.6875rem] tracking-[0.18em] uppercase">
                 {copy.itemsLabel} ({artwork.items.length})
               </h3>
               {artwork.items.length === 0 ? (
@@ -661,7 +661,7 @@ export default function ZoneStudio({
                         onClick={() => bringToFront(item.id)}
                         aria-label={copy.bringToFront}
                         title={copy.bringToFront}
-                        className="border-slate border px-2 py-1 font-mono text-[0.625rem]"
+                        className="border-slate border px-2 py-1 font-mono text-[0.6875rem]"
                       >
                         ▲
                       </button>
@@ -670,7 +670,7 @@ export default function ZoneStudio({
                         onClick={() => removeItem(item.id)}
                         aria-label={copy.removeItem}
                         title={copy.removeItem}
-                        className="border-slate border px-2 py-1 font-mono text-[0.625rem]"
+                        className="border-slate border px-2 py-1 font-mono text-[0.6875rem]"
                       >
                         ✕
                       </button>
@@ -683,14 +683,14 @@ export default function ZoneStudio({
             {/* ── Propiedades del elemento activo ── */}
             {activeItem ? (
               <section className="flex flex-col gap-3">
-                <h3 className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.18em] uppercase">
+                <h3 className="font-mono text-text-tertiary text-[0.6875rem] tracking-[0.18em] uppercase">
                   {copy.propertiesLabel}
                 </h3>
 
                 {activeItem.kind === "text" ? (
                   <>
                     <label className="flex flex-col gap-1">
-                      <span className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.14em] uppercase">
+                      <span className="font-mono text-text-tertiary text-[0.6875rem] tracking-[0.14em] uppercase">
                         {copy.textLabel}
                       </span>
                       <input
@@ -704,7 +704,7 @@ export default function ZoneStudio({
                     </label>
 
                     <label className="flex flex-col gap-1">
-                      <span className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.14em] uppercase">
+                      <span className="font-mono text-text-tertiary text-[0.6875rem] tracking-[0.14em] uppercase">
                         {copy.fontLabel}
                       </span>
                       <select
@@ -766,7 +766,7 @@ export default function ZoneStudio({
                     />
 
                     <div>
-                      <span className="font-mono text-text-tertiary mb-1.5 block text-[0.625rem] tracking-[0.14em] uppercase">
+                      <span className="font-mono text-text-tertiary mb-1.5 block text-[0.6875rem] tracking-[0.14em] uppercase">
                         {copy.colorLabel}
                       </span>
                       <div className="flex flex-wrap gap-1.5">
@@ -876,7 +876,7 @@ interface SliderProps {
 function Slider({ label, value, min, max, step, onChange }: SliderProps) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.14em] uppercase">
+      <span className="font-mono text-text-tertiary text-[0.6875rem] tracking-[0.14em] uppercase">
         {label}
       </span>
       <input

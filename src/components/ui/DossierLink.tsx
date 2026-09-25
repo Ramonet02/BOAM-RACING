@@ -77,11 +77,11 @@ export default function DossierLink({
         target="_blank"
         rel="noopener noreferrer"
         aria-label={label}
-        className="link-tactical font-mono text-text-primary text-xs tracking-[0.1em]"
+        className="hit-area link-tactical font-mono text-text-primary text-xs tracking-[0.1em]"
       >
         {copy.dossierCta}
       </a>
-      <span className="font-mono text-text-tertiary text-[0.625rem] tracking-[0.1em]">
+      <span className="font-mono text-text-tertiary text-[0.6875rem] tracking-[0.1em]">
         {meta}
         {note ? ` · ${note}` : ""}
       </span>

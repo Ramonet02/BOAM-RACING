@@ -114,13 +114,13 @@ export default function ZoneTooltip({
           {/* Cabecera: nivel + estado */}
           <div className="flex items-center justify-between gap-2">
             <span
-              className="font-mono text-[0.625rem] leading-none font-semibold tracking-[0.22em] uppercase"
+              className="font-mono text-[0.6875rem] leading-none font-semibold tracking-[0.22em] uppercase"
               style={{ color: tierInk }}
             >
               {t.sponsors.tierLabels[slot.tier]}
             </span>
             <span
-              className={`font-mono text-[0.625rem] leading-none tracking-[0.18em] uppercase ${
+              className={`font-mono text-[0.6875rem] leading-none tracking-[0.18em] uppercase ${
                 occupied ? "text-text-tertiary" : "text-lime"
               }`}
             >
@@ -186,7 +186,7 @@ export default function ZoneTooltip({
             <button
               type="button"
               onClick={onClose}
-              className="font-mono text-text-tertiary hover:text-amber-text mt-1 w-full border-t border-slate pt-2.5 text-[0.625rem] tracking-[0.2em] uppercase transition-colors"
+              className="font-mono text-text-tertiary hover:text-amber-text mt-1 w-full border-t border-slate pt-2.5 text-[0.6875rem] tracking-[0.2em] uppercase transition-colors"
             >
               {t.common.actions.close}
             </button>

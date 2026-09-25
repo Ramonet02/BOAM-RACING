@@ -28,6 +28,8 @@
 
    ANIMACION (toda condicionada a prefers-reduced-motion)
    ------------------------------------------------------
+   · Las fotos son sólidas para el lienzo topográfico: sus curvas de nivel
+     no pasan por encima de ninguna celda.
    · Tarjeta con volumen al pasar el raton (<TiltCard />): giro 3D hacia el
      puntero, canto, sombra en el suelo y reflejo, con muelles de
      framer-motion: cero renders de React por movimiento del raton.
@@ -419,10 +421,13 @@ export default function BentoGallery({
             <h3 className="mt-3 font-heading text-2xl leading-tight tracking-[0.04em] text-text-primary sm:text-3xl">
               {t.media.gallery.title}
             </h3>
+            <p className="mt-2 max-w-xl font-body text-xs leading-relaxed text-text-tertiary">
+              {t.media.gallery.note}
+            </p>
           </div>
 
           <p className="shrink-0 font-mono text-xs tracking-[0.18em] text-text-tertiary">
-            <span className="text-sand tabular-nums">
+            <span className="text-sand-solid tabular-nums">
               {String(filtered.length).padStart(2, "0")}
             </span>{" "}
             {t.media.gallery.countLabel}
@@ -477,7 +482,7 @@ export default function BentoGallery({
               depth={PARALLAX_DEPTHS[index % PARALLAX_DEPTHS.length]}
               priority={index < 2}
               zoomOnHover={renderMotion}
-              actionLabel={`${t.common.actions.more} · ${entry.caption}`}
+              actionLabel={t.common.actions.more}
               onOpen={(trigger) => openAt(index, trigger)}
             />
           ))}
@@ -493,7 +498,7 @@ export default function BentoGallery({
             className="btn-tactical btn-outline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber"
           >
             {t.common.actions.viewAll}
-            <span className="font-mono text-[0.625rem] text-amber-text tabular-nums">
+            <span className="font-mono text-[0.6875rem] text-amber-text tabular-nums">
               +{String(hiddenCount).padStart(2, "0")}
             </span>
           </button>
@@ -573,7 +578,9 @@ function BentoCell({
 
   return (
     <article className={`group relative ${TILE_CLASSES[shape]}`}>
-      <TiltCard className="h-full" maxTilt={8} lift={18} thickness={4}>
+      {/* `solid`: las curvas de nivel del cursor no se dibujan encima de la
+          foto (ver topoState.ts). */}
+      <TiltCard className="h-full" maxTilt={8} lift={18} thickness={4} solid>
         <div
           className="chamfer relative h-full w-full overflow-hidden bg-bg-surface"
           style={CARD_STYLE}
@@ -605,7 +612,7 @@ function BentoCell({
 
           {/* Badge de etapa: siempre visible, ancla el dato de ruta */}
           {stage && (
-            <span className="pointer-events-none absolute left-3 top-3 z-20 bg-bg-base/75 px-2 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.18em] text-amber-text">
+            <span className="pointer-events-none absolute left-3 top-3 z-20 bg-bg-base/75 px-2 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.18em] text-amber-text">
               {stage}
             </span>
           )}
@@ -615,6 +622,7 @@ function BentoCell({
               @media (hover: none) mas abajo). */}
           <div
             aria-hidden="true"
+            lang="es"
             className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-end opacity-0 transition-opacity duration-300 ease-tactical group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100"
             style={{
               backgroundImage:
@@ -622,11 +630,11 @@ function BentoCell({
             }}
           >
             <div className="flex flex-col gap-1.5 p-3 sm:p-4">
-              <p className="line-clamp-2 font-heading text-sm uppercase leading-tight tracking-[0.04em] text-text-primary sm:text-base">
+              <p className="line-clamp-2 font-heading text-sm leading-tight tracking-[0.02em] text-text-primary sm:text-base">
                 {entry.caption}
               </p>
 
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-text-tertiary">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-text-tertiary">
                 {entry.rally?.location && (
                   <span className="flex min-w-0 items-center gap-1 text-text-secondary">
                     <MapPin size={10} strokeWidth={2} aria-hidden="true" />
@@ -640,7 +648,7 @@ function BentoCell({
                   </span>
                 )}
                 {terrain && (
-                  <span className="flex shrink-0 items-center gap-1 text-sand">
+                  <span className="flex shrink-0 items-center gap-1 text-sand-solid">
                     <Mountain size={10} strokeWidth={2} aria-hidden="true" />
                     {TERRAIN_LABELS[terrain]}
                   </span>
@@ -667,7 +675,12 @@ function BentoCell({
             onClick={(event) => onOpen(event.currentTarget)}
             className="absolute inset-0 z-30 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-amber"
           >
-            <span className="sr-only">{actionLabel}</span>
+            {/* El pie de foto solo existe en castellano: se marca su idioma
+                para que un lector de pantalla no lo lea con la voz del
+                idioma activo (WCAG 3.1.2). */}
+            <span className="sr-only">
+              {actionLabel} · <span lang="es">{entry.caption}</span>
+            </span>
             <span
               aria-hidden="true"
               className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center bg-bg-base/75 text-amber opacity-0 transition-opacity duration-300 ease-tactical group-hover:opacity-100 group-focus-within:opacity-100"
